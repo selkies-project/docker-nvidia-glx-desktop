@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xgl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xgl
+  template:
+    metadata:
+      labels:
+        app: xgl
+    spec:
+      hostname: xgl
+      containers:
+      - name: xgl
+        image: ehfd/nvidia-glx-desktop:latest
+        env:
+        - name: TZ
+          value: "America/Los_Angeles"
+        - name: SIZEW
+          value: "1920"
+        - name: SIZEH
+          value: "1080"
+        - name: VNCPASS
+          value: "vncpasswd"
+#          valueFrom:
+#            secretKeyRef:
+#              name: xgl-pass
+#              key: xgl-pass
+        securityContext:
+          privileged: true
+        stdin: true
+        tty: true
+        ports:
+          - containerPort: 5901
+            protocol: TCP
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+            memory: "64Gi"
+            cpu: "16"
+          requests:
+            memory: "100m"
+            cpu: "100m"
+        volumeMounts:
+        - mountPath: /cache
+          name: xgl-cache-vol
+        - mountPath: /home/user
+          name: xgl-root-vol
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /dev/tty0
+          name: tty
+      volumes:
+        - name: xgl-cache-vol
+          emptyDir: {}
+#          persistentVolumeClaim:
+#            claimName: xgl-cache-vol
+        - name: xgl-root-vol
+          emptyDir: {}
+#          persistentVolumeClaim:
+#            claimName: xgl-root-vol
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        - name: tty
+          hostPath:
+            path: /dev/tty0
