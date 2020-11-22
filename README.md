@@ -1,6 +1,6 @@
 # docker-nvidia-glx-desktop
 
-MATE Desktop container with GLX support for NVIDIA GPUs by spawning its own X Server and noVNC WebSocket interface instead of using the host X server. Does not require `/tmp/X11-unix` host sockets or any non-conventional/dangerous host setup.
+MATE Desktop container with GLX support for NVIDIA GPUs by spawning its own X Server and noVNC WebSocket interface instead of using the host X server. Does not require `/tmp/.X11-unix` host sockets or any non-conventional/dangerous host setup.
 
 Use [docker-nvidia-egl-desktop](https://github.com/ehfd/docker-nvidia-egl-desktop) for a more stable MATE Desktop container that directly accesses NVIDIA GPUs without using an X Server.
 
