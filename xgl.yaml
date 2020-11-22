@@ -38,12 +38,12 @@ spec:
             protocol: TCP
         resources:
           limits:
-            nvidia.com/gpu: 1
-            memory: "64Gi"
+            memory: 64Gi
             cpu: "16"
+            nvidia.com/gpu: 1
           requests:
-            memory: "100m"
-            cpu: "100m"
+            memory: 100Mi
+            cpu: 100m
         volumeMounts:
         - mountPath: /cache
           name: xgl-cache-vol
