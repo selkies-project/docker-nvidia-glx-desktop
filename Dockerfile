@@ -146,7 +146,7 @@ RUN chmod 755 /bootstrap.sh
 COPY supervisord.conf /etc/supervisord.conf
 RUN chmod 755 /etc/supervisord.conf
 
-# Create user
+# Create user with password 'vncpasswd'
 RUN apt-get update && apt-get install -y --no-install-recommends \
       sudo && \
     groupadd -g 1000 user && \
@@ -154,6 +154,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     usermod -a -G adm,audio,cdrom,disk,games,lpadmin,sudo,dip,plugdev,tty,video user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown -R user:user /home/user/ && \
+    echo 'user:vncpasswd' | chpasswd && \
     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 5901

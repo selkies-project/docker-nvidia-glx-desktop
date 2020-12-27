@@ -6,7 +6,7 @@ Use [docker-nvidia-egl-desktop](https://github.com/ehfd/docker-nvidia-egl-deskto
 
 **Change the NVIDIA GPU driver version to be same as the host and build your own Dockerfile.** Change **bootstrap.sh** if you are using a headless GPU like Tesla. Corresponding container toolkit on the host for allocating GPUs should also be set up.
 
-Connect to the spawned noVNC WebSocket instance with a browser in port 5901, no VNC client required.
+Connect to the spawned noVNC WebSocket instance with a browser in port 5901, no VNC client required (password for the default user is 'vncpasswd').
 
 Note: Requires access to at least one **/dev/ttyX** device. Check out [k8s-hostdev-plugin](https://github.com/bluebeach/k8s-hostdev-plugin) for provisioning this in Kubernetes clusters without privileged access.
 
