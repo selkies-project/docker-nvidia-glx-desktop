@@ -12,6 +12,9 @@ ENV NVIDIA_DRIVER_CAPABILITIES all
 ARG NOVNC_VERSION=1.1.0
 ENV NOVNC_VERSION $NOVNC_VERSION
 
+# Default password is 'vncpasswd'
+ENV VNCPASS vncpasswd
+
 # Install locales to prevent errors
 RUN apt-get clean && \
     apt-get update && \
@@ -33,8 +36,8 @@ RUN dpkg --add-architecture i386 && \
         file \
         libc6:i386 \
         libelf-dev \
-	    libglvnd-dev \
-	    pkg-config && \
+        libglvnd-dev \
+        pkg-config && \
     rm -rf /var/lib/apt/lists/*
 
 # Install X server and desktop before driver
@@ -81,8 +84,7 @@ RUN apt-get update && apt-get install -y \
 # Driver version must be equal to host's driver
 #ARG BASE_URL=https://us.download.nvidia.com/tesla
 ARG BASE_URL=http://us.download.nvidia.com/XFree86/Linux-x86_64
-ARG DRIVER_VERSION=450.66
-ENV DRIVER_VERSION $DRIVER_VERSION
+ENV DRIVER_VERSION 450.66
 
 RUN cd /tmp && \
     curl -fSsl -O $BASE_URL/$DRIVER_VERSION/NVIDIA-Linux-x86_64-$DRIVER_VERSION.run && \
@@ -106,7 +108,7 @@ RUN cd /tmp && \
 # Install packages related to X server
 # pkg-config: nvidia-xconfig requires this package
 # mesa-utils: This package includes glxgears and glxinfo, which is useful for testing GLX drivers
-# x11vnc: Make connection between x11 server and VNC client.
+# x11vnc: Make connection between X11 server and VNC client.
 # x11-apps: xeyes can be used to make sure that X11 server is running.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         mesa-utils \
@@ -120,7 +122,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Sound driver including PulseAudio and GTK library
-# If you want to use sounds on docker, try `pulseaudio --start`
+# If you want to use sounds on docker, try 'pulseaudio --start'
 RUN apt-get update && apt-get install -y --no-install-recommends \
       alsa pulseaudio libgtk2.0-0 && \
     rm -rf /var/lib/apt/lists/*
@@ -146,7 +148,7 @@ RUN chmod 755 /bootstrap.sh
 COPY supervisord.conf /etc/supervisord.conf
 RUN chmod 755 /etc/supervisord.conf
 
-# Create user with password 'vncpasswd'
+# Create user with password '${VNCPASS}'
 RUN apt-get update && apt-get install -y --no-install-recommends \
       sudo && \
     groupadd -g 1000 user && \
@@ -154,7 +156,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     usermod -a -G adm,audio,cdrom,disk,games,lpadmin,sudo,dip,plugdev,tty,video user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown -R user:user /home/user/ && \
-    echo 'user:vncpasswd' | chpasswd && \
+    echo 'user:${VNCPASS}' | chpasswd && \
     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 5901
