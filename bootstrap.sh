@@ -3,7 +3,7 @@ set -e
 
 trap "echo TRAPed signal" HUP INT QUIT KILL TERM
 
-echo 'user:${VNCPASS}' | sudo chpasswd
+echo "user:${VNCPASS}" | sudo chpasswd
 
 # NVIDIA driver inside the container must be same version as host.
 HEX_ID=$(sudo nvidia-smi --query-gpu=pci.bus_id --id=${NVIDIA_VISIBLE_DEVICES} --format=csv | tail -n1)
@@ -15,7 +15,8 @@ sudo nvidia-xconfig -a --virtual=${SIZEW}x${SIZEH} --allow-empty-initial-configu
 shopt -s extglob
 for TTY in /dev/tty+([0-9])
 do
-if [ -w $TTY ] ; then
+if [ -w $TTY ]
+then
     /usr/bin/X tty$(echo $TTY | grep -Eo '[0-9]+$') :0 &
     break
 fi

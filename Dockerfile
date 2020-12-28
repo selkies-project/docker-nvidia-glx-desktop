@@ -156,7 +156,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     usermod -a -G adm,audio,cdrom,disk,games,lpadmin,sudo,dip,plugdev,tty,video user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown -R user:user /home/user/ && \
-    echo 'user:${VNCPASS}' | chpasswd && \
+    echo "user:${VNCPASS}" | chpasswd && \
     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 5901
