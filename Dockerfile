@@ -12,8 +12,10 @@ ENV NVIDIA_DRIVER_CAPABILITIES all
 ARG NOVNC_VERSION=1.1.0
 ENV NOVNC_VERSION $NOVNC_VERSION
 
-# Default password is 'vncpasswd'
+# Default options (password is 'vncpasswd')
 ENV VNCPASS vncpasswd
+ENV SIZEW 1920
+ENV SIZEH 1080
 
 # Install locales to prevent errors
 RUN apt-get clean && \
@@ -148,7 +150,7 @@ RUN chmod 755 /bootstrap.sh
 COPY supervisord.conf /etc/supervisord.conf
 RUN chmod 755 /etc/supervisord.conf
 
-# Create user with password '${VNCPASS}'
+# Create user with password ${VNCPASS}
 RUN apt-get update && apt-get install -y --no-install-recommends \
       sudo && \
     groupadd -g 1000 user && \
