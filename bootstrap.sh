@@ -13,10 +13,10 @@ BUS_ID=PCI:$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))
 sudo nvidia-xconfig -a --virtual=${SIZEW}x${SIZEH} --allow-empty-initial-configuration --enable-all-gpus --busid=$BUS_ID --use-display-device=None
 
 shopt -s extglob
-for tty in /dev/tty+([0-9])
+for TTY in /dev/tty+([0-9])
 do
-if [ -w $tty ] ; then
-    /usr/bin/X tty$(echo $tty | grep -Eo '[0-9]+$') :0 &
+if [ -w $TTY ] ; then
+    /usr/bin/X tty$(echo $TTY | grep -Eo '[0-9]+$') :0 &
     break
 fi
 done
