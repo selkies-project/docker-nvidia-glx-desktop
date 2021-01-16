@@ -9,9 +9,6 @@ ARG NVIDIA_VISIBLE_DEVICES=all
 ARG DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_DRIVER_CAPABILITIES all
 
-ARG NOVNC_VERSION=1.1.0
-ENV NOVNC_VERSION $NOVNC_VERSION
-
 # Default options (password is 'vncpasswd')
 ENV VNCPASS vncpasswd
 ENV SIZEW 1920
@@ -62,25 +59,22 @@ RUN apt-get install -y \
         python-numpy \
         x11-xkb-utils \
         xauth \
+        xinit \
         xfonts-base \
         xkb-data \
         libxtst6 \
         libxtst6:i386 \
         mlocate \
+        nano \
         vim \
         htop \
         firefox \
-        qt5-default \
         libpci3 \
         supervisor \
         net-tools \
         ubuntu-mate-core \
         ubuntu-mate-desktop && \
         rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get install -y \
-        xinit && \
-    rm -rf /var/lib/apt/lists/*
 
 # Install NVIDIA drivers, including X graphic drivers by omitting --x-{prefix,module-path,library-path,sysconfig-path}
 # Driver version must be equal to host's driver
@@ -120,22 +114,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install Vulkan
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libvulkan1 vulkan-utils && \
+        libvulkan1 \
+        vulkan-utils \
+        vulkan-validationlayers && \
     rm -rf /var/lib/apt/lists/*
 
 # Sound driver including PulseAudio and GTK library
 # If you want to use sounds on docker, try 'pulseaudio --start'
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      alsa pulseaudio libgtk2.0-0 && \
+        alsa \
+        pulseaudio \
+        libgtk2.0-0 && \
     rm -rf /var/lib/apt/lists/*
 
 # noVNC and Websockify
+ENV NOVNC_VERSION 1.1.0
 RUN wget https://github.com/novnc/noVNC/archive/v$NOVNC_VERSION.zip && \
-  unzip -q v$NOVNC_VERSION.zip && \
-  rm -rf v$NOVNC_VERSION.zip && \
-  mv noVNC-$NOVNC_VERSION /opt/noVNC && \
-  ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
-  git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
+    unzip -q v$NOVNC_VERSION.zip && \
+    rm -rf v$NOVNC_VERSION.zip && \
+    mv noVNC-$NOVNC_VERSION /opt/noVNC && \
+    ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
+    git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
 
 # X server segfault error mitigation
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -153,13 +152,13 @@ RUN chmod 755 /etc/supervisord.conf
 # Create user with password ${VNCPASS}
 RUN apt-get update && apt-get install -y --no-install-recommends \
       sudo && \
+    rm -rf /var/lib/apt/lists/* && \
     groupadd -g 1000 user && \
     useradd -ms /bin/bash user -u 1000 -g 1000 && \
-    usermod -a -G adm,audio,cdrom,disk,games,lpadmin,sudo,dip,plugdev,tty,video user && \
+    usermod -a -G adm,audio,bluetooth,cdrom,dialout,dip,fax,floppy,input,lpadmin,netdev,plugdev,pulse-access,render,scanner,ssh,sudo,tape,tty,video,voice user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown -R user:user /home/user/ && \
-    echo "user:${VNCPASS}" | chpasswd && \
-    rm -rf /var/lib/apt/lists/*
+    echo "user:${VNCPASS}" | chpasswd
 
 EXPOSE 5901
 
