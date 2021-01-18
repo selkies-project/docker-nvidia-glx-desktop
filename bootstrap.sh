@@ -32,7 +32,7 @@ sleep 1
 pulseaudio --start
 sleep 1
 
-x11vnc -display :0 -passwd $VNCPASS -forever -ncache 10 -ncache_cr -xkb -rfbport 5900 $SHARESTRING &
+x11vnc -display :0 -passwd $VNCPASS -forever -xkb -rfbport 5900 $SHARESTRING &
 sleep 1
 
 /opt/noVNC/utils/launch.sh --vnc localhost:5900 --listen 5901 &
