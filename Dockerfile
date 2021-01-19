@@ -142,11 +142,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN sed -i "s/allowed_users=console/allowed_users=anybody/;$ a needs_root_rights=yes" /etc/X11/Xwrapper.config
 
-COPY bootstrap.sh /bootstrap.sh
-RUN chmod 755 /bootstrap.sh
-COPY supervisord.conf /etc/supervisord.conf
-RUN chmod 755 /etc/supervisord.conf
-
 # Create user with password ${VNCPASS}
 RUN apt-get update && apt-get install -y --no-install-recommends \
         sudo && \
@@ -157,6 +152,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown -R user:user /home/user && \
     echo "user:${VNCPASS}" | chpasswd
+
+COPY bootstrap.sh /bootstrap.sh
+RUN chmod 755 /bootstrap.sh
+COPY supervisord.conf /etc/supervisord.conf
+RUN chmod 755 /etc/supervisord.conf
 
 EXPOSE 5901
 

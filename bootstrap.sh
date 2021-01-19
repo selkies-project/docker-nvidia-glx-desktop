@@ -3,7 +3,6 @@ set -e
 
 trap "echo TRAPed signal" HUP INT QUIT KILL TERM
 
-sudo chown -R user:user ~
 echo "user:${VNCPASS}" | sudo chpasswd
 
 # NVIDIA driver version inside the container from Dockerfile must be equal to the host
