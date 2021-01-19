@@ -114,8 +114,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Vulkan
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libvulkan1 \
-        vulkan-utils \
-        vulkan-validationlayers && \
+        vulkan-utils && \
     rm -rf /var/lib/apt/lists/*
 
 # Sound driver including PulseAudio and GTK library
