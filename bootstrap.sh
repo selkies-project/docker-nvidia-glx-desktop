@@ -3,6 +3,7 @@ set -e
 
 trap "echo TRAPed signal" HUP INT QUIT KILL TERM
 
+sudo chown -R user:user ~
 echo "user:${VNCPASS}" | sudo chpasswd
 
 # NVIDIA driver version inside the container from Dockerfile must be equal to the host
@@ -29,9 +30,6 @@ fi
 done
 sleep 1
 
-pulseaudio --start
-sleep 1
-
 x11vnc -display :0 -passwd $VNCPASS -forever -xkb -rfbport 5900 $SHARESTRING &
 sleep 1
 
@@ -40,6 +38,9 @@ sleep 1
 
 export DISPLAY=:0
 mate-session &
+sleep 1
+
+pulseaudio --start
 
 echo "Session Running. Press [Return] to exit."
 read

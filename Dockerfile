@@ -74,7 +74,7 @@ RUN apt-get install -y \
         net-tools \
         ubuntu-mate-core \
         ubuntu-mate-desktop && \
-        rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*
 
 # Install NVIDIA drivers, including X graphic drivers by omitting --x-{prefix,module-path,library-path,sysconfig-path}
 # Driver version must be equal to the host
@@ -136,8 +136,8 @@ RUN wget https://github.com/novnc/noVNC/archive/v$NOVNC_VERSION.zip && \
 
 # X server segfault error mitigation
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      dbus-x11 \
-      libdbus-c++-1-0v5 && \
+        dbus-x11 \
+        libdbus-c++-1-0v5 && \
     rm -rf /var/lib/apt/lists/*
 
 RUN sed -i "s/allowed_users=console/allowed_users=anybody/;$ a needs_root_rights=yes" /etc/X11/Xwrapper.config
@@ -149,13 +149,13 @@ RUN chmod 755 /etc/supervisord.conf
 
 # Create user with password ${VNCPASS}
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      sudo && \
+        sudo && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd -g 1000 user && \
     useradd -ms /bin/bash user -u 1000 -g 1000 && \
     usermod -a -G adm,audio,bluetooth,cdrom,dialout,dip,fax,floppy,input,lpadmin,netdev,plugdev,pulse-access,render,scanner,ssh,sudo,tape,tty,video,voice user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
-    chown -R user:user /home/user/ && \
+    chown -R user:user /home/user && \
     echo "user:${VNCPASS}" | chpasswd
 
 EXPOSE 5901
