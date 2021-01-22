@@ -80,7 +80,7 @@ RUN apt-get install -y \
 # Driver version must be equal to the host
 #ARG BASE_URL=https://us.download.nvidia.com/tesla
 ARG BASE_URL=http://us.download.nvidia.com/XFree86/Linux-x86_64
-ENV DRIVER_VERSION 450.80.02
+ENV DRIVER_VERSION 450.66
 RUN cd /tmp && \
     curl -fSsl -O $BASE_URL/$DRIVER_VERSION/NVIDIA-Linux-x86_64-$DRIVER_VERSION.run && \
     sh NVIDIA-Linux-x86_64-$DRIVER_VERSION.run -x && \
