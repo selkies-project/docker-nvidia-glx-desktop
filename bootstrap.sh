@@ -36,6 +36,23 @@ sleep 1
 sleep 1
 
 export DISPLAY=:0
+if vulkaninfo | grep $(echo $NVIDIA_VISIBLE_DEVICES | cut -d ',' -f1 | cut -c 5-) | grep -q ^
+then
+VK=0
+while true
+do
+if ENABLE_DEVICE_CHOOSER_LAYER=1 VULKAN_DEVICE_INDEX=$VK vulkaninfo | grep $(echo $NVIDIA_VISIBLE_DEVICES | cut -d ',' -f1 | cut -c 5-) | grep -q ^
+then
+    export ENABLE_DEVICE_CHOOSER_LAYER=1
+    export VULKAN_DEVICE_INDEX=$VK
+    break
+fi
+VK=$((VK+1))
+done
+else
+echo "Vulkan not available for current GPU."
+fi
+
 mate-session &
 sleep 1
 
