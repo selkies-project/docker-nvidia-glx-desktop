@@ -11,7 +11,7 @@ IFS=":." ARR_ID=("$HEX_ID")
 unset IFS
 BUS_ID=PCI:$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))
 # Leave out --use-display-device=None if GPU is headless such as Tesla, and download links of such GPU drivers in Dockerfile should also be changed
-sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --allow-empty-initial-configuration --enable-all-gpus --no-use-edid-dpi --busid="$BUS_ID" --use-display-device=None
+sudo nvidia-xconfig --virtual="${SIZEW}x$SIZEH" --allow-empty-initial-configuration --enable-all-gpus --no-use-edid-dpi --busid="$BUS_ID" --use-display-device=None
 
 if [ "x$SHARED" == "xTRUE" ]; then
   export SHARESTRING="-shared"
