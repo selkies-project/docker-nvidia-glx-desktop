@@ -80,7 +80,7 @@ RUN apt-get install -y \
 # Driver version must be equal to the host
 #ARG BASE_URL=https://us.download.nvidia.com/tesla
 ARG BASE_URL=http://us.download.nvidia.com/XFree86/Linux-x86_64
-ENV DRIVER_VERSION 450.66
+ENV DRIVER_VERSION 450.80.02
 RUN cd /tmp && \
     curl -fSsl -O $BASE_URL/$DRIVER_VERSION/NVIDIA-Linux-x86_64-$DRIVER_VERSION.run && \
     sh NVIDIA-Linux-x86_64-$DRIVER_VERSION.run -x && \
@@ -113,9 +113,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install Vulkan
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libvulkan1 \
-        vulkan-utils && \
-    rm -rf /var/lib/apt/lists/*
+        libvulkan-dev \
+        vulkan-validationlayers-dev \
+        vulkan-utils \
+        meson && \
+    rm -rf /var/lib/apt/lists/* && \
+    cd /tmp && \
+    git clone https://github.com/aejsmith/vkdevicechooser && \
+    cd vkdevicechooser && \
+    meson builddir --prefix=/usr && \
+    ninja -C builddir && \
+    meson install -C builddir && \
+    cd / && rm -rf /tmp/*
 
 # Sound driver including PulseAudio and GTK library
 # If you want to use sounds on docker, try 'pulseaudio --start'
@@ -148,7 +157,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/* && \
     groupadd -g 1000 user && \
     useradd -ms /bin/bash user -u 1000 -g 1000 && \
-    usermod -a -G adm,audio,bluetooth,cdrom,dialout,dip,fax,floppy,input,lpadmin,netdev,plugdev,pulse-access,render,scanner,ssh,sudo,tape,tty,video,voice user && \
+    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lpadmin,netdev,plugdev,render,scanner,ssh,sudo,tape,tty,video,voice user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown -R user:user /home/user && \
     echo "user:${VNCPASS}" | chpasswd
