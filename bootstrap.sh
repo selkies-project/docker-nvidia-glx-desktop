@@ -9,7 +9,7 @@ echo "user:$VNCPASS" | sudo chpasswd
 HEX_ID=$(sudo nvidia-smi --query-gpu=pci.bus_id --id="$(echo "$NVIDIA_VISIBLE_DEVICES" | cut -d ',' -f1)" --format=csv | sed -n 2p)
 IFS=":." ARR_ID=($HEX_ID)
 unset IFS
-BUS_ID=$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))
+BUS_ID=PCI:$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))
 # Leave out --use-display-device=None if GPU is headless such as Tesla, and download links of such GPU drivers in Dockerfile should also be changed
 sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --allow-empty-initial-configuration --enable-all-gpus --no-use-edid-dpi --busid="$BUS_ID" --use-display-device=None
 
