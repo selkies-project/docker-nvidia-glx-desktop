@@ -36,12 +36,12 @@ RUN dpkg --add-architecture i386 && \
         libc6:i386 \
         libelf-dev \
         libglvnd-dev \
-        pkg-config \
-        software-properties-common && \
+        pkg-config && \
     rm -rf /var/lib/apt/lists/*
 
 # Install X server and desktop before driver
 RUN apt-get update && apt-get install -y \
+        software-properties-common \
         wget \
         gzip \
         zip \
