@@ -82,7 +82,7 @@ RUN apt-get update && apt-get install -y \
 # Driver version must be equal to the host
 #ARG BASE_URL=https://us.download.nvidia.com/tesla
 ARG BASE_URL=http://us.download.nvidia.com/XFree86/Linux-x86_64
-ENV DRIVER_VERSION 450.66
+ENV DRIVER_VERSION 460.39
 RUN cd /tmp && \
     curl -fSsl -O $BASE_URL/$DRIVER_VERSION/NVIDIA-Linux-x86_64-$DRIVER_VERSION.run && \
     sh NVIDIA-Linux-x86_64-$DRIVER_VERSION.run -x && \
@@ -124,7 +124,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git clone https://github.com/aejsmith/vkdevicechooser && \
     cd vkdevicechooser && \
     meson builddir --prefix=/usr && \
-    ninja -C builddir && \
     meson install -C builddir && \
     cd / && rm -rf /tmp/*
 
