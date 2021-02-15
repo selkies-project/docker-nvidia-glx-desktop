@@ -5,13 +5,37 @@ trap "echo TRAPed signal" HUP INT QUIT KILL TERM
 
 echo "user:$VNCPASS" | sudo chpasswd
 
-# NVIDIA driver version inside the container from Dockerfile must be equal to the host
+# Install NVIDIA drivers, including X graphic drivers by omitting --x-{prefix,module-path,library-path,sysconfig-path}
+export DRIVER_VERSION=$(head -n1 </proc/driver/nvidia/version | awk '{ print $8 }')
+BASE_URL=https://us.download.nvidia.com/XFree86/Linux-x86_64
+cd /tmp
+curl -fSsl -O $BASE_URL/$DRIVER_VERSION/NVIDIA-Linux-x86_64-$DRIVER_VERSION.run
+sudo sh NVIDIA-Linux-x86_64-$DRIVER_VERSION.run -x
+cd NVIDIA-Linux-x86_64-$DRIVER_VERSION
+sudo ./nvidia-installer --silent \
+                   --no-kernel-module \
+                   --install-compat32-libs \
+                   --no-nouveau-check \
+                   --no-nvidia-modprobe \
+                   --no-rpms \
+                   --no-backup \
+                   --no-check-for-alternate-installs \
+                   --no-libglx-indirect \
+                   --no-install-libglvnd
+sudo rm -rf /tmp/NVIDIA*
+cd ~
+
+sudo sed -i "s/allowed_users=console/allowed_users=anybody/;$ a needs_root_rights=yes" /etc/X11/Xwrapper.config
+
+if ! sudo nvidia-smi --id="$(echo "$NVIDIA_VISIBLE_DEVICES" | cut -d ',' -f1)" -q | grep -q "Tesla"; then
+  DISPLAYSTRING="--use-display-device=None"
+fi
+
 HEX_ID=$(sudo nvidia-smi --query-gpu=pci.bus_id --id="$(echo "$NVIDIA_VISIBLE_DEVICES" | cut -d ',' -f1)" --format=csv | sed -n 2p)
 IFS=":." ARR_ID=($HEX_ID)
 unset IFS
 BUS_ID=PCI:$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))
-# Leave out --use-display-device=None if GPU is headless such as Tesla, and download links of such GPU drivers in Dockerfile should also be changed
-sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --allow-empty-initial-configuration --enable-all-gpus --no-use-edid-dpi --busid="$BUS_ID" --use-display-device=None
+sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --allow-empty-initial-configuration --enable-all-gpus --no-use-edid-dpi --busid="$BUS_ID" --only-one-x-screen "$DISPLAYSTRING"
 
 if [ "x$SHARED" == "xTRUE" ]; then
   export SHARESTRING="-shared"

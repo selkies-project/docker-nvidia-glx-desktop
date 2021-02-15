@@ -10,10 +10,9 @@ Use
 for a MATE Desktop container that directly accesses NVIDIA GPUs without using an
 X Server (without Vulkan support).
 
-**Change the NVIDIA GPU driver version inside the container to be equal to the
-host and build your own Dockerfile.** Change **bootstrap.sh** also if you are
-using a headless GPU like Tesla. Corresponding container toolkit on the host for
-allocating GPUs should also be set up.
+Corresponding container toolkit on the host for allocating GPUs should be set
+up. Container startup should take some time as it automatically installs NVIDIA
+drivers.
 
 Connect to the spawned noVNC WebSocket instance with a browser in port 5901, no
 VNC client required (password for the default user is 'vncpasswd').

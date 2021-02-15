@@ -23,6 +23,8 @@ spec:
           value: "1920"
         - name: SIZEH
           value: "1080"
+        - name: CDEPTH
+          value: "24"
         - name: SHARED
           value: "TRUE"
         - name: VNCPASS
