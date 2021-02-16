@@ -18,7 +18,7 @@ spec:
         image: ehfd/nvidia-glx-desktop:latest
         env:
         - name: TZ
-          value: "America/Los_Angeles"
+          value: "UTC"
         - name: SIZEW
           value: "1920"
         - name: SIZEH
@@ -38,8 +38,8 @@ spec:
         stdin: true
         tty: true
         ports:
-          - containerPort: 5901
-            protocol: TCP
+        - containerPort: 5901
+          protocol: TCP
         resources:
           limits:
             memory: 64Gi
@@ -58,17 +58,17 @@ spec:
         - mountPath: /dev/tty0
           name: tty
       volumes:
-        - name: xgl-cache-vol
-          emptyDir: {}
-#          persistentVolumeClaim:
-#            claimName: xgl-cache-vol
-        - name: xgl-root-vol
-          emptyDir: {}
-#          persistentVolumeClaim:
-#            claimName: xgl-root-vol
-        - name: dshm
-          emptyDir:
-            medium: Memory
-        - name: tty
-          hostPath:
-            path: /dev/tty0
+      - name: xgl-cache-vol
+        emptyDir: {}
+#        persistentVolumeClaim:
+#          claimName: xgl-cache-vol
+      - name: xgl-root-vol
+        emptyDir: {}
+#        persistentVolumeClaim:
+#          claimName: xgl-root-vol
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: tty
+        hostPath:
+          path: /dev/tty0
