@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM nvidia/opengl:1.2-glvnd-devel-ubuntu20.04
 
 LABEL maintainer "https://github.com/ehfd"
 
@@ -26,7 +26,7 @@ ENV LC_ALL en_US.UTF-8
 
 # https://gitlab.com/nvidia/container-images/driver/-/blob/master/ubuntu20.04/Dockerfile
 RUN dpkg --add-architecture i386 && \
-    apt-get update && apt-get install -o APT::Immediate-Configure=false -y --no-install-recommends \
+    apt-get update && apt-get install -y --no-install-recommends \
         apt-utils \
         build-essential \
         ca-certificates \
