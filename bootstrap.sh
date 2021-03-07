@@ -52,13 +52,7 @@ if [ "x$SHARED" == "xTRUE" ]; then
   export SHARESTRING="-shared"
 fi
 
-shopt -s extglob
-for TTY in /dev/tty+([0-9]); do
-  if [ -w "$TTY" ]; then
-    Xorg :0 &
-    break
-  fi
-done
+Xorg :0 &
 sleep 1
 
 x11vnc -display :0 -passwd "$VNCPASS" -forever -xkb -rfbport 5900 "$SHARESTRING" &
