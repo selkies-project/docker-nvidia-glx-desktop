@@ -28,14 +28,20 @@ echo "user:$VNCPASS" | sudo chpasswd
 
 sudo sed -i "s/allowed_users=console/allowed_users=anybody/;$ a needs_root_rights=yes" /etc/X11/Xwrapper.config
 
-# If NVIDIA_VISIBLE_DEVICES is empty or all set GPU_SELECT to first GPU visible
 if [ "$NVIDIA_VISIBLE_DEVICES" == "all" ]; then
   export GPU_SELECT=$(sudo nvidia-smi --query-gpu=uuid --format=csv | sed -n 2p)
 elif [ -z "$NVIDIA_VISIBLE_DEVICES" ]; then
   export GPU_SELECT=$(sudo nvidia-smi --query-gpu=uuid --format=csv | sed -n 2p)
-# Else set GPU_SELECT to first GPU in NVIDIA_VISIBLE_DEVICES
 else
   export GPU_SELECT=$(sudo nvidia-smi --id=$(echo "$NVIDIA_VISIBLE_DEVICES" | cut -d ',' -f1) --query-gpu=uuid --format=csv | sed -n 2p)
+  if [ -z "$GPU_SELECT" ]; then
+    export GPU_SELECT=$(sudo nvidia-smi --query-gpu=uuid --format=csv | sed -n 2p)
+  fi
+fi
+
+if [ -z "$GPU_SELECT" ]; then
+  echo "No NVIDIA GPUs detected. Exiting."
+  exit 1
 fi
 
 if ! sudo nvidia-smi --id="$GPU_SELECT" -q | grep -q "Tesla"; then
@@ -46,16 +52,22 @@ HEX_ID=$(sudo nvidia-smi --query-gpu=pci.bus_id --id="$GPU_SELECT" --format=csv 
 IFS=":." ARR_ID=($HEX_ID)
 unset IFS
 BUS_ID=PCI:$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))
-sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --mode="${SIZEW}x${SIZEH}" --allow-empty-initial-configuration --no-use-edid-dpi --busid="$BUS_ID" --only-one-x-screen "$DISPLAYSTRING"
+sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --mode="${SIZEW}x${SIZEH}" --allow-empty-initial-configuration --no-use-edid-dpi --busid="$BUS_ID" --only-one-x-screen --no-xinerama "$DISPLAYSTRING"
 
 if [ "x$SHARED" == "xTRUE" ]; then
   export SHARESTRING="-shared"
 fi
 
-Xorg :0 &
+shopt -s extglob
+for TTY in $(ls -1 /dev/tty+([0-9]) | sort -rV); do
+  if [ -w "$TTY" ]; then
+    Xorg vt"$(echo "$TTY" | grep -Eo '[0-9]+$')" :0 &
+    break
+  fi
+done
 sleep 1
 
-x11vnc -display :0 -passwd "$VNCPASS" -forever -xkb -rfbport 5900 "$SHARESTRING" &
+x11vnc -display :0 -passwd "$VNCPASS" -forever -repeat -xkb -rfbport 5900 "$SHARESTRING" &
 sleep 1
 
 /opt/noVNC/utils/launch.sh --vnc localhost:5900 --listen 5901 &

@@ -60,10 +60,13 @@ RUN apt-get update && apt-get install -y \
         python3 \
         python3-numpy \
         x11-xkb-utils \
+        x11-xserver-utils \
         xauth \
         xinit \
         xfonts-base \
         xkb-data \
+        libxrandr-dev \
+        xorg-dev \
         libxtst6 \
         libxtst6:i386 \
         mlocate \
