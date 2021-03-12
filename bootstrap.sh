@@ -67,7 +67,7 @@ for TTY in $(ls -1 /dev/tty+([0-9]) | sort -rV); do
 done
 sleep 1
 
-x11vnc -display :0 -passwd "$VNCPASS" -forever -repeat -xkb -rfbport 5900 "$SHARESTRING" &
+x11vnc -display :0 -passwd "$VNCPASS" -forever -repeat -xkb -xrandr resize -noxinerama -rfbport 5900 "$SHARESTRING" &
 sleep 1
 
 /opt/noVNC/utils/launch.sh --vnc localhost:5900 --listen 5901 &
