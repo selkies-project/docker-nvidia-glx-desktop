@@ -1,4 +1,4 @@
-FROM nvidia/opengl:1.2-glvnd-devel-ubuntu20.04
+FROM nvidia/opengl:1.2-glvnd-runtime-ubuntu20.04
 
 LABEL maintainer "https://github.com/ehfd"
 
@@ -13,6 +13,7 @@ ENV VNCPASS vncpasswd
 ENV SIZEW 1920
 ENV SIZEH 1080
 ENV CDEPTH 24
+ENV VIDEO_PORT DFP
 
 # Install locales to prevent errors
 RUN apt-get clean && \
@@ -39,7 +40,7 @@ RUN dpkg --add-architecture i386 && \
         pkg-config && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Xorg and desktop packages
+# Install Xorg, MATE desktop, and others
 RUN apt-get update && apt-get install -y \
         software-properties-common \
         wget \
@@ -59,6 +60,8 @@ RUN apt-get update && apt-get install -y \
         python-numpy \
         python3 \
         python3-numpy \
+        dbus-x11 \
+        libdbus-c++-1-0v5 \
         x11-xkb-utils \
         x11-xserver-utils \
         xauth \
@@ -82,9 +85,11 @@ RUN apt-get update && apt-get install -y \
         mesa-utils \
         x11vnc \
         x11-apps && \
+    # Remove Bluetooth packages that throw errors
+    apt-get autoremove --purge -y blueman bluez bluez-cups pulseaudio-module-bluetooth && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Vulkan
+# Install Vulkan and fix containerization issues
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libvulkan-dev \
         vulkan-validationlayers-dev \
@@ -98,13 +103,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     meson install -C builddir && \
     rm -rf /tmp/*
 
-# Sound driver including PulseAudio and GTK library
-# If you want to use sounds on docker, try 'pulseaudio --start'
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        alsa \
-        pulseaudio \
-        libgtk2.0-0 && \
-    rm -rf /var/lib/apt/lists/*
+# Wine and Winetricks, comment out the below lines to disable
+ARG WINE_BRANCH=stable
+RUN curl -fsSL https://dl.winehq.org/wine-builds/winehq.key | APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add - && \
+    apt-add-repository "deb https://dl.winehq.org/wine-builds/ubuntu/ $(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2) main" && \
+    apt-get update && apt-get install -y --install-recommends winehq-${WINE_BRANCH} && \
+    rm -rf /var/lib/apt/lists/* && \
+    curl -fsSL -o /usr/bin/winetricks https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks && \
+    chmod 755 /usr/bin/winetricks && \
+    curl -fsSL -o /usr/share/bash-completion/completions/winetricks https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks.bash-completion
 
 # noVNC and Websockify
 ENV NOVNC_VERSION 1.2.0
@@ -113,25 +120,19 @@ RUN curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz |
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
     git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
 
-# Xorg segfault error mitigation
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        dbus-x11 \
-        libdbus-c++-1-0v5 && \
-    rm -rf /var/lib/apt/lists/*
-
 # Create user with password ${VNCPASS}
 RUN apt-get update && apt-get install -y --no-install-recommends \
         sudo && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd -g 1000 user && \
     useradd -ms /bin/bash user -u 1000 -g 1000 && \
-    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lpadmin,netdev,plugdev,render,scanner,ssh,sudo,tape,tty,video,voice user && \
+    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lp,lpadmin,netdev,plugdev,render,scanner,ssh,sudo,tape,tty,video,voice user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown -R user:user /home/user && \
     echo "user:${VNCPASS}" | chpasswd
 
-COPY bootstrap.sh /bootstrap.sh
-RUN chmod 755 /bootstrap.sh
+COPY bootstrap.sh /etc/bootstrap.sh
+RUN chmod 755 /etc/bootstrap.sh
 COPY supervisord.conf /etc/supervisord.conf
 RUN chmod 755 /etc/supervisord.conf
 
