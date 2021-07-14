@@ -29,12 +29,12 @@ spec:
           value: "TRUE"
         - name: VNCPASS
           value: "vncpasswd"
-        - name: VIDEO_PORT
-          value: "DFP"
 #          valueFrom:
 #            secretKeyRef:
 #              name: xgl-pass
 #              key: xgl-pass
+        - name: VIDEO_PORT
+          value: "DFP"
         stdin: true
         tty: true
         ports:
@@ -69,7 +69,7 @@ spec:
       - name: dshm
         emptyDir:
           medium: Memory
-# Replace this with the cluster's device plugin entry that provisions the virtual terminal device
+# Replace this and the above mountPath with the cluster's device plugin entry that provisions the virtual terminal device
       - name: tty
         hostPath:
           path: /dev/tty63
