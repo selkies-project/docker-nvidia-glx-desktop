@@ -9,6 +9,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_DRIVER_CAPABILITIES all
 
 # Default options (password is 'vncpasswd')
+ENV TZ UTC
 ENV VNCPASS vncpasswd
 ENV SIZEW 1920
 ENV SIZEH 1080
@@ -129,7 +130,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lp,lpadmin,netdev,plugdev,render,scanner,ssh,sudo,tape,tty,video,voice user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown -R user:user /home/user && \
-    echo "user:${VNCPASS}" | chpasswd
+    echo "user:${VNCPASS}" | chpasswd && \
+    ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | tee /etc/timezone > /dev/null
 
 COPY bootstrap.sh /etc/bootstrap.sh
 RUN chmod 755 /etc/bootstrap.sh

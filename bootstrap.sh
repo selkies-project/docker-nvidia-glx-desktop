@@ -4,6 +4,7 @@ set -e
 trap "echo TRAPed signal" HUP INT QUIT KILL TERM
 
 echo "user:$VNCPASS" | sudo chpasswd
+sudo ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | sudo tee /etc/timezone > /dev/null
 
 sudo /etc/init.d/dbus start
 
@@ -26,8 +27,11 @@ if ! command -v nvidia-xconfig &> /dev/null; then
                     --no-libglx-indirect \
                     --no-install-libglvnd
   sudo rm -rf /tmp/NVIDIA*
-  sudo sed -i "s/allowed_users=console/allowed_users=anybody/;$ a needs_root_rights=yes" /etc/X11/Xwrapper.config
   cd ~
+fi
+
+if grep -Fxq "allowed_users=console" /etc/X11/Xwrapper.config; then
+  sudo sed -i "s/allowed_users=console/allowed_users=anybody/;$ a needs_root_rights=yes" /etc/X11/Xwrapper.config
 fi
 
 if [ -f "/etc/X11/xorg.conf" ]; then

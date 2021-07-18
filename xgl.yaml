@@ -45,6 +45,9 @@ spec:
             memory: 64Gi
             cpu: "16"
             nvidia.com/gpu: 1
+# Deploy either https://gitlab.com/arm-research/smarter/smarter-device-manager or https://github.com/bluebeach/k8s-hostdev-plugin and increase allocatable resources of one same virtual terminal device to at least the number of GPUs
+#            smarter-devices/tty63: 1
+#            hostdev.k8s.io/dev_tty63: 1
           requests:
             memory: 100Mi
             cpu: 100m
@@ -55,8 +58,6 @@ spec:
           name: xgl-root-vol
         - mountPath: /dev/shm
           name: dshm
-        - mountPath: /dev/tty63
-          name: tty
       volumes:
       - name: xgl-cache-vol
         emptyDir: {}
@@ -69,7 +70,3 @@ spec:
       - name: dshm
         emptyDir:
           medium: Memory
-# Replace this and the above mountPath with the cluster's device plugin entry that provisions the virtual terminal device
-      - name: tty
-        hostPath:
-          path: /dev/tty63
