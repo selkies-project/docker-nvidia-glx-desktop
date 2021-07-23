@@ -3,10 +3,15 @@ set -e
 
 trap "echo TRAPed signal" HUP INT QUIT KILL TERM
 
-echo "user:$VNCPASS" | sudo chpasswd
+sudo chown -R user:user /home/user /opt/tomcat
+echo "user:$PASSWD" | sudo chpasswd
 sudo ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | sudo tee /etc/timezone > /dev/null
+export PATH="${PATH}:/opt/tomcat/bin"
 
+sudo ln -snf /dev/ptmx /dev/tty7
+sudo /etc/init.d/ssh start
 sudo /etc/init.d/dbus start
+pulseaudio --start
 
 # Install NVIDIA drivers, including X graphic drivers by omitting --x-{prefix,module-path,library-path,sysconfig-path}
 if ! command -v nvidia-xconfig &> /dev/null; then
@@ -63,43 +68,48 @@ sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --mode=$(ech
 sudo sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "NoMaxPClkCheck, NoEdidMaxPClkCheck, NoMaxSizeCheck, NoHorizSyncCheck, NoVertRefreshCheck, NoVirtualSizeCheck, NoExtendedGpuCapabilitiesCheck, NoTotalSizeCheck, NoDualLinkDVICheck, NoDisplayPortBandwidthCheck, AllowNon3DVisionModes, AllowNonHDMI3DModes, AllowNonEdidModes, NoEdidHDMI2Check, AllowDpInterlaced"\n    Option         "DPI" "96 x 96"' /etc/X11/xorg.conf
 sudo sed -i '/Section\s\+"Monitor"/a\    '"$MODELINE" /etc/X11/xorg.conf
 
-shopt -s extglob
-for TTY in $(ls -1 /dev/tty+([0-9]) | sort -rV); do
-  if [ -w "$TTY" ]; then
-    Xorg vt"$(echo "$TTY" | grep -Eo '[0-9]+$')" -sharevts :0 &
-    break
-  fi
-done
-sleep 1
+Xorg vt7 -novtswitch -sharevts +extension "MIT-SHM" :0 &
 
 if [ "x$SHARED" == "xTRUE" ]; then
   export SHARESTRING="-shared"
 fi
 
-x11vnc -display ":0" -passwd "$VNCPASS" -forever -repeat -xkb -xrandr "resize" -rfbport 5900 "$SHARESTRING" &
-sleep 1
+sudo x11vnc -display ":0" -passwd "$PASSWD" -forever -repeat -xkb -xrandr "resize" -rfbport 5900 "$SHARESTRING" &
 
-/opt/noVNC/utils/launch.sh --vnc localhost:5900 --listen 5901 &
-sleep 1
+mkdir -p ~/.guacamole
+echo "<user-mapping>
+    <authorize username=\"user\" password=\"$PASSWD\">
+        <connection name=\"VNC\">
+            <protocol>vnc</protocol>
+            <param name=\"hostname\">localhost</param>
+            <param name=\"port\">5900</param>
+            <param name=\"autoretry\">10</param>
+            <param name=\"password\">$PASSWD</param>
+            <param name=\"enable-sftp\">true</param>
+            <param name=\"sftp-hostname\">localhost</param>
+            <param name=\"sftp-username\">user</param>
+            <param name=\"sftp-password\">$PASSWD</param>
+            <param name=\"sftp-directory\">/home/user</param>
+            <param name=\"enable-audio\">true</param>
+            <param name=\"audio-servername\">localhost</param>
+        </connection>
+        <connection name=\"SSH\">
+            <protocol>ssh</protocol>
+            <param name=\"hostname\">localhost</param>
+            <param name=\"username\">user</param>
+            <param name=\"password\">$PASSWD</param>
+            <param name=\"enable-sftp\">true</param>
+        </connection>
+    </authorize>
+</user-mapping>
+" > ~/.guacamole/user-mapping.xml
+chmod 0600 ~/.guacamole/user-mapping.xml
+
+/opt/tomcat/bin/catalina.sh run &
+guacd -f &
 
 export DISPLAY=:0
-UUID_CUT=$(sudo nvidia-smi --query-gpu=uuid --id="$GPU_SELECT" --format=csv | sed -n 2p | cut -c 5-)
-if vulkaninfo | grep "$UUID_CUT" | grep -q ^; then
-  VK=0
-  while true; do
-    if ENABLE_DEVICE_CHOOSER_LAYER=1 VULKAN_DEVICE_INDEX=$VK vulkaninfo | grep "$UUID_CUT" | grep -q ^; then
-      export ENABLE_DEVICE_CHOOSER_LAYER=1
-      export VULKAN_DEVICE_INDEX="$VK"
-      break
-    fi
-    VK=$((VK + 1))
-  done
-else
-  echo "Vulkan is not available for the current GPU."
-fi
-
 mate-session &
-pulseaudio --start
 
 echo "Session Running. Press [Return] to exit."
 read

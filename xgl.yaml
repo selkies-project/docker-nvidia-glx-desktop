@@ -27,8 +27,8 @@ spec:
           value: "24"
         - name: SHARED
           value: "TRUE"
-        - name: VNCPASS
-          value: "vncpasswd"
+        - name: PASSWD
+          value: "mypasswd"
 #          valueFrom:
 #            secretKeyRef:
 #              name: xgl-pass
@@ -38,27 +38,27 @@ spec:
         stdin: true
         tty: true
         ports:
-        - containerPort: 5901
+        - containerPort: 8080
           protocol: TCP
         resources:
           limits:
             memory: 64Gi
             cpu: "16"
             nvidia.com/gpu: 1
-# Deploy either https://gitlab.com/arm-research/smarter/smarter-device-manager or https://github.com/bluebeach/k8s-hostdev-plugin and increase allocatable resources of one same virtual terminal device to at least the number of GPUs
-#            smarter-devices/tty63: 1
-#            hostdev.k8s.io/dev_tty63: 1
           requests:
             memory: 100Mi
             cpu: 100m
         volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
         - mountPath: /cache
           name: xgl-cache-vol
         - mountPath: /home/user
           name: xgl-root-vol
-        - mountPath: /dev/shm
-          name: dshm
       volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
       - name: xgl-cache-vol
         emptyDir: {}
 #        persistentVolumeClaim:
@@ -67,6 +67,3 @@ spec:
         emptyDir: {}
 #        persistentVolumeClaim:
 #          claimName: xgl-root-vol
-      - name: dshm
-        emptyDir:
-          medium: Memory
