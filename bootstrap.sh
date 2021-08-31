@@ -106,7 +106,7 @@ echo "<user-mapping>
 chmod 0600 ~/.guacamole/user-mapping.xml
 
 /opt/tomcat/bin/catalina.sh run &
-guacd -f &
+guacd -b 0.0.0.0 -f &
 
 export DISPLAY=:0
 mate-session &
