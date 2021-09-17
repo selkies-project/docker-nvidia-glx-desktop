@@ -15,7 +15,7 @@ spec:
       hostname: xgl
       containers:
       - name: xgl
-        image: ehfd/nvidia-glx-desktop:latest
+        image: ghcr.io/ehfd/nvidia-glx-desktop:latest
         env:
         - name: TZ
           value: "UTC"
