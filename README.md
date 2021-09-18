@@ -23,7 +23,7 @@ For building Ubuntu 18.04 containers, in **Dockerfile** change `FROM nvidia/open
 For Docker this will be sufficient (the container must only be used in unprivileged mode, use `--tmpfs /dev/shm:rw` for a slight performance improvement):
 
 ```
-docker run --gpus 1 -it -e TZ=UTC -e SIZEW=1920 -e SIZEH=1080 -e SHARED=TRUE -e PASSWD=mypasswd -e VIDEO_PORT=DFP -p 8080:8080 ghcr.io/ehfd/nvidia-glx-desktop:latest
+docker run --gpus 1 -it -e TZ=UTC -e SIZEW=1920 -e SIZEH=1080 -e PASSWD=mypasswd -e VIDEO_PORT=DFP -p 8080:8080 ghcr.io/ehfd/nvidia-glx-desktop:latest
 ```
 
 This work was supported in part by NSF awards CNS-1730158, ACI-1540112, ACI-1541349, OAC-1826967, the University of California Office of the President, and the University of California San Diego’s California Institute for Telecommunications and Information Technology/Qualcomm Institute. Thanks to CENIC for the 100Gbps networks.

@@ -65,16 +65,14 @@ unset IFS
 BUS_ID=PCI:$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))
 export MODELINE=$(cvt -r ${SIZEW} ${SIZEH} | sed -n 2p)
 sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --mode=$(echo $MODELINE | awk '{print $2}' | tr -d '"') --allow-empty-initial-configuration --no-probe-all-gpus --busid="$BUS_ID" --only-one-x-screen --connected-monitor="$VIDEO_PORT"
-sudo sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "NoMaxPClkCheck, NoEdidMaxPClkCheck, NoMaxSizeCheck, NoHorizSyncCheck, NoVertRefreshCheck, NoVirtualSizeCheck, NoExtendedGpuCapabilitiesCheck, NoTotalSizeCheck, NoDualLinkDVICheck, NoDisplayPortBandwidthCheck, AllowNon3DVisionModes, AllowNonHDMI3DModes, AllowNonEdidModes, NoEdidHDMI2Check, AllowDpInterlaced"\n    Option         "DPI" "96 x 96"' /etc/X11/xorg.conf
+sudo sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "NoMaxPClkCheck, NoEdidMaxPClkCheck, NoMaxSizeCheck, NoHorizSyncCheck, NoVertRefreshCheck, NoVirtualSizeCheck, NoExtendedGpuCapabilitiesCheck, NoTotalSizeCheck, NoDualLinkDVICheck, NoDisplayPortBandwidthCheck, AllowNon3DVisionModes, AllowNonHDMI3DModes, AllowNonEdidModes, NoEdidHDMI2Check, AllowDpInterlaced"' /etc/X11/xorg.conf
 sudo sed -i '/Section\s\+"Monitor"/a\    '"$MODELINE" /etc/X11/xorg.conf
 
-Xorg vt7 -novtswitch -sharevts +extension "MIT-SHM" :0 &
+export __GL_SYNC_TO_VBLANK=0
+Xorg vt7 -novtswitch -sharevts -dpi 96 +extension "MIT-SHM" :0 &
+sleep 1
 
-if [ "x$SHARED" == "xTRUE" ]; then
-  export SHARESTRING="-shared"
-fi
-
-sudo x11vnc -display ":0" -passwd "$PASSWD" -forever -repeat -xkb -xrandr "resize" -rfbport 5900 "$SHARESTRING" &
+sudo x11vnc -display ":0" -passwd "$PASSWD" -shared -forever -repeat -xkb -xrandr "resize" -rfbport 5900 &
 
 mkdir -p ~/.guacamole
 echo "<user-mapping>
