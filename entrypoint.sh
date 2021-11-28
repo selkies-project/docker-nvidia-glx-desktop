@@ -75,7 +75,7 @@ until [ -S "/tmp/.X11-unix/X${DISPLAY/:/}" ]; do sleep 1; done
 echo "X socket is ready"
 
 if [ "$NOVNC_ENABLE" = "true" ]; then
-  sudo x11vnc -display "$DISPLAY" -passwd "${BASIC_AUTH_PASSWORD:-$PASSWD}" -shared -forever -repeat -xkb -xrandr "resize" -rfbport 5900 &
+  sudo x11vnc -display "${DISPLAY}" -passwd "${BASIC_AUTH_PASSWORD:-$PASSWD}" -shared -forever -repeat -xkb -xrandr "resize" -rfbport 5900 &
   /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 8080 --heartbeat 10 &
 fi
 
