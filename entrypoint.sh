@@ -37,7 +37,7 @@ if grep -Fxq "allowed_users=console" /etc/X11/Xwrapper.config; then
 fi
 
 if [ -f "/etc/X11/xorg.conf" ]; then
-  sudo rm /etc/X11/xorg.conf
+  sudo rm "/etc/X11/xorg.conf"
 fi
 
 if [ "$NVIDIA_VISIBLE_DEVICES" == "all" ]; then
@@ -65,8 +65,8 @@ sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --mode=$(ech
 sudo sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "NoMaxPClkCheck, NoEdidMaxPClkCheck, NoMaxSizeCheck, NoHorizSyncCheck, NoVertRefreshCheck, NoVirtualSizeCheck, NoExtendedGpuCapabilitiesCheck, NoTotalSizeCheck, NoDualLinkDVICheck, NoDisplayPortBandwidthCheck, AllowNon3DVisionModes, AllowNonHDMI3DModes, AllowNonEdidModes, NoEdidHDMI2Check, AllowDpInterlaced"' /etc/X11/xorg.conf
 sudo sed -i '/Section\s\+"Monitor"/a\    '"$MODELINE" /etc/X11/xorg.conf
 
-export DISPLAY=:0
-export __GL_SYNC_TO_VBLANK=0
+export DISPLAY=":0"
+export __GL_SYNC_TO_VBLANK="0"
 Xorg vt7 -novtswitch -sharevts -dpi "${DPI}" +extension "MIT-SHM" "${DISPLAY}" &
 
 # Wait for X11 to start
@@ -75,7 +75,7 @@ until [ -S "/tmp/.X11-unix/X${DISPLAY/:/}" ]; do sleep 1; done
 echo "X socket is ready"
 
 if [ "$NOVNC_ENABLE" = "true" ]; then
-  sudo x11vnc -display ":0" -passwd "${BASIC_AUTH_PASSWORD:-$PASSWD}" -shared -forever -repeat -xkb -xrandr "resize" -rfbport 5900 &
+  sudo x11vnc -display "$DISPLAY" -passwd "${BASIC_AUTH_PASSWORD:-$PASSWD}" -shared -forever -repeat -xkb -xrandr "resize" -rfbport 5900 &
   /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 8080 --heartbeat 10 &
 fi
 
