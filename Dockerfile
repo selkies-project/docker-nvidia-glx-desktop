@@ -194,7 +194,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     useradd -ms /bin/bash user -u 1000 -g 1000 && \
     usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lp,lpadmin,netdev,plugdev,scanner,ssh,sudo,tape,tty,video,voice user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
-    chown -R user:user /home/user && \
+    chown user:user /home/user && \
     echo "user:${PASSWD}" | chpasswd && \
     ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 

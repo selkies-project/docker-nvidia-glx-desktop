@@ -2,13 +2,14 @@
 
 trap "echo TRAPed signal" HUP INT QUIT KILL TERM
 
-sudo chown -R user:user /home/user
+sudo chown user:user /home/user
 echo "user:$PASSWD" | sudo chpasswd
 sudo rm -rf /tmp/.X*
 sudo ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | sudo tee /etc/timezone > /dev/null
 
 sudo ln -snf /dev/ptmx /dev/tty7
 sudo /etc/init.d/dbus start
+source /opt/gstreamer/gst-env
 
 # Install NVIDIA drivers, including X graphic drivers by omitting --x-{prefix,module-path,library-path,sysconfig-path}
 if ! command -v nvidia-xconfig &> /dev/null; then
