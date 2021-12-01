@@ -54,6 +54,7 @@ RUN dpkg --add-architecture i386 && \
         unzip \
         gcc \
         git \
+        jq \
         make \
         python \
         python-numpy \
