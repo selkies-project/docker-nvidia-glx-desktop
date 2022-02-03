@@ -13,6 +13,8 @@ spec:
         app: xgl
     spec:
       hostname: xgl
+      # Uncomment the below line to disable network isolation for WebRTC connectivity, may show an error if disallowed by the cluster
+#      hostNetwork: true
       containers:
       - name: xgl
         image: ghcr.io/ehfd/nvidia-glx-desktop:latest
@@ -41,6 +43,13 @@ spec:
         # Uncomment this to enable noVNC, disabing selkies-gstreamer and ignoring all its parameters except `BASIC_AUTH_PASSWORD`, which will be used for authentication with noVNC, `BASIC_AUTH_PASSWORD` also defaulting to `PASSWD` if not provided
 #        - name: NOVNC_ENABLE
 #          value: "true"
+        # Additional view only password only applicable to the noVNC interface, choose either `value:` or `secretKeyRef:` but not both at the same time
+#        - name: NOVNC_VIEWPASS
+#          value: "mypasswd"
+#          valueFrom:
+#            secretKeyRef:
+#              name: my-pass
+#              key: my-pass
         ###
         # selkies-gstreamer parameters, for additional configurations see lines that start with "parser.add_argument" in https://github.com/selkies-project/selkies-gstreamer/blob/master/src/selkies_gstreamer/__main__.py
         ###

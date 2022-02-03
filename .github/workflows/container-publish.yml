@@ -3,6 +3,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ehfd/nvidia-glx-desktop
