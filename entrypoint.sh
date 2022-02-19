@@ -6,7 +6,7 @@ sudo chown user:user /home/user
 echo "user:$PASSWD" | sudo chpasswd
 sudo rm -rf /tmp/.X*
 sudo ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | sudo tee /etc/timezone > /dev/null
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/lib/libreoffice/program"
+export LD_LIBRARY_PATH="/usr/lib/libreoffice/program:${LD_LIBRARY_PATH}"
 
 sudo ln -snf /dev/ptmx /dev/tty7
 sudo /etc/init.d/dbus start
