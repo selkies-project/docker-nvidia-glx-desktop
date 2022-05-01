@@ -1,10 +1,12 @@
 # Ubuntu release versions 18.04 and 20.04 are supported
 ARG UBUNTU_RELEASE=20.04
-FROM nvcr.io/nvidia/cudagl:11.0.3-runtime-ubuntu${UBUNTU_RELEASE}
+ARG CUDA_VERSION=11.0.3
+FROM nvcr.io/nvidia/cudagl:${CUDA_VERSION}-runtime-ubuntu${UBUNTU_RELEASE}
 
 LABEL maintainer "https://github.com/ehfd,https://github.com/danisla"
 
 ARG UBUNTU_RELEASE
+ARG CUDA_VERSION
 # Make all NVIDIA GPUs visible, but we want to manually install drivers
 ARG NVIDIA_VISIBLE_DEVICES=all
 # Supress interactive menu while installing keyboard-configuration
@@ -26,6 +28,11 @@ ENV WEBRTC_ENCODER nvh264enc
 ENV WEBRTC_ENABLE_RESIZE false
 ENV ENABLE_AUDIO true
 ENV ENABLE_BASIC_AUTH true
+
+# Temporary fix for NVIDIA container repository
+RUN apt-get clean && \
+    apt-key adv --fetch-keys "https://developer.download.nvidia.com/compute/cuda/repos/$(cat /etc/os-release | grep '^ID=' | awk -F'=' '{print $2}')$(cat /etc/os-release | grep '^VERSION_ID=' | awk -F'=' '{print $2}' | sed 's/[^0-9]*//g')/x86_64/3bf863cc.pub" && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install locales to prevent errors
 RUN apt-get clean && \
@@ -142,12 +149,16 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         pulseaudio \
         libpulse0 \
         libpangocairo-1.0-0 \
-        libgirepository1.0-dev && \
+        libgirepository1.0-dev \
+        libjpeg-dev \
+        zlib1g-dev \
+        x264 && \
     rm -rf /var/lib/apt/lists/* && \
     cd /opt && \
     SELKIES_VERSION=$(curl -fsSL "https://api.github.com/repos/selkies-project/selkies-gstreamer/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g') && \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.tgz" | tar -zxf - && \
     curl -O -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && pip3 install "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && rm -f "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && \
+    pip3 install -e git+https://github.com/selkies-project/python-xlib.git@add-xfixes-cursor#egg=python-xlib && \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-web-v${SELKIES_VERSION}.tgz" | tar -zxf - && \
     cd /usr/local/cuda/lib64 && sudo find . -maxdepth 1 -type l -name "*libnvrtc.so.*" -exec sh -c 'ln -sf $(basename {}) libnvrtc.so' \;
 
