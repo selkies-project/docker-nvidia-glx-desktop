@@ -1,10 +1,12 @@
 # Ubuntu release versions 18.04 and 20.04 are supported
 ARG UBUNTU_RELEASE=20.04
-FROM nvcr.io/nvidia/cudagl:11.0.3-runtime-ubuntu${UBUNTU_RELEASE}
+ARG CUDA_VERSION=11.0.3
+FROM nvcr.io/nvidia/cudagl:${CUDA_VERSION}-runtime-ubuntu${UBUNTU_RELEASE}
 
 LABEL maintainer "https://github.com/ehfd,https://github.com/danisla"
 
 ARG UBUNTU_RELEASE
+ARG CUDA_VERSION
 # Make all NVIDIA GPUs visible, but we want to manually install drivers
 ARG NVIDIA_VISIBLE_DEVICES=all
 # Supress interactive menu while installing keyboard-configuration
@@ -26,6 +28,11 @@ ENV WEBRTC_ENCODER nvh264enc
 ENV WEBRTC_ENABLE_RESIZE false
 ENV ENABLE_AUDIO true
 ENV ENABLE_BASIC_AUTH true
+
+# Temporary fix for NVIDIA container repository
+RUN apt-get clean && \
+    apt-key adv --fetch-keys "https://developer.download.nvidia.com/compute/cuda/repos/$(cat /etc/os-release | grep '^ID=' | awk -F'=' '{print $2}')$(cat /etc/os-release | grep '^VERSION_ID=' | awk -F'=' '{print $2}' | sed 's/[^0-9]*//g')/x86_64/3bf863cc.pub" && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install locales to prevent errors
 RUN apt-get clean && \
