@@ -12,9 +12,6 @@ echo "Waiting for X socket"
 until [ -S "/tmp/.X11-unix/X${DISPLAY/:/}" ]; do sleep 1; done
 echo "X socket is ready"
 
-# Fix keyboard mapping for "<" and ">"
-sudo xmodmap -e "keycode 94 shift = less less" &
-
 # Write Progressive Web App (PWA) config.
 export PWA_APP_NAME="Selkies WebRTC"
 export PWA_APP_SHORT_NAME="selkies"
