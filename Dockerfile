@@ -1,6 +1,6 @@
 # Ubuntu release versions 18.04 and 20.04 are supported
 ARG UBUNTU_RELEASE=20.04
-ARG CUDA_VERSION=11.0.3
+ARG CUDA_VERSION=11.1.1
 FROM nvcr.io/nvidia/cudagl:${CUDA_VERSION}-runtime-ubuntu${UBUNTU_RELEASE}
 
 LABEL maintainer "https://github.com/ehfd,https://github.com/danisla"
@@ -28,11 +28,6 @@ ENV WEBRTC_ENCODER nvh264enc
 ENV WEBRTC_ENABLE_RESIZE false
 ENV ENABLE_AUDIO true
 ENV ENABLE_BASIC_AUTH true
-
-# Temporary fix for NVIDIA container repository
-RUN apt-get clean && \
-    apt-key adv --fetch-keys "https://developer.download.nvidia.com/compute/cuda/repos/$(cat /etc/os-release | grep '^ID=' | awk -F'=' '{print $2}')$(cat /etc/os-release | grep '^VERSION_ID=' | awk -F'=' '{print $2}' | sed 's/[^0-9]*//g')/x86_64/3bf863cc.pub" && \
-    rm -rf /var/lib/apt/lists/*
 
 # Install locales to prevent errors
 RUN apt-get clean && \
@@ -77,6 +72,8 @@ RUN dpkg --add-architecture i386 && \
         libpci3 \
         libelf-dev \
         libglvnd-dev \
+        vainfo \
+        vdpauinfo \
         pkg-config \
         mesa-utils \
         mesa-utils-extra \
@@ -100,6 +97,8 @@ RUN dpkg --add-architecture i386 && \
         xorg-dev && \
     apt-get install -y ubuntu-mate-desktop libreoffice && \
     if [ "${UBUNTU_RELEASE}" = "18.04" ]; then apt-get install --no-install-recommends -y vulkan-utils; else apt-get install --no-install-recommends -y vulkan-tools; fi && \
+    # Support libva and VA-API through NVIDIA VDPAU
+    curl -fsSL -o /tmp/vdpau-va-driver.deb "https://launchpad.net/~saiarcot895/+archive/ubuntu/chromium-dev/+files/vdpau-va-driver_0.7.4-6ubuntu2~ppa1~18.04.1_amd64.deb" && apt-get install --no-install-recommends -y /tmp/vdpau-va-driver.deb && rm -rf /tmp/* && \
     # Remove Bluetooth packages that throw errors
     apt-get autoremove --purge -y \
         blueman \
@@ -109,16 +108,16 @@ RUN dpkg --add-architecture i386 && \
 # Wine, Winetricks, and PlayOnLinux, comment out the below lines to disable
 ARG WINE_BRANCH=devel
 RUN if [ "${UBUNTU_RELEASE}" = "18.04" ]; then add-apt-repository ppa:cybermax-dexter/sdl2-backport; fi && \
-    curl -fsSL https://dl.winehq.org/wine-builds/winehq.key | APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add - && \
-    apt-add-repository "deb https://dl.winehq.org/wine-builds/ubuntu/ $(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2) main" && \
+    curl -fsSL -o /usr/share/keyrings/winehq-archive.key "https://dl.winehq.org/wine-builds/winehq.key" && \
+    curl -fsSL -o "/etc/apt/sources.list.d/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" "https://dl.winehq.org/wine-builds/ubuntu/dists/$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2)/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" && \
     apt-get update && apt-get install -y \
         winehq-${WINE_BRANCH} \
         q4wine \
         playonlinux && \
     rm -rf /var/lib/apt/lists/* && \
-    curl -fsSL -o /usr/bin/winetricks https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks && \
+    curl -fsSL -o /usr/bin/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" && \
     chmod 755 /usr/bin/winetricks && \
-    curl -fsSL -o /usr/share/bash-completion/completions/winetricks https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks.bash-completion
+    curl -fsSL -o /usr/share/bash-completion/completions/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks.bash-completion"
 
 # Install latest selkies-gstreamer (https://github.com/selkies-project/selkies-gstreamer) build, Python application, and web application
 RUN apt-get update && apt-get install --no-install-recommends -y \

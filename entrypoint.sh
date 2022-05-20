@@ -12,7 +12,7 @@ sudo ln -snf /dev/ptmx /dev/tty7
 sudo /etc/init.d/dbus start
 source /opt/gstreamer/gst-env
 
-# Install NVIDIA drivers, including X graphic drivers by omitting --x-{prefix,module-path,library-path,sysconfig-path}
+# Install NVIDIA drivers including X graphic drivers
 if ! command -v nvidia-xconfig &> /dev/null; then
   export DRIVER_VERSION=$(head -n1 </proc/driver/nvidia/version | awk '{print $8}')
   cd /tmp
@@ -28,9 +28,7 @@ if ! command -v nvidia-xconfig &> /dev/null; then
                     --no-nvidia-modprobe \
                     --no-rpms \
                     --no-backup \
-                    --no-check-for-alternate-installs \
-                    --no-libglx-indirect \
-                    --no-install-libglvnd
+                    --no-check-for-alternate-installs
   sudo rm -rf /tmp/NVIDIA* && cd ~
 fi
 
@@ -64,12 +62,12 @@ unset IFS
 BUS_ID=PCI:$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))
 export MODELINE=$(cvt -r "${SIZEW}" "${SIZEH}" "${REFRESH}" | sed -n 2p)
 sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --mode=$(echo "$MODELINE" | awk '{print $2}' | tr -d '"') --allow-empty-initial-configuration --no-probe-all-gpus --busid="$BUS_ID" --only-one-x-screen --connected-monitor="$VIDEO_PORT"
-sudo sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "NoMaxPClkCheck, NoEdidMaxPClkCheck, NoMaxSizeCheck, NoHorizSyncCheck, NoVertRefreshCheck, NoVirtualSizeCheck, NoExtendedGpuCapabilitiesCheck, NoTotalSizeCheck, NoDualLinkDVICheck, NoDisplayPortBandwidthCheck, AllowNon3DVisionModes, AllowNonHDMI3DModes, AllowNonEdidModes, NoEdidHDMI2Check, AllowDpInterlaced"' /etc/X11/xorg.conf
+sudo sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "NoMaxPClkCheck, NoEdidMaxPClkCheck, NoMaxSizeCheck, NoHorizSyncCheck, NoVertRefreshCheck, NoVirtualSizeCheck, NoExtendedGpuCapabilitiesCheck, NoTotalSizeCheck, NoDualLinkDVICheck, NoDisplayPortBandwidthCheck, AllowNon3DVisionModes, AllowNonHDMI3DModes, AllowNonEdidModes, NoEdidHDMI2Check, AllowDpInterlaced"\n    Option         "HardDPMS" "False"' /etc/X11/xorg.conf
 sudo sed -i '/Section\s\+"Monitor"/a\    '"$MODELINE" /etc/X11/xorg.conf
 
 export DISPLAY=":0"
 export __GL_SYNC_TO_VBLANK="0"
-Xorg vt7 -novtswitch -sharevts -dpi "${DPI}" +extension "MIT-SHM" "${DISPLAY}" &
+Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DPI}" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" "${DISPLAY}" &
 
 # Wait for X11 to start
 echo "Waiting for X socket"
@@ -84,6 +82,11 @@ fi
 
 # Add custom processes below this section or within `supervisord.conf`
 mate-session &
+
+# Fix selkies-gstreamer keyboard mapping
+if [ "$FALLBACK_ENABLE" != "true" ]; then
+  sudo xmodmap -e "keycode 94 shift = less less"
+fi
 
 echo "Session Running. Press [Return] to exit."
 read
