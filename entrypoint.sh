@@ -84,7 +84,7 @@ fi
 mate-session &
 
 # Fix selkies-gstreamer keyboard mapping
-if [ "$FALLBACK_ENABLE" != "true" ]; then
+if [ "$NOVNC_ENABLE" != "true" ]; then
   sudo xmodmap -e "keycode 94 shift = less less"
 fi
 
