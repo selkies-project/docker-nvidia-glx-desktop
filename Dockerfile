@@ -91,10 +91,10 @@ RUN dpkg --add-architecture i386 && \
         fonts-freefont-ttf \
         fonts-noto \
         fonts-noto-cjk \
+        fonts-noto-cjk-extra \
         fonts-noto-color-emoji \
         fonts-noto-hinted \
         fonts-noto-mono \
-        fonts-noto-extra \
         fonts-opensymbol \
         fonts-symbola \
         fonts-ubuntu \
