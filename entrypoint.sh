@@ -81,7 +81,7 @@ if [ "$NOVNC_ENABLE" = "true" ]; then
 fi
 
 # Add custom processes below this section or within `supervisord.conf`
-startxfce4 &
+xfce4-session &
 
 # Fix selkies-gstreamer keyboard mapping
 if [ "$NOVNC_ENABLE" != "true" ]; then
