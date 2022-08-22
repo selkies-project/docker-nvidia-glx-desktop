@@ -37,7 +37,7 @@ if grep -Fxq "allowed_users=console" /etc/X11/Xwrapper.config; then
 fi
 
 if [ -f "/etc/X11/xorg.conf" ]; then
-  sudo rm "/etc/X11/xorg.conf"
+  sudo rm -f "/etc/X11/xorg.conf"
 fi
 
 if [ "$NVIDIA_VISIBLE_DEVICES" == "all" ]; then
@@ -52,8 +52,14 @@ else
 fi
 
 if [ -z "$GPU_SELECT" ]; then
-  echo "No NVIDIA GPUs detected. Exiting."
+  echo "No NVIDIA GPUs detected or nvidia-container-toolkit not configured. Exiting."
   exit 1
+fi
+
+if [ "${VIDEO_PORT,,}" = "none" ]; then
+  export CONNECTED_MONITOR="--use-display-device=None"
+else
+  export CONNECTED_MONITOR="--connected-monitor=${VIDEO_PORT}"
 fi
 
 HEX_ID=$(sudo nvidia-smi --query-gpu=pci.bus_id --id="$GPU_SELECT" --format=csv | sed -n 2p)
@@ -61,12 +67,13 @@ IFS=":." ARR_ID=($HEX_ID)
 unset IFS
 BUS_ID=PCI:$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))
 export MODELINE=$(cvt -r "${SIZEW}" "${SIZEH}" "${REFRESH}" | sed -n 2p)
-sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --mode=$(echo "$MODELINE" | awk '{print $2}' | tr -d '"') --allow-empty-initial-configuration --no-probe-all-gpus --busid="$BUS_ID" --only-one-x-screen --connected-monitor="$VIDEO_PORT"
+sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --mode=$(echo "$MODELINE" | awk '{print $2}' | tr -d '"') --allow-empty-initial-configuration --no-probe-all-gpus --busid="$BUS_ID" --no-multigpu --no-sli --no-base-mosaic --only-one-x-screen ${CONNECTED_MONITOR}
 sudo sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "NoMaxPClkCheck, NoEdidMaxPClkCheck, NoMaxSizeCheck, NoHorizSyncCheck, NoVertRefreshCheck, NoVirtualSizeCheck, NoExtendedGpuCapabilitiesCheck, NoTotalSizeCheck, NoDualLinkDVICheck, NoDisplayPortBandwidthCheck, AllowNon3DVisionModes, AllowNonHDMI3DModes, AllowNonEdidModes, NoEdidHDMI2Check, AllowDpInterlaced"\n    Option         "HardDPMS" "False"' /etc/X11/xorg.conf
 sudo sed -i '/Section\s\+"Monitor"/a\    '"$MODELINE" /etc/X11/xorg.conf
 
 export DISPLAY=":0"
 export __GL_SYNC_TO_VBLANK="0"
+export __NV_PRIME_RENDER_OFFLOAD="1"
 Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DPI}" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" "${DISPLAY}" &
 
 # Wait for X11 to start
@@ -74,17 +81,17 @@ echo "Waiting for X socket"
 until [ -S "/tmp/.X11-unix/X${DISPLAY/:/}" ]; do sleep 1; done
 echo "X socket is ready"
 
-if [ "$NOVNC_ENABLE" = "true" ]; then
+if [ "${NOVNC_ENABLE,,}" = "true" ]; then
   if [ -n "$NOVNC_VIEWPASS" ]; then export NOVNC_VIEWONLY="-viewpasswd ${NOVNC_VIEWPASS}"; else unset NOVNC_VIEWONLY; fi
-  sudo x11vnc -display "${DISPLAY}" -passwd "${BASIC_AUTH_PASSWORD:-$PASSWD}" -shared -forever -repeat -xkb -xrandr "resize" -rfbport 5900 ${NOVNC_VIEWONLY} &
+  sudo x11vnc -display "${DISPLAY}" -passwd "${BASIC_AUTH_PASSWORD:-$PASSWD}" -shared -forever -repeat -xkb -snapfb -threads -xrandr "resize" -rfbport 5900 ${NOVNC_VIEWONLY} &
   /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 8080 --heartbeat 10 &
 fi
 
-# Add custom processes below this section or within `supervisord.conf`
+# Add custom processes below this section, or within `supervisord.conf` to perform service management like systemd
 xfce4-session &
 
 # Fix selkies-gstreamer keyboard mapping
-if [ "$NOVNC_ENABLE" != "true" ]; then
+if [ "${NOVNC_ENABLE,,}" != "true" ]; then
   sudo xmodmap -e "keycode 94 shift = less less"
 fi
 

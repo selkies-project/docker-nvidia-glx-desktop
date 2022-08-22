@@ -5,7 +5,7 @@ source /opt/gstreamer/gst-env
 export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 export DISPLAY=":0"
 export GST_DEBUG="${GST_DEBUG:-*:2}"
-if [ -n "$ENABLE_BASIC_AUTH" ] && [ -z "$BASIC_AUTH_PASSWORD" ]; then export BASIC_AUTH_PASSWORD="$PASSWD"; fi
+if [ "${ENABLE_BASIC_AUTH,,}" = "true" ] && [ -z "$BASIC_AUTH_PASSWORD" ]; then export BASIC_AUTH_PASSWORD="$PASSWD"; fi
 
 # Wait for X11 to start
 echo "Waiting for X socket"
@@ -36,7 +36,7 @@ if [ ! -f "${SELKIES_USER_CONFIG_FILE}" ]; then
     "audio_bitrate": 64000,
     "enable_audio": "${ENABLE_AUDIO:-true}",
     "enable_resize": "${WEBRTC_ENABLE_RESIZE:-true}",
-    "encoder": "nvh264enc"
+    "encoder": "${WEBRTC_ENCODER:-nvh264enc}"
 }
 EOF
 fi

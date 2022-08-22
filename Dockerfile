@@ -9,13 +9,14 @@ ARG UBUNTU_RELEASE
 ARG CUDA_VERSION
 # Make all NVIDIA GPUs visible, but we want to manually install drivers
 ARG NVIDIA_VISIBLE_DEVICES=all
-# Supress interactive menu while installing keyboard-configuration
 ARG DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_DRIVER_CAPABILITIES all
 ENV PULSE_SERVER 127.0.0.1:4713
+ENV XDG_RUNTIME_DIR /tmp
 
 # Default environment variables (password is "mypasswd")
 ENV TZ UTC
+ENV DISPLAY :0
 ENV SIZEW 1920
 ENV SIZEH 1080
 ENV REFRESH 60
@@ -28,11 +29,6 @@ ENV WEBRTC_ENCODER nvh264enc
 ENV WEBRTC_ENABLE_RESIZE false
 ENV ENABLE_AUDIO true
 ENV ENABLE_BASIC_AUTH true
-
-# Temporary fix for NVIDIA container repository
-RUN apt-get clean && \
-    apt-key adv --fetch-keys "https://developer.download.nvidia.com/compute/cuda/repos/$(cat /etc/os-release | grep '^ID=' | awk -F'=' '{print $2}')$(cat /etc/os-release | grep '^VERSION_ID=' | awk -F'=' '{print $2}' | sed 's/[^0-9]*//g')/x86_64/3bf863cc.pub" && \
-    rm -rf /var/lib/apt/lists/*
 
 # Install locales to prevent errors
 RUN apt-get clean && \
@@ -215,6 +211,7 @@ RUN if [ "${UBUNTU_RELEASE}" = "18.04" ]; then add-apt-repository ppa:cybermax-d
 
 # Install latest selkies-gstreamer (https://github.com/selkies-project/selkies-gstreamer) build, Python application, and web application
 RUN apt-get update && apt-get install --no-install-recommends -y \
+        adwaita-icon-theme-full \
         build-essential \
         python3-pip \
         python3-dev \
@@ -290,7 +287,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
     git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
 
-# Add custom packages below this comment
+# Add custom packages below this comment, or use FROM in a new container and replace entrypoint.sh or supervisord.conf
 
 # Create user with password ${PASSWD}
 RUN apt-get update && apt-get install --no-install-recommends -y \
