@@ -78,6 +78,7 @@ RUN dpkg --add-architecture i386 && \
         transmission-gtk \
         qpdfview \
         xarchiver \
+        adwaita-icon-theme-full \
         brltty \
         brltty-x11 \
         desktop-file-utils \
@@ -208,7 +209,6 @@ RUN if [ "${UBUNTU_RELEASE}" = "18.04" ]; then add-apt-repository ppa:cybermax-d
 
 # Install latest selkies-gstreamer (https://github.com/selkies-project/selkies-gstreamer) build, Python application, and web application
 RUN apt-get update && apt-get install --no-install-recommends -y \
-        adwaita-icon-theme-full \
         build-essential \
         python3-pip \
         python3-dev \
@@ -238,6 +238,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libpangocairo-1.0-0 \
         libgirepository1.0-dev \
         libjpeg-dev \
+        libvpx-dev \
         zlib1g-dev \
         x264 && \
     if [ "${UBUNTU_RELEASE}" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt; fi && \
@@ -246,7 +247,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     SELKIES_VERSION=$(curl -fsSL "https://api.github.com/repos/selkies-project/selkies-gstreamer/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g') && \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.tgz" | tar -zxf - && \
     curl -O -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && pip3 install "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && rm -f "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && \
-    if [ "${UBUNTU_RELEASE}" \> "18.04" ]; then pip3 install -e "git+https://github.com/selkies-project/python-xlib.git@add-xfixes-cursor#egg=python-xlib"; fi && \
+    if [ "${UBUNTU_RELEASE}" \> "18.04" ]; then pip3 install --upgrade --force-reinstall "https://github.com/python-xlib/python-xlib/archive/master.zip"; fi && \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-web-v${SELKIES_VERSION}.tgz" | tar -zxf - && \
     cd /usr/local/cuda/lib64 && sudo find . -maxdepth 1 -type l -name "*libnvrtc.so.*" -exec sh -c 'ln -sf $(basename {}) libnvrtc.so' \;
 

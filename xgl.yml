@@ -53,7 +53,7 @@ spec:
         ###
         # selkies-gstreamer parameters, for additional configurations see lines that start with "parser.add_argument" in https://github.com/selkies-project/selkies-gstreamer/blob/master/src/selkies_gstreamer/__main__.py
         ###
-        # Change `WEBRTC_ENCODER` to `x264enc` if your GPU doesn't support `H.264 (AVCHD)` under the `NVENC - Encoding` section in https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new
+        # Change `WEBRTC_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` if your GPU doesn't support `H.264 (AVCHD)` under the `NVENC - Encoding` section in https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new
         - name: WEBRTC_ENCODER
           value: "nvh264enc"
         - name: WEBRTC_ENABLE_RESIZE

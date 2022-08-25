@@ -31,9 +31,9 @@ mkdir -p $(dirname "$SELKIES_USER_CONFIG_FILE")
 if [ ! -f "${SELKIES_USER_CONFIG_FILE}" ]; then
     cat - > "${SELKIES_USER_CONFIG_FILE}" <<EOF
 {
-    "framerate": 60,
-    "video_bitrate": 4000,
-    "audio_bitrate": 64000,
+    "framerate": "${WEBRTC_FRAMERATE:-60}",
+    "video_bitrate": "${WEBRTC_VIDEO_BITRATE:-4000}",
+    "audio_bitrate": "${WEBRTC_AUDIO_BITRATE:-64000}",
     "enable_audio": "${ENABLE_AUDIO:-true}",
     "enable_resize": "${WEBRTC_ENABLE_RESIZE:-true}",
     "encoder": "${WEBRTC_ENCODER:-nvh264enc}"
