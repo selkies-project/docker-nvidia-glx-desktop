@@ -4,7 +4,7 @@ Xfce Desktop container designed for Kubernetes supporting OpenGL GLX and Vulkan 
 
 Use [docker-nvidia-egl-desktop](https://github.com/ehfd/docker-nvidia-egl-desktop) for an Xfce Desktop container which directly accesses NVIDIA (and unofficially Intel and AMD) GPUs without using an X11 Server, supports sharing a GPU with many containers, and automatically falling back to software acceleration in the absence of GPUs (but with limited graphics performance).
 
-**Read the [Troubleshooting](#troubleshooting) section first before raising an issue. Support is also available with the [Selkies Discord](https://discord.gg/wDNGDeSW5F).**
+**Read the [Troubleshooting](#troubleshooting) section first before raising an issue. Support is also available with the [Selkies Discord](https://discord.gg/wDNGDeSW5F). Please redirect issues or discussions regarding the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC HTML5 interface to the [project](https://github.com/selkies-project/selkies-gstreamer).**
 
 ### Usage
 
@@ -62,37 +62,15 @@ Change `WEBRTC_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` when using the selki
 
 4. (Not Applicable for noVNC) **Read carefully if the selkies-gstreamer WebRTC HTML5 interface does not connect.** Choose whether to use host networking or a TURN server. The selkies-gstreamer WebRTC HTML5 interface will likely just start working if you uncomment `hostNetwork: true` in `xgl.yml`. However, this may be restricted or be undesired because of security reasons. If so, check if the container starts working after commenting out `hostNetwork: true`. If it does not work, you need a TURN server. Read the [Using a TURN Server](#using-a-turn-server) section and fill in the environment variables `TURN_HOST` and `TURN_PORT`, then pick one of `TURN_SHARED_SECRET` or both `TURN_USERNAME` and `TURN_PASSWORD` environment variables based on your authentication method.
 
-#### Using a TURN Server
+#### Using a TURN server
 
 Note that this section is only required for the selkies-gstreamer WebRTC HTML5 interface. For an easy fix to when the signaling connection works, but the WebRTC connection fails, add the option `--network host` to your Docker command, or uncomment `hostNetwork: true` in your `xgl.yml` file when using Kubernetes (note that your cluster may have not allowed this, resulting in an error). This exposes your container to the host network, which disables network isolation. If this does not fix the connection issue (normally when the host is behind another firewall) or you cannot use this fix for security or technical reasons, read the below text.
 
-In most cases when either of your server or client has a permissive firewall, the default Google STUN server configuration will work without additional configuration. However, when connecting from networks that cannot be traversed with STUN, a TURN server is required. Provide the TURN server address, port, and shared secret in order to take advantage of the TURN relay capabilities and improve connection success.
+In most cases when either of your server or client has a permissive firewall, the default Google STUN server configuration will work without additional configuration. However, when connecting from networks that cannot be traversed with STUN, a TURN server is required.
 
-[Open Relay](https://www.metered.ca/tools/openrelay) is a free TURN server instance that may be used for personal purposes, but may not be optimal for production usage.
+##### Deploying a TURN server
 
-An open source TURN server that can be used is [coTURN](https://github.com/coturn/coturn), and an [example container](https://hub.docker.com/r/coturn/coturn) `coturn/coturn:latest` is available. For dynamic IP addresses, [dynamic-coturn](https://github.com/mreichardt95/dynamic-coturn) is a container implementation which restarts the TURN server whenever the public IP address gets changed. [Pion TURN](https://github.com/pion/turn) is another TURN server implementation compatible with all major operating systems including Windows.
-
-It is possible to install [coTURN](https://github.com/coturn/coturn) on your own server or PC, as long as ports can be opened. In short, `/etc/turnserver.conf` must have either `use-auth-secret` and `static-auth-secret=(PUT RANDOM 64 BYTE BASE64 KEY HERE)`, or `lt-cred-mech` and `user=yourusername:yourpassword`. Other optional, but useful parameters include `min-port=` and `max-port=` for setting your relay ports between TURN servers, and `cert=` and `pkey=` options for TURN over TLS/DTLS. Install coTURN from your package repository, or use its container image with Docker/Podman or Kubernetes.
-
-##### Deploy coTURN with Docker
-
-In order to deploy a coTURN container, use the following command (consult this [example configuration](https://github.com/coturn/coturn/blob/master/examples/etc/turnserver.conf) for more options which may also be used as command line arguments). You should be able to expose these ports to the internet. Change `-p 49160-49200:49160-49200/udp` and `--min-port=49160 --max-port=49200` as appropriate. Simply using `--network host` instead of specifying `-p 49160-49200:49160-49200/udp` is also fine if possible.
-
-For time-limited shared secret TURN authentication:
-
-```
-docker run -d -p 3478:3478 -p 3478:3478/udp -p 49160-49200:49160-49200/udp coturn/coturn -n --min-port=49160 --max-port=49200 --use-auth-secret --static-auth-secret=(PUT RANDOM 64 BYTE BASE64 KEY HERE)
-```
-
-For legacy long-term TURN authentication:
-
-```
-docker run -d -p 3478:3478 -p 3478:3478/udp -p 49160-49200:49160-49200/udp coturn/coturn -n --min-port=49160 --max-port=49200 --lt-cred-mech --user=yourusername:yourpassword
-```
-
-If you want to use TURN over TLS/DTLS, you must have a valid hostname, and also provision a valid certificate issued from a legitimate certificate authority such as [ZeroSSL](https://zerossl.com/features/acme/) (Let's Encrypt may have issues depending on the OS) and provide the certificate and private files to the coTURN container with `-v /mylocalpath/coturncert.pem:/etc/coturncert.pem -v /mylocalpath/coturnkey.pem:/etc/coturnkey.pem` and add command line arguments `-n --cert=/etc/coturncert.pem --pkey=/etc/coturnkey.pem`.
-
-More information available in the [coTURN container image](https://hub.docker.com/r/coturn/coturn) or the [coTURN repository](https://github.com/coturn/coturn) website.
+**Read the instructions from [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer#using-a-turn-server) if want to deploy a TURN server or use a public TURN server instance.**
 
 ##### Configuring with Docker
 
@@ -102,25 +80,11 @@ You may set `TURN_PROTOCOL` to `tcp` if you are only able to open TCP ports for 
 
 You also require to provide either just `TURN_SHARED_SECRET` for time-limited shared secret TURN authentication, or both `TURN_USERNAME` and `TURN_PASSWORD` for legacy long-term TURN authentication, depending on your TURN server configuration. Provide just one of these authentication methods, not both.
 
-##### Deploy coTURN With Kubernetes
-
-You are recommended to use a `ConfigMap` for creating the configuration file for coTURN. Use the [example coTURN configuration](https://github.com/coturn/coturn/blob/master/examples/etc/turnserver.conf) as a reference to create a `ConfigMap` which mounts to `/etc/turnserver.conf`. The only mandatory lines are either `use-auth-secret` and `static-auth-secret=(PUT RANDOM 64 BYTE BASE64 KEY HERE)` or `lt-cred-mech` and `user=yourusername:yourpassword`.
-
-Use `Deployment` or `DaemonSet` and use `containerPort` and `hostPort` under `ports:` to open port 3478 (or any other port you set in `/etc/turnserver.conf` with `listening-port=`).
-
-Then you must also open all ports between `min-port=` and `max-port=` that you set in `/etc/turnserver.conf`, but this may be skipped if `hostNetwork: true` is used instead.
-
-Under `args:` set `-c /etc/turnserver.conf` and use the `coturn/coturn:latest` image.
-
-If you want to use TURN over TLS/DTLS, use [cert-manager](https://cert-manager.io) to issue a valid certificate with the correct hostname from preferably ZeroSSL (Let's Encrypt may have issues based on the OS), then mount the certificate and private key in the container. Do not forget to include the options `cert=` and `pkey=` in `/etc/turnserver.conf` to the correct path of the certificate and the key.
-
-More information available in the [coTURN container image](https://hub.docker.com/r/coturn/coturn) or the [coTURN repository](https://github.com/coturn/coturn) website.
-
-##### Configuring With Kubernetes
+##### Configuring with Kubernetes
 
 Your TURN server will use only one out of two ways to authenticate the client, so only provide one type of authentication method. The time-limited shared secret TURN authentication requires to only provide the Base64 encoded `TURN_SHARED_SECRET`. The legacy long-term TURN authentication requires to provide both `TURN_USERNAME` and `TURN_PASSWORD` credentials.
 
-###### Time-Limited Shared Secret Authentication
+###### Time-limited shared secret authentication
 
 1. Create a secret containing the TURN shared secret:
 
@@ -148,7 +112,7 @@ kubectl create secret generic turn-shared-secret --from-literal=turn-shared-secr
 ```
 > NOTES: It is possible to skip the first step and directly provide the shared secret with `value:`, but this exposes the shared secret in plain text. Set `TURN_PROTOCOL` to `tcp` if you were able to only open TCP ports while creating your own coTURN Deployment/DaemonSet, or if your client network throttles or blocks the UDP protocol.
 
-###### Legacy Long-Term Authentication
+###### Legacy long-term authentication
 
 1. Create a secret containing the TURN password:
 
@@ -194,9 +158,9 @@ kubectl create secret generic turn-password --from-literal=turn-password=MY_TURN
 
 [CloudRetro](https://github.com/giongto35/cloud-game) and [CloudMorph](https://github.com/giongto35/cloud-morph): This uses WebRTC in a web browser, like the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) project. The principles of this project are pretty similar to our project. However, hardware acceleration across various GPUs is currently not implemented. Hardware acceleration is critical to remote desktop and workload performance, and therefore you should use our repository if you need hardware acceleration.
 
-[neko](https://github.com/m1k1o/neko): Uses WebRTC in a web browser with a text chat, containers can be used, but hardware acceleration is very limited. Use this if you want the best performance while requiring multiple users to be able to access the screen. However, note that you can always use conference software such as [Zoom](https://zoom.us), [Jitsi](https://meet.jit.si), or [BigBlueButton](https://bigbluebutton.org) to share your screen while using our container.
+[neko](https://github.com/m1k1o/neko): Uses WebRTC in a web browser with a text chat, and it is also designed for containers (uses GStreamer too), but I had a hard time in conditions where more than one port can't be exposed or when using reverse proxies. Use this if you want good performance while requiring multiple users to be able to access the screen. However, note that you can always use conference software such as [Zoom](https://zoom.us), [Jitsi](https://meet.jit.si), or [BigBlueButton](https://bigbluebutton.org) to share your screen while using our container.
 
-[RustDesk](https://github.com/rustdesk/rustdesk): This is an open-source TeamViewer or AnyDesk. You can use this to have other people control your container if you need to.
+[RustDesk](https://github.com/rustdesk/rustdesk): This is an open-source TeamViewer or AnyDesk. You can use this to have other people control your node if you need to.
 
 [Weylus](https://github.com/H-M-H/Weylus): This is a very interesting project, and has many technologies in common. Use this if you want to turn your tablet or smartphone to a graphic tablet for your PC.
 
@@ -206,7 +170,9 @@ kubectl create secret generic turn-password --from-literal=turn-password=MY_TURN
 
 #### The container doesn't work.
 
-Check that the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) is configured in the host. If you did that, scroll down.
+Check that the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) is properly configured in the host. After that, check the environment variable `NVIDIA_DRIVER_CAPABILITIES` after starting a shell interface inside the container. `NVIDIA_DRIVER_CAPABILITIES` should be set to `all`, or include a comma-separated list of `compute` (requirement for CUDA and OpenCL, or for the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC remote desktop interface), `utility` (requirement for `nvidia-smi` and NVML), `graphics` (requirement for OpenGL and part of the requirement for Vulkan), `video` (required for encoding or decoding videos using NVIDIA GPUs, or for the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC remote desktop interface), `display` (the other requirement for Vulkan), and optionally `compat32` if you use Wine or 32-bit graphics applications.
+
+If you checked everything here, scroll down.
 
 #### The container doesn't work if an existing GUI or X server is running in the host outside the container. / I want to use `--privileged` mode or `--cap-add` to my containers.
 
@@ -237,15 +203,15 @@ Then, you must avoid the GPU of which you are using for your host X server. Use 
 
 #### Vulkan does not work.
 
-Make sure that the `NVIDIA_DRIVER_CAPABILITIES` environment variable is set to `all` or includes all of `utility`, `graphics`, `video`, and `display`. The `display` capability is especially crucial to Vulkan, but the container does start without `display`, even with its name.
+Make sure that the `NVIDIA_DRIVER_CAPABILITIES` environment variable is set to `all`, or includes both `graphics` and `display`. The `display` capability is especially crucial to Vulkan, but the container does start without noticeable issues other than Vulkan without `display`, despite its name.
 
 #### The container doesn't work if I set the resolution above 1920 x 1200 or 2560 x 1600 in 60 hz.
 
-##### Short Answer
+##### Short answer
 
 If your GPU is a consumer or professional GPU, change the `VIDEO_PORT` environment variable from `DFP` to `DP-0` if `DP-0` is empty, or any empty `DP-*` port. Set `VIDEO_PORT` to where your monitor is connected if you want to show the remote desktop in a real monitor. If your GPU is a Datacenter (Tesla) GPU, keep the `VIDEO_PORT` environment variable to `DFP`, and your maximum resolution is at 2560 x 1600. To go above this restriction, you may set `VIDEO_PORT` to `none`, but you must use borderless window instead of fullscreen, and this may lead to quite a lot of applications not starting, showing errors related to `XRANDR` or `RANDR`.
 
-##### Long Answer
+##### Long answer
 
 The container simulates the GPU being virtually plugged into a physical DVI-D/HDMI/DisplayPort digital video interface in consumer and professional GPUs with the `ConnectedMonitor` NVIDIA driver option. The container uses virtualized DVI-D ports for this purpose in Datacenter (Tesla) GPUs. The ports to be used should **only** be connected with an actual monitor when the user wants the remote desktop screen to be shown on that monitor. If you want to show the remote desktop screen spawned by the container in a physical monitor, connect the monitor and set `VIDEO_PORT` to the the video interface identifier that is connected to the monitor. Manually specify a video interface identifier that is not connected to a monitor in `VIDEO_PORT` if you have a physical monitor connected and want to show the screen to the monitor. `VIDEO_PORT` identifiers and their connection states can be obtained by typing `xrandr -q` when the `DISPLAY` environment variable is set to the number of the spawned X server display (for example `:0`). As an alternative, you may set `VIDEO_PORT` to `none` (which effectively sets `--use-display-device=None`), but you must use borderless window instead of fullscreen, and this may lead to quite a lot of applications not starting because the `RANDR` extension is not available in the X server.
 > NOTES: Do not start two or more X servers for a single GPU. Use a separate GPU (or use Xvfb/Xdummy/XVnc without hardware acceleration to use no GPUs) if you need a host X server unaffiliated with containers, and do not make the GPU available to the container runtime.
@@ -255,6 +221,6 @@ Since this container simulates the GPU being virtually plugged into a physical m
 Datacenter (Tesla) GPUs seem to only support resolutions of up to around 2560 x 1600 at 60 hz (`VIDEO_PORT` must be kept to `DFP` instead of changing to `DP-0` or other DisplayPort identifiers). The K40 (Kepler) GPU did not support RandR (required for some graphical applications using SDL and other graphical frameworks). Other Kepler generation Datacenter GPUs (maybe except the GRID K1 and K2 GPUs with vGPU capabilities) are also unlikely to support RandR, thus Datacenter GPU RandR support probably starts from Maxwell. Other tested Datacenter GPUs (V100, T4, A40, A100) support all graphical applications that consumer GPUs support. However, the performances were not better than consumer GPUs that usually cost a fraction of Datacenter GPUs, and the maximum supported resolutions were even lower.
 
 ---
-This project involved a collaboration effort with [Itopia](https://itopia.com)'s [Dan Isla](https://github.com/danisla) (founder of the [Selkies Project](https://github.com/selkies-project)), incorporating the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC remote desktop streaming application. Commercial support for this container may be available from [Itopia](https://itopia.com).
+This project involved a collaboration effort with members of the [Selkies Project](https://github.com/selkies-project), incorporating the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC remote desktop streaming application. Commercial support for this container is available with [itopia Spaces](https://itopiaspaces.com).
 
 This work was supported in part by NSF awards CNS-1730158, ACI-1540112, ACI-1541349, OAC-1826967, OAC-2112167, CNS-2120019, the University of California Office of the President, and the University of California San Diego's California Institute for Telecommunications and Information Technology/Qualcomm Institute. Thanks to CENIC for the 100Gbps networks.
