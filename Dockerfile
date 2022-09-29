@@ -216,6 +216,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         python3-dev \
         python3-gi \
         python3-setuptools \
+        python3-tk \
         python3-wheel \
         tzdata \
         sudo \
@@ -248,7 +249,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     SELKIES_VERSION=$(curl -fsSL "https://api.github.com/repos/selkies-project/selkies-gstreamer/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g') && \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.tgz" | tar -zxf - && \
     curl -O -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && pip3 install "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && rm -f "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && \
-    if [ "${UBUNTU_RELEASE}" \> "18.04" ]; then pip3 install --upgrade --force-reinstall "https://github.com/python-xlib/python-xlib/archive/master.zip"; fi && \
+    if [ "${UBUNTU_RELEASE}" \> "18.04" ]; then pip3 install --upgrade --force-reinstall "https://github.com/python-xlib/python-xlib/archive/e8cf018.zip"; fi && \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-web-v${SELKIES_VERSION}.tgz" | tar -zxf - && \
     cd /usr/local/cuda/lib64 && sudo find . -maxdepth 1 -type l -name "*libnvrtc.so.*" -exec sh -c 'ln -sf $(basename {}) libnvrtc.so' \;
 
