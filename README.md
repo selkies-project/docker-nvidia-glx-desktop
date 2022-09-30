@@ -32,7 +32,7 @@ docker run --gpus 1 -it --tmpfs /dev/shm:rw -e TZ=UTC -e SIZEW=1920 -e SIZEH=108
 ```
 > NOTES: The container tags available are `latest` and `20.04` for Ubuntu 20.04 and `18.04` for Ubuntu 18.04. Replace all instances of `mypasswd` with your desired password. `BASIC_AUTH_PASSWORD` will default to `PASSWD` if unspecified. The container must not be run in privileged mode.
 
-Change `WEBRTC_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` when using the selkies-gstreamer interface if your GPU doesn't support `H.264 (AVCHD)` under the `NVENC - Encoding` section in NVIDIA's [Video Encode and Decode GPU Support Matrix](https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new).
+Change `WEBRTC_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` when using the selkies-gstreamer interface if your GPU does not support `H.264 (AVCHD)` under the `NVENC - Encoding` section in NVIDIA's [Video Encode and Decode GPU Support Matrix](https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new).
 
 2. Connect to the web server with a browser on port 8080. You may also separately configure a reverse proxy to this port for external connectivity.
 > NOTES: Additional configurations and environment variables for the selkies-gstreamer WebRTC HTML5 interface are listed in lines that start with `parser.add_argument` within the [selkies-gstreamer main script](https://github.com/selkies-project/selkies-gstreamer/blob/master/src/selkies_gstreamer/__main__.py).
@@ -55,7 +55,7 @@ kubectl create -f xgl.yml
 ```
 > NOTES: The container tags available are `latest` and `20.04` for Ubuntu 20.04 and `18.04` for Ubuntu 18.04. `BASIC_AUTH_PASSWORD` will default to `PASSWD` if unspecified.
 
-Change `WEBRTC_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` when using the selkies-gstreamer WebRTC interface if your GPU doesn't support `H.264 (AVCHD)` under the `NVENC - Encoding` section in NVIDIA's [Video Encode and Decode GPU Support Matrix](https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new).
+Change `WEBRTC_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` when using the selkies-gstreamer WebRTC interface if your GPU does not support `H.264 (AVCHD)` under the `NVENC - Encoding` section in NVIDIA's [Video Encode and Decode GPU Support Matrix](https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new).
 
 3. Connect to the web server spawned at port 8080. You may configure the ingress endpoint or reverse proxy that your Kubernetes cluster provides to this port for external connectivity.
 > NOTES: Additional configurations and environment variables for the selkies-gstreamer WebRTC HTML5 interface are listed in lines that start with `parser.add_argument` within the [selkies-gstreamer main script](https://github.com/selkies-project/selkies-gstreamer/blob/master/src/selkies_gstreamer/__main__.py).
@@ -168,17 +168,23 @@ kubectl create secret generic turn-password --from-literal=turn-password=MY_TURN
 
 ### Troubleshooting
 
-#### The container doesn't work.
+#### The container does not work.
 
-Check that the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) is properly configured in the host. After that, check the environment variable `NVIDIA_DRIVER_CAPABILITIES` after starting a shell interface inside the container. `NVIDIA_DRIVER_CAPABILITIES` should be set to `all`, or include a comma-separated list of `compute` (requirement for CUDA and OpenCL, or for the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC remote desktop interface), `utility` (requirement for `nvidia-smi` and NVML), `graphics` (requirement for OpenGL and part of the requirement for Vulkan), `video` (required for encoding or decoding videos using NVIDIA GPUs, or for the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC remote desktop interface), `display` (the other requirement for Vulkan), and optionally `compat32` if you use Wine or 32-bit graphics applications.
+Check that the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) is properly configured in the host. After that, check the environment variable `NVIDIA_DRIVER_CAPABILITIES` after starting a shell interface inside the container.
+
+`NVIDIA_DRIVER_CAPABILITIES` should be set to `all`, or include a comma-separated list of `compute` (requirement for CUDA and OpenCL, or for the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC remote desktop interface), `utility` (requirement for `nvidia-smi` and NVML), `graphics` (requirement for OpenGL and part of the requirement for Vulkan), `video` (required for encoding or decoding videos using NVIDIA GPUs, or for the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC remote desktop interface), `display` (the other requirement for Vulkan), and optionally `compat32` if you use Wine or 32-bit graphics applications.
 
 If you checked everything here, scroll down.
 
-#### The container doesn't work if an existing GUI or X server is running in the host outside the container. / I want to use `--privileged` mode or `--cap-add` to my containers.
+#### I want to share one GPU with multiple containers to run GUI workloads.
 
-In order to use an X server on the host for your monitor with one GPU, and then provision other GPUs for the containers, you must change your `/etc/X11/xorg.conf` configurations.
+Note that because of restrictions from Xorg, it is not possible to share one GPU to multiple Xorg servers running in different containers. Use [docker-nvidia-egl-desktop](https://github.com/ehfd/docker-nvidia-egl-desktop) if you intend to do this.
 
-First, use `sudo nvidia-xconfig --no-probe-all-gpus --busid=$BUS_ID --only-one-x-screen` to generate `/etc/X11/xorg.conf` where `BUS_ID` is generated with the below script. Set `GPU_SELECT` to the ID of the specific GPU you want to provision from `nvidia-smi`.
+#### The container does not work if an existing GUI, desktop environment, or X server is running in the host outside the container. / I want to use this container in `--privileged` mode or with `--cap-add` and do not want other containers to interfere.
+
+In order to use an X server on the host for your monitor with one GPU, and provision the other GPUs to the containers, you must change your `/etc/X11/xorg.conf` configuration of the host.
+
+First, use `sudo nvidia-xconfig --no-probe-all-gpus --busid=$BUS_ID --only-one-x-screen` to generate `/etc/X11/xorg.conf` where `BUS_ID` is generated with the below script. Set `GPU_SELECT` to the ID (from `nvidia-smi`) of the specific GPU you want to provision.
 
 ```
 HEX_ID=$(nvidia-smi --query-gpu=pci.bus_id --id="$GPU_SELECT" --format=csv | sed -n 2p)
@@ -187,12 +193,18 @@ unset IFS
 BUS_ID=PCI:$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))
 ```
 
-Then, edit `/etc/X11/xorg.conf` and add the following to the end. If you want to use the containers in privileged mode, add this section to the `/etc/X11/xorg.conf` file of all containers as well.
+Then, edit the `/etc/X11/xorg.conf` file of your host outside the container and add the below snippet to the end of the file. If you want to use containers in `--privileged` mode or with `--cap-add`, add the snippet to the `/etc/X11/xorg.conf` files of all other containers running an Xorg server as well (has been already added for this container). The exact file location may vary if not using the NVIDIA graphics driver.
 
 ```
 Section "ServerFlags"
     Option "AutoAddGPU" "false"
 EndSection
+```
+
+The below command adds the above snippet automatically. The exact file location may vary if not using the NVIDIA graphics driver.
+
+```bash
+echo -e "Section \"ServerFlags\"\n    Option \"AutoAddGPU\" \"false\"\nEndSection" | sudo tee -a /etc/X11/xorg.conf > /dev/null
 ```
 
 [Reference](https://man.archlinux.org/man/extra/xorg-server/xorg.conf.d.5.en)
@@ -205,7 +217,7 @@ Then, you must avoid the GPU of which you are using for your host X server. Use 
 
 Make sure that the `NVIDIA_DRIVER_CAPABILITIES` environment variable is set to `all`, or includes both `graphics` and `display`. The `display` capability is especially crucial to Vulkan, but the container does start without noticeable issues other than Vulkan without `display`, despite its name.
 
-#### The container doesn't work if I set the resolution above 1920 x 1200 or 2560 x 1600 in 60 hz.
+#### The container does not work if I set the resolution above 1920 x 1200 or 2560 x 1600 in 60 hz.
 
 ##### Short answer
 
@@ -213,8 +225,13 @@ If your GPU is a consumer or professional GPU, change the `VIDEO_PORT` environme
 
 ##### Long answer
 
-The container simulates the GPU being virtually plugged into a physical DVI-D/HDMI/DisplayPort digital video interface in consumer and professional GPUs with the `ConnectedMonitor` NVIDIA driver option. The container uses virtualized DVI-D ports for this purpose in Datacenter (Tesla) GPUs. The ports to be used should **only** be connected with an actual monitor when the user wants the remote desktop screen to be shown on that monitor. If you want to show the remote desktop screen spawned by the container in a physical monitor, connect the monitor and set `VIDEO_PORT` to the the video interface identifier that is connected to the monitor. Manually specify a video interface identifier that is not connected to a monitor in `VIDEO_PORT` if you have a physical monitor connected and want to show the screen to the monitor. `VIDEO_PORT` identifiers and their connection states can be obtained by typing `xrandr -q` when the `DISPLAY` environment variable is set to the number of the spawned X server display (for example `:0`). As an alternative, you may set `VIDEO_PORT` to `none` (which effectively sets `--use-display-device=None`), but you must use borderless window instead of fullscreen, and this may lead to quite a lot of applications not starting because the `RANDR` extension is not available in the X server.
-> NOTES: Do not start two or more X servers for a single GPU. Use a separate GPU (or use Xvfb/Xdummy/XVnc without hardware acceleration to use no GPUs) if you need a host X server unaffiliated with containers, and do not make the GPU available to the container runtime.
+The container simulates the GPU to become plugged into a physical DVI-D/HDMI/DisplayPort digital video interface in consumer and professional GPUs with the `ConnectedMonitor` NVIDIA driver option. The container uses virtualized DVI-D ports for this purpose in Datacenter (Tesla) GPUs.
+
+The ports to be used should **only** be connected with an actual monitor if the user wants the remote desktop screen to be shown on that monitor. If you want to show the remote desktop screen spawned by the container in a physical monitor, connect the monitor and set `VIDEO_PORT` to the the video interface identifier that is connected to the monitor. If not, avoid the video interface identifier that is connected to the monitor.
+
+`VIDEO_PORT` identifiers and their connection states can be obtained by typing `xrandr -q` when the `DISPLAY` environment variable is set to the number of the spawned X server display (for example `:0`). As an alternative, you may set `VIDEO_PORT` to `none` (which effectively sets `--use-display-device=None`), but you must use borderless window instead of fullscreen, and this may lead to quite a lot of applications not starting because the `RANDR` extension is not available in the X server.
+
+> NOTES: Do not start two or more X servers for a single GPU. Use a separate GPU (or use Xvfb/Xdummy/Xvnc without hardware acceleration to use no GPUs at all) if you need a host X server unaffiliated with containers, and do not make the GPU available to the container runtime.
 
 Since this container simulates the GPU being virtually plugged into a physical monitor while it actually does not, make sure the resolutions specified with the environment variables `SIZEW` and `SIZEH` are within the maximum size supported by the GPU. The environment variable `VIDEO_PORT` can override which video port is used (defaults to `DFP`, the first interface detected in the driver). Therefore, specifying `VIDEO_PORT` to an unplugged DisplayPort (for example numbered like `DP-0`, `DP-1`, and so on) is recommended for resolutions above 1920 x 1200 at 60 hz, because some driver restrictions are applied when the default is set to an unplugged physical DVI-D or HDMI port. The maximum size that should work in all cases is 1920 x 1200 at 60 hz, mainly for when the default `VIDEO_PORT` identifier `DFP` is not set to DisplayPort. The screen sizes over 1920 x 1200 at 60 hz but under the maximum supported display size specified for each port (supported by GPU specifications) will be possible if the port is set to DisplayPort (both physically connected or disconnected), or when a physical monitor or dummy plug to any other type of display ports (including DVI-D and HDMI) has been physically connected. If all GPUs in the cluster have at least one DisplayPort and they are not physically connected to any monitors, simply setting `VIDEO_PORT` to `DP-0` is recommended (but this is not set as default because of legacy GPU compatibility reasons).
 
