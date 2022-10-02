@@ -33,6 +33,9 @@ ENV WEBRTC_ENABLE_RESIZE false
 ENV ENABLE_AUDIO true
 ENV ENABLE_BASIC_AUTH true
 
+# Set versions for components that should be manually checked before upgrading, other component versions are automatically determined by fetching the version online
+ARG NOVNC_VERSION=1.3.0
+
 # Install locales to prevent Xorg errors
 RUN apt-get clean && \
     apt-get update && apt-get install --no-install-recommends -y locales && \
@@ -251,6 +254,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     if [ "${UBUNTU_RELEASE}" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt; fi && \
     rm -rf /var/lib/apt/lists/* && \
     cd /opt && \
+    # Automatically fetch the latest selkies-gstreamer version and install the components
     SELKIES_VERSION=$(curl -fsSL "https://api.github.com/repos/selkies-project/selkies-gstreamer/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g') && \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.tgz" | tar -zxf - && \
     curl -O -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && pip3 install "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && rm -f "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && \
@@ -258,7 +262,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-web-v${SELKIES_VERSION}.tgz" | tar -zxf - && \
     cd /usr/local/cuda/lib64 && sudo find . -maxdepth 1 -type l -name "*libnvrtc.so.*" -exec sh -c 'ln -sf $(basename {}) libnvrtc.so' \;
 
-# Install latest noVNC web interface and x11vnc for fallback
+# Install the noVNC web interface and the latest x11vnc for fallback
 RUN apt-get update && apt-get install --no-install-recommends -y \
         autoconf \
         automake \
@@ -283,12 +287,13 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libxtst-dev \
         libavahi-client-dev && \
     rm -rf /var/lib/apt/lists/* && \
+    # Build the latest x11vnc source to avoid various errors
     git clone "https://github.com/LibVNC/x11vnc.git" /tmp/x11vnc && \
     cd /tmp/x11vnc && autoreconf -fi && ./configure && make install && cd / && rm -rf /tmp/* && \
-    NOVNC_VERSION=$(curl -fsSL "https://api.github.com/repos/noVNC/noVNC/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g') && \
     curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz | tar -xzf - -C /opt && \
     mv /opt/noVNC-${NOVNC_VERSION} /opt/noVNC && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
+    # Use the latest websockify source to expose noVNC
     git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
 
 # Add custom packages below this comment, or use FROM in a new container and replace entrypoint.sh or supervisord.conf, and set ENTRYPOINT to /usr/bin/supervisord

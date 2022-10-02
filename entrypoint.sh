@@ -10,8 +10,12 @@ echo "user:$PASSWD" | sudo chpasswd
 sudo rm -rf /tmp/.X* ~/.cache ~/.config/xfce4
 # Change time zone from environment variable
 sudo ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | sudo tee /etc/timezone > /dev/null
+# Add game directories to path
+export PATH="${PATH}:/usr/local/games:/usr/games"
 # Add LibreOffice to library path
 export LD_LIBRARY_PATH="/usr/lib/libreoffice/program:${LD_LIBRARY_PATH}"
+# Enable AppImage execution in a container
+export APPIMAGE_EXTRACT_AND_RUN="1"
 
 # This symbolic link enables running Xorg inside a container with `-sharevts`
 sudo ln -snf /dev/ptmx /dev/tty7
@@ -104,8 +108,6 @@ echo -e "Section \"ServerFlags\"\n    Option \"AutoAddGPU\" \"false\"\nEndSectio
 export DISPLAY=":0"
 # Disable VSYNC in OpenGL by default, change this to "1" to enable
 export __GL_SYNC_TO_VBLANK="0"
-# Prioritize NVIDIA Vulkan driver if multiple GPU vendors exist
-export __NV_PRIME_RENDER_OFFLOAD="1"
 # Run Xorg server with required extensions
 Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DPI}" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" "${DISPLAY}" &
 
