@@ -249,6 +249,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libpangocairo-1.0-0 \
         libgirepository1.0-dev \
         libjpeg-dev \
+        libvpx-dev \
         zlib1g-dev \
         x264 && \
     if [ "${UBUNTU_RELEASE}" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt; fi && \
