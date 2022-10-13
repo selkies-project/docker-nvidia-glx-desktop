@@ -14,8 +14,6 @@ sudo ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | sudo tee /
 export PATH="${PATH}:/usr/local/games:/usr/games"
 # Add LibreOffice to library path
 export LD_LIBRARY_PATH="/usr/lib/libreoffice/program:${LD_LIBRARY_PATH}"
-# Enable AppImage execution in a container
-export APPIMAGE_EXTRACT_AND_RUN="1"
 
 # This symbolic link enables running Xorg inside a container with `-sharevts`
 sudo ln -snf /dev/ptmx /dev/tty7
