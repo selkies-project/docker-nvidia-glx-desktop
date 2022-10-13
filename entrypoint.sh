@@ -104,8 +104,6 @@ echo -e "Section \"ServerFlags\"\n    Option \"AutoAddGPU\" \"false\"\nEndSectio
 
 # Default display is :0 across the container
 export DISPLAY=":0"
-# Disable VSYNC in OpenGL by default, change this to "1" to enable
-export __GL_SYNC_TO_VBLANK="0"
 # Run Xorg server with required extensions
 Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DPI}" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" "${DISPLAY}" &
 
