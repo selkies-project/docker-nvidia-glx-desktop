@@ -127,6 +127,8 @@ RUN dpkg --add-architecture i386 && \
         mesa-utils-extra \
         mesa-va-drivers \
         mesa-vulkan-drivers \
+        libvulkan-dev \
+        libvulkan-dev:i386 \
         libglu1 \
         libglu1:i386 \
         libsm6 \
