@@ -208,13 +208,14 @@ ARG WINE_BRANCH=staging
 RUN if [ "${UBUNTU_RELEASE}" = "18.04" ]; then add-apt-repository ppa:cybermax-dexter/sdl2-backport; fi && \
     mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-archive.key "https://dl.winehq.org/wine-builds/winehq.key" && \
     curl -fsSL -o "/etc/apt/sources.list.d/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" "https://dl.winehq.org/wine-builds/ubuntu/dists/$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2)/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" && \
-    add-apt-repository ppa:lutris-team/lutris && \
     apt-get update && apt-get install --install-recommends -y \
         winehq-${WINE_BRANCH} && \
     apt-get update && apt-get install --no-install-recommends -y \
-        lutris \
         q4wine \
         playonlinux && \
+    LUTRIS_VERSION=$(curl -fsSL "https://api.github.com/repos/lutris/lutris/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g') && \
+    curl -fsSL -O "https://github.com/lutris/lutris/releases/download/v${LUTRIS_VERSION}/lutris_${LUTRIS_VERSION}_all.deb" && \
+    apt-get update && apt-get install --no-install-recommends -y ./lutris_${LUTRIS_VERSION}_all.deb && rm -f "./lutris_${LUTRIS_VERSION}_all.deb" && \
     rm -rf /var/lib/apt/lists/* && \
     curl -fsSL -o /usr/bin/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" && \
     chmod 755 /usr/bin/winetricks && \
@@ -293,11 +294,11 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     # Build the latest x11vnc source to avoid various errors
     git clone "https://github.com/LibVNC/x11vnc.git" /tmp/x11vnc && \
     cd /tmp/x11vnc && autoreconf -fi && ./configure && make install && cd / && rm -rf /tmp/* && \
-    curl -fsSL https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz | tar -xzf - -C /opt && \
-    mv /opt/noVNC-${NOVNC_VERSION} /opt/noVNC && \
+    curl -fsSL "https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz" | tar -xzf - -C /opt && \
+    mv -f "/opt/noVNC-${NOVNC_VERSION}" /opt/noVNC && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
-    # Use the latest websockify source to expose noVNC
-    git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
+    # Use the latest Websockify source to expose noVNC
+    git clone "https://github.com/novnc/websockify.git" /opt/noVNC/utils/websockify
 
 # Add custom packages below this comment, or use FROM in a new container and replace entrypoint.sh or supervisord.conf, and set ENTRYPOINT to /usr/bin/supervisord
 
