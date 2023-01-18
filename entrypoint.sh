@@ -2,15 +2,19 @@
 
 trap "echo TRAPed signal" HUP INT QUIT KILL TERM
 
+# Create and modify permissions of XDG_RUNTIME_DIR
+sudo -u user mkdir -pm700 /tmp/runtime-user
+sudo chown user:user /tmp/runtime-user
+sudo -u user chmod 700 /tmp/runtime-user
 # Make user directory owned by the user in case it is not
 sudo chown user:user /home/user
 # Change operating system password to environment variable
 echo "user:$PASSWD" | sudo chpasswd
 # Remove directories to make sure the desktop environment starts
-sudo rm -rf /tmp/.X* ~/.cache ~/.config/xfce4
+sudo rm -rf /tmp/.X* ~/.cache
 # Change time zone from environment variable
 sudo ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | sudo tee /etc/timezone > /dev/null
-# Add game directories to path
+# Add game directories for Lutris to path
 export PATH="${PATH}:/usr/local/games:/usr/games"
 # Add LibreOffice to library path
 export LD_LIBRARY_PATH="/usr/lib/libreoffice/program:${LD_LIBRARY_PATH}"
@@ -119,15 +123,10 @@ if [ "${NOVNC_ENABLE,,}" = "true" ]; then
   /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 8080 --heartbeat 10 &
 fi
 
-# Start Xfce4 desktop environment
-xfce4-session &
+# Start KDE desktop environment
+startplasma-x11 &
 
-# Add custom processes here, or within `supervisord.conf` to perform service management similar to systemd
-
-# Fix selkies-gstreamer keyboard mapping, remove if selkies-gstreamer issue #6 is fixed and in release
-if [ "${NOVNC_ENABLE,,}" != "true" ]; then
-  sudo xmodmap -e "keycode 94 shift = less less"
-fi
+# Add custom processes right below this line, or within `supervisord.conf` to perform service management similar to systemd
 
 echo "Session Running. Press [Return] to exit."
 read

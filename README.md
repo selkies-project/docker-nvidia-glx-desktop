@@ -1,8 +1,8 @@
 # docker-nvidia-glx-desktop
 
-Xfce Desktop container designed for Kubernetes supporting OpenGL GLX and Vulkan for NVIDIA GPUs with WebRTC and HTML5, providing an open source remote cloud graphics or game streaming platform. Spawns its own fully isolated X Server instead of using the host X server, therefore not requiring `/tmp/.X11-unix` host sockets or host configuration.
+KDE Plasma Desktop container designed for Kubernetes supporting OpenGL GLX and Vulkan for NVIDIA GPUs with WebRTC and HTML5, providing an open source remote cloud graphics or game streaming platform. Spawns its own fully isolated X Server instead of using the host X server, not requiring `/tmp/.X11-unix` host sockets or host configuration.
 
-Use [docker-nvidia-egl-desktop](https://github.com/ehfd/docker-nvidia-egl-desktop) for an Xfce Desktop container which directly accesses NVIDIA (and unofficially Intel and AMD) GPUs without using an X11 Server, supports sharing a GPU with many containers, and automatically falling back to software acceleration in the absence of GPUs (but with limited graphics performance).
+Use [docker-nvidia-egl-desktop](https://github.com/selkies-project/docker-nvidia-egl-desktop) for a KDE Plasma Desktop container which directly accesses NVIDIA (and unofficially Intel and AMD) GPUs without using an X11 Server, supports sharing a GPU with many containers, and automatically falling back to software acceleration in the absence of GPUs (but with limited graphics performance).
 
 **Read the [Troubleshooting](#troubleshooting) section first before raising an issue. Support is also available with the [Selkies Discord](https://discord.gg/wDNGDeSW5F). Please redirect issues or discussions regarding the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC HTML5 interface to the [project](https://github.com/selkies-project/selkies-gstreamer).**
 
@@ -28,7 +28,7 @@ The username is `user` in both the container user account and the web authentica
 1. Run the container with Docker (or other similar container CLIs like Podman):
 
 ```
-docker run --gpus 1 -it --tmpfs /dev/shm:rw -e TZ=UTC -e SIZEW=1920 -e SIZEH=1080 -e REFRESH=60 -e DPI=96 -e CDEPTH=24 -e VIDEO_PORT=DFP -e PASSWD=mypasswd -e WEBRTC_ENCODER=nvh264enc -e BASIC_AUTH_PASSWORD=mypasswd -p 8080:8080 ghcr.io/ehfd/nvidia-glx-desktop:latest
+docker run --gpus 1 -it --tmpfs /dev/shm:rw -e TZ=UTC -e SIZEW=1920 -e SIZEH=1080 -e REFRESH=60 -e DPI=96 -e CDEPTH=24 -e VIDEO_PORT=DFP -e PASSWD=mypasswd -e WEBRTC_ENCODER=nvh264enc -e BASIC_AUTH_PASSWORD=mypasswd -p 8080:8080 ghcr.io/selkies-project/nvidia-glx-desktop:latest
 ```
 > NOTES: The container tags available are `latest` and `20.04` for Ubuntu 20.04 and `18.04` for Ubuntu 18.04. Replace all instances of `mypasswd` with your desired password. `BASIC_AUTH_PASSWORD` will default to `PASSWD` if unspecified. The container must not be run in privileged mode.
 
@@ -144,7 +144,7 @@ kubectl create secret generic turn-password --from-literal=turn-password=MY_TURN
 
 ## Comparison
 
-[docker-nvidia-egl-desktop](https://github.com/ehfd/docker-nvidia-egl-desktop): It's generally recommended to use docker-nvidia-glx-desktop when possible for maximum capabilities and performance. It starts its own X server inside the container without exposure to security risks. However, docker-nvidia-egl-desktop is versatile in various environments and has less processes running, meaning less possible complications in restricted environments. It is also possible to be used in HPC clusters with Apptainer/Singularity available, and sharing a GPU with multiple containers is also possible. Unofficial support for Intel and AMD GPUs is also available.
+[docker-nvidia-egl-desktop](https://github.com/selkies-project/docker-nvidia-egl-desktop): It's generally recommended to use docker-nvidia-glx-desktop when possible for maximum capabilities and performance. It starts its own X server inside the container without exposure to security risks. However, docker-nvidia-egl-desktop is versatile in various environments and has less processes running, meaning less possible complications in restricted environments. It is also possible to be used in HPC clusters with Apptainer/Singularity available, and sharing a GPU with multiple containers is also possible. Unofficial support for Intel and AMD GPUs is also available.
 
 [Sunshine](https://github.com/LizardByte/Sunshine): This repository is an open-source server for NVIDIA's GameStream protocol, supporting all clients that can install [Moonlight](https://github.com/moonlight-stream). Try it if you don't need username/password authentication and you don't need to use containers. [Games on Whales](https://github.com/games-on-whales/gow) is a container implementation of Sunshine. However, many container ports have to be accessible to the internet, and because of its requirement for the `/dev/uinput` device, unsafe `privileged` access for containers are required. The [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) project, which is integrated to our container, does not require more than one port open from the container (TURN server may be required but can be deployed in a different environment with flexibility), and has almost equal performance while using only a web browser as a client.
 
@@ -178,7 +178,7 @@ If you checked everything here, scroll down.
 
 ### I want to share one GPU with multiple containers to run GUI workloads.
 
-Note that because of restrictions from Xorg, it is not possible to share one GPU to multiple Xorg servers running in different containers. Use [docker-nvidia-egl-desktop](https://github.com/ehfd/docker-nvidia-egl-desktop) if you intend to do this.
+Note that because of restrictions from Xorg, it is not possible to share one GPU to multiple Xorg servers running in different containers. Use [docker-nvidia-egl-desktop](https://github.com/selkies-project/docker-nvidia-egl-desktop) if you intend to do this.
 
 ### The container does not work if an existing GUI, desktop environment, or X server is running in the host outside the container. / I want to use this container in `--privileged` mode or with `--cap-add` and do not want other containers to interfere.
 
@@ -246,4 +246,4 @@ For `systemd`, FUSE mounts, or other sandboxed application distribution systems,
 ---
 This project involved a collaboration effort with members of the [Selkies Project](https://github.com/selkies-project), incorporating the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) WebRTC remote desktop streaming application. Commercial support for this container is available with [itopia Spaces](https://itopiaspaces.com).
 
-This work was supported in part by NSF awards CNS-1730158, ACI-1540112, ACI-1541349, OAC-1826967, OAC-2112167, CNS-2120019, the University of California Office of the President, and the University of California San Diego's California Institute for Telecommunications and Information Technology/Qualcomm Institute. Thanks to CENIC for the 100Gbps networks.
+This work was supported in part by National Science Foundation (NSF) awards CNS-1730158, ACI-1540112, ACI-1541349, OAC-1826967, OAC-2112167, CNS-2100237, CNS-2120019, the University of California Office of the President, and the University of California San Diego's California Institute for Telecommunications and Information Technology/Qualcomm Institute. Thanks to CENIC for the 100Gbps networks.

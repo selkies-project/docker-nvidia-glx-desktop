@@ -21,37 +21,20 @@ echo "X socket is ready"
 export PWA_APP_NAME="Selkies WebRTC"
 export PWA_APP_SHORT_NAME="selkies"
 export PWA_START_URL="/index.html"
-sed -i \
+sudo sed -i \
     -e "s|PWA_APP_NAME|${PWA_APP_NAME}|g" \
     -e "s|PWA_APP_SHORT_NAME|${PWA_APP_SHORT_NAME}|g" \
     -e "s|PWA_START_URL|${PWA_START_URL}|g" \
 /opt/gst-web/manifest.json && \
-sed -i \
+sudo sed -i \
     -e "s|PWA_CACHE|${PWA_APP_SHORT_NAME}-webrtc-pwa|g" \
 /opt/gst-web/sw.js
-
-# Write default user configuration
-export SELKIES_USER_CONFIG_FILE="${HOME}/.config/selkies/selkies-gstreamer-conf.json"
-mkdir -p $(dirname "$SELKIES_USER_CONFIG_FILE")
-if [ ! -f "${SELKIES_USER_CONFIG_FILE}" ]; then
-    cat - > "${SELKIES_USER_CONFIG_FILE}" <<EOF
-{
-    "framerate": "${WEBRTC_FRAMERATE:-60}",
-    "video_bitrate": "${WEBRTC_VIDEO_BITRATE:-4000}",
-    "audio_bitrate": "${WEBRTC_AUDIO_BITRATE:-64000}",
-    "enable_audio": "${ENABLE_AUDIO:-true}",
-    "enable_resize": "${WEBRTC_ENABLE_RESIZE:-true}",
-    "encoder": "${WEBRTC_ENCODER:-nvh264enc}"
-}
-EOF
-fi
 
 # Clear the cache registry to force the CUDA elements to refresh
 rm -f "${HOME}/.cache/gstreamer-1.0/registry.x86_64.bin"
 
 # Start the selkies-gstreamer WebRTC HTML5 remote desktop application
 selkies-gstreamer \
-    --json_config="${SELKIES_USER_CONFIG_FILE}" \
     --addr="0.0.0.0" \
     --port="8080" \
     $@

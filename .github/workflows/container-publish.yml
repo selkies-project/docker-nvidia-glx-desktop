@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ehfd/nvidia-glx-desktop
+  IMAGE_NAME: selkies-project/nvidia-glx-desktop
 jobs:
   build-bionic:
     runs-on: ubuntu-latest

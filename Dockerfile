@@ -1,7 +1,7 @@
-# Ubuntu release versions 18.04 and 20.04 are supported
-ARG UBUNTU_RELEASE=20.04
-ARG CUDA_VERSION=11.2.2
-FROM nvcr.io/nvidia/cudagl:${CUDA_VERSION}-runtime-ubuntu${UBUNTU_RELEASE}
+# Ubuntu release versions 22.04, 20.04, and 18.04 are supported
+ARG UBUNTU_RELEASE=22.04
+ARG CUDA_VERSION=11.7.1
+FROM nvcr.io/nvidia/cuda:${CUDA_VERSION}-runtime-ubuntu${UBUNTU_RELEASE}
 
 LABEL maintainer "https://github.com/ehfd,https://github.com/danisla"
 
@@ -17,8 +17,9 @@ ENV NVIDIA_DRIVER_CAPABILITIES all
 ENV APPIMAGE_EXTRACT_AND_RUN 1
 # System defaults that should not be changed
 ENV DISPLAY :0
-ENV PULSE_SERVER 127.0.0.1:4713
-ENV XDG_RUNTIME_DIR /tmp
+ENV XDG_RUNTIME_DIR /tmp/runtime-user
+ENV PULSE_SERVER unix:/run/pulse/native
+ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
 # Default environment variables (password is "mypasswd")
 ENV TZ UTC
@@ -38,7 +39,7 @@ ENV ENABLE_BASIC_AUTH true
 # Set versions for components that should be manually checked before upgrading, other component versions are automatically determined by fetching the version online
 ARG NOVNC_VERSION=1.3.0
 
-# Install locales to prevent Xorg errors
+# Install locales to prevent X11 errors
 RUN apt-get clean && \
     apt-get update && apt-get install --no-install-recommends -y locales && \
     rm -rf /var/lib/apt/lists/* && \
@@ -47,17 +48,16 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-# Install Xorg, Xfce4 desktop environment, and other utility packages
+# Install Xorg and other important libraries or packages
 RUN dpkg --add-architecture i386 && \
     apt-get update && apt-get install --no-install-recommends -y \
         software-properties-common \
+        alsa-base \
+        alsa-utils \
         apt-transport-https \
         apt-utils \
         build-essential \
         ca-certificates \
-        kmod \
-        libc6:i386 \
-        libc6-dev \
         cups-filters \
         cups-common \
         cups-pdf \
@@ -82,14 +82,6 @@ RUN dpkg --add-architecture i386 && \
         nano \
         vim \
         htop \
-        firefox \
-        transmission-gtk \
-        qpdfview \
-        xarchiver \
-        adwaita-icon-theme-full \
-        brltty \
-        brltty-x11 \
-        desktop-file-utils \
         fonts-dejavu-core \
         fonts-freefont-ttf \
         fonts-noto \
@@ -101,113 +93,180 @@ RUN dpkg --add-architecture i386 && \
         fonts-opensymbol \
         fonts-symbola \
         fonts-ubuntu \
-        gucharmap \
-        mpd \
-        onboard \
-        parole \
-        policykit-desktop-privileges \
         libpulse0 \
         pulseaudio \
-        pavucontrol \
-        ristretto \
         supervisor \
-        thunar \
-        thunar-volman \
-        thunar-archive-plugin \
-        thunar-media-tags-plugin \
         net-tools \
-        libgtk-3-bin \
-        libpci3 \
-        libelf-dev \
         libglvnd-dev \
+        libglvnd-dev:i386 \
+        libgl1-mesa-dev \
+        libgl1-mesa-dev:i386 \
+        libegl1-mesa-dev \
+        libegl1-mesa-dev:i386 \
+        libgles2-mesa-dev \
+        libgles2-mesa-dev:i386 \
+        libglvnd0 \
+        libglvnd0:i386 \
+        libgl1 \
+        libgl1:i386 \
+        libglx0 \
+        libglx0:i386 \
+        libegl1 \
+        libegl1:i386 \
+        libgles2 \
+        libgles2:i386 \
+        libglu1 \
+        libglu1:i386 \
+        libsm6 \
+        libsm6:i386 \
         vainfo \
         vdpauinfo \
         pkg-config \
         mesa-utils \
         mesa-utils-extra \
-        mesa-va-drivers \
+        va-driver-all \
+        xserver-xorg-input-all \
+        xserver-xorg-video-all \
         mesa-vulkan-drivers \
         libvulkan-dev \
         libvulkan-dev:i386 \
-        libglu1 \
-        libglu1:i386 \
-        libsm6 \
+        libxau6 \
+        libxau6:i386 \
+        libxdmcp6 \
+        libxdmcp6:i386 \
+        libxcb1 \
+        libxcb1:i386 \
+        libxext6 \
+        libxext6:i386 \
+        libx11-6 \
+        libx11-6:i386 \
         libxv1 \
         libxv1:i386 \
         libxtst6 \
         libxtst6:i386 \
         xdg-utils \
+        dbus-x11 \
+        libdbus-c++-1-0v5 \
+        xkb-data \
         x11-xkb-utils \
         x11-xserver-utils \
         x11-utils \
         x11-apps \
-        dbus-x11 \
-        libdbus-c++-1-0v5 \
-        dmz-cursor-theme \
-        numlockx \
         xauth \
-        xcursor-themes \
+        xbitmaps \
         xinit \
         xfonts-base \
-        xkb-data \
         libxrandr-dev \
-        xorg \
-        xubuntu-artwork \
-        xfburn \
-        xfpanel-switch \
-        xfce4 \
-        xfdesktop4 \
-        xfwm4 \
-        xfce4-appfinder \
-        xfce4-clipman \
-        xfce4-dict \
-        xfce4-goodies \
-        xfce4-notes \
-        xfce4-notifyd \
-        xfce4-panel \
-        xfce4-screenshooter \
-        xfce4-session \
-        xfce4-settings \
-        xfce4-taskmanager \
-        xfce4-terminal \
-        xfce4-appmenu-plugin \
-        xfce4-battery-plugin \
-        xfce4-clipman-plugin \
-        xfce4-cpufreq-plugin \
-        xfce4-cpugraph-plugin \
-        xfce4-diskperf-plugin \
-        xfce4-datetime-plugin \
-        xfce4-fsguard-plugin \
-        xfce4-genmon-plugin \
-        xfce4-indicator-plugin \
-        xfce4-mpc-plugin \
-        xfce4-mount-plugin \
-        xfce4-netload-plugin \
-        xfce4-notes-plugin \
-        xfce4-places-plugin \
-        xfce4-pulseaudio-plugin \
-        xfce4-sensors-plugin \
-        xfce4-smartbookmark-plugin \
-        xfce4-statusnotifier-plugin \
-        xfce4-systemload-plugin \
-        xfce4-timer-plugin \
-        xfce4-verve-plugin \
-        xfce4-weather-plugin \
-        xfce4-whiskermenu-plugin \
-        xfce4-xkb-plugin && \
-    # Install LibreOffice with the recommended packages
-    apt-get install -y libreoffice && \
-    # Prevent dialogs at desktop environment start
-    cp -rf /etc/xdg/xfce4/panel/default.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml && \
-    # Install Vulkan packages
-    if [ "${UBUNTU_RELEASE}" = "18.04" ]; then apt-get install --no-install-recommends -y vulkan-utils; else apt-get install --no-install-recommends -y vulkan-tools; fi && \
+        # Install essential Xorg and NVIDIA packages, packages above this line should be the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
+        kmod \
+        libc6-dev \
+        libc6:i386 \
+        libpci3 \
+        libelf-dev \
+        xorg && \
+    # Install Vulkan utilities
+    if [ "${UBUNTU_RELEASE}" \< "20.04" ]; then apt-get install --no-install-recommends -y vulkan-utils; else apt-get install --no-install-recommends -y vulkan-tools; fi && \
     # Support decoding from libva or VA-API through NVIDIA VDPAU
     curl -fsSL -o /tmp/vdpau-va-driver.deb "https://launchpad.net/~saiarcot895/+archive/ubuntu/chromium-dev/+files/vdpau-va-driver_0.7.4-6ubuntu2~ppa1~18.04.1_amd64.deb" && apt-get install --no-install-recommends -y /tmp/vdpau-va-driver.deb && rm -rf /tmp/* && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    # Configure EGL manually
+    mkdir -p /usr/share/glvnd/egl_vendor.d/ && \
+    echo "{\n\
+    \"file_format_version\" : \"1.0.0\",\n\
+    \"ICD\": {\n\
+        \"library_path\": \"libEGL_nvidia.so.0\"\n\
+    }\n\
+}" > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+
+# Anything below this line should be always kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
+
+# Install KDE and other GUI packages
+ENV XDG_CURRENT_DESKTOP KDE
+ENV KWIN_COMPOSE N
+# Use sudoedit to change protected files instead of using sudo on kate
+ENV SUDO_EDITOR kate
+RUN mkdir -pm755 /etc/apt/preferences.d && \
+    echo "Package: firefox*\n\
+Pin: release o=Ubuntu*\n\
+Pin-Priority: -1" > /etc/apt/preferences.d/firefox-ppa && \
+    add-apt-repository -y ppa:mozillateam/ppa && \
+    apt-get update && apt-get install --no-install-recommends -y \
+        kde-plasma-desktop \
+        kwin-addons \
+        kwin-x11 \
+        kdeadmin \
+        akregator \
+        ark \
+        baloo-kf5 \
+        breeze-cursor-theme \
+        breeze-icon-theme \
+        debconf-kde-helper \
+        colord-kde \
+        desktop-file-utils \
+        dragonplayer \
+        elisa \
+        filelight \
+        gwenview \
+        hspell \
+        kaddressbook \
+        kate \
+        kcalc \
+        kcharselect \
+        kdeconnect \
+        kde-spectacle \
+        kdf \
+        kget \
+        kgpg \
+        khelpcenter \
+        khotkeys \
+        kimageformat-plugins \
+        kinfocenter \
+        kio-extras \
+        kleopatra \
+        kmail \
+        kmenuedit \
+        kmix \
+        knotes \
+        kontact \
+        kopete \
+        korganizer \
+        krdc \
+        ktimer \
+        kwalletmanager \
+        okular \
+        okular-extra-backends \
+        plasma-browser-integration \
+        plasma-dataengines-addons \
+        plasma-discover \
+        plasma-runners-addons \
+        plasma-wallpapers-addons \
+        plasma-widgets-addons \
+        plasma-workspace-wallpapers \
+        qtvirtualkeyboard-plugin \
+        software-properties-qt \
+        sonnet-plugins \
+        sweeper \
+        systemsettings \
+        xdg-desktop-portal-kde \
+        kubuntu-restricted-extras \
+        kubuntu-wallpapers \
+        firefox \
+        transmission-qt && \
+    apt-get update && apt-get install -y \
+        libreoffice \
+        libreoffice-kf5 \
+        libreoffice-plasma \
+        libreoffice-style-breeze && \
+    rm -rf /var/lib/apt/lists/* && \
+    # Fix KDE startup permissions issues in containers
+    cp -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit /tmp/ && \
+    rm -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
+    cp -r /tmp/start_kdeinit /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
+    rm -f /tmp/start_kdeinit
 
 # Wine, Winetricks, Lutris, and PlayOnLinux, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
-RUN if [ "${UBUNTU_RELEASE}" = "18.04" ]; then add-apt-repository ppa:cybermax-dexter/sdl2-backport; fi && \
+RUN if [ "${UBUNTU_RELEASE}" \< "20.04" ]; then add-apt-repository -y ppa:cybermax-dexter/sdl2-backport; fi && \
     mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-archive.key "https://dl.winehq.org/wine-builds/winehq.key" && \
     curl -fsSL -o "/etc/apt/sources.list.d/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" "https://dl.winehq.org/wine-builds/ubuntu/dists/$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2)/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" && \
     apt-get update && apt-get install --install-recommends -y \
@@ -264,9 +323,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     SELKIES_VERSION=$(curl -fsSL "https://api.github.com/repos/selkies-project/selkies-gstreamer/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g') && \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.tgz" | tar -zxf - && \
     curl -O -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && pip3 install "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && rm -f "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && \
-    if [ "${UBUNTU_RELEASE}" \> "18.04" ]; then pip3 install --upgrade --no-deps --force-reinstall "https://github.com/python-xlib/python-xlib/archive/e8cf018.zip"; fi && \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-web-v${SELKIES_VERSION}.tgz" | tar -zxf - && \
-    cd /usr/local/cuda/lib64 && sudo find . -maxdepth 1 -type l -name "*libnvrtc.so.*" -exec sh -c 'ln -sf $(basename {}) libnvrtc.so' \;
+    cd /usr/local/cuda/lib64 && sudo find . -maxdepth 1 -type l -name "*libnvrtc.so.*" -exec sh -c 'ln -snf $(basename {}) libnvrtc.so' \;
 
 # Install the noVNC web interface and the latest x11vnc for fallback
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -298,11 +356,11 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     cd /tmp/x11vnc && autoreconf -fi && ./configure && make install && cd / && rm -rf /tmp/* && \
     curl -fsSL "https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz" | tar -xzf - -C /opt && \
     mv -f "/opt/noVNC-${NOVNC_VERSION}" /opt/noVNC && \
-    ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html && \
+    ln -snf /opt/noVNC/vnc.html /opt/noVNC/index.html && \
     # Use the latest Websockify source to expose noVNC
     git clone "https://github.com/novnc/websockify.git" /opt/noVNC/utils/websockify
 
-# Add custom packages below this comment, or use FROM in a new container and replace entrypoint.sh or supervisord.conf, and set ENTRYPOINT to /usr/bin/supervisord
+# Add custom packages right below this comment, or use FROM in a new container and replace entrypoint.sh or supervisord.conf, and set ENTRYPOINT to /usr/bin/supervisord
 
 # Create user with password ${PASSWD} and assign adequate groups
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -310,7 +368,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     rm -rf /var/lib/apt/lists/* && \
     groupadd -g 1000 user && \
     useradd -ms /bin/bash user -u 1000 -g 1000 && \
-    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lp,lpadmin,plugdev,scanner,sudo,tape,tty,video,voice user && \
+    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lp,lpadmin,plugdev,pulse-access,scanner,sudo,tape,tty,video,voice user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown user:user /home/user && \
     echo "user:${PASSWD}" | chpasswd && \
@@ -327,7 +385,8 @@ RUN chmod 755 /etc/supervisord.conf
 EXPOSE 8080
 
 USER user
-ENV USER=user
+ENV SHELL /bin/bash
+ENV USER user
 WORKDIR /home/user
 
 ENTRYPOINT ["/usr/bin/supervisord"]
