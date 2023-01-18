@@ -203,12 +203,11 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-ppa && \
         debconf-kde-helper \
         colord-kde \
         desktop-file-utils \
-        dragonplayer \
-        elisa \
         filelight \
         gwenview \
         hspell \
         kaddressbook \
+        kaffeine \
         kate \
         kcalc \
         kcharselect \
@@ -235,7 +234,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-ppa && \
         kwalletmanager \
         okular \
         okular-extra-backends \
-        plasma-browser-integration \
         plasma-dataengines-addons \
         plasma-discover \
         plasma-runners-addons \
@@ -243,7 +241,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-ppa && \
         plasma-widgets-addons \
         plasma-workspace-wallpapers \
         qtvirtualkeyboard-plugin \
-        software-properties-qt \
         sonnet-plugins \
         sweeper \
         systemsettings \
