@@ -170,8 +170,6 @@ RUN dpkg --add-architecture i386 && \
         xorg && \
     # Install Vulkan utilities
     if [ "${UBUNTU_RELEASE}" \< "20.04" ]; then apt-get install --no-install-recommends -y vulkan-utils; else apt-get install --no-install-recommends -y vulkan-tools; fi && \
-    # Support decoding from libva or VA-API through NVIDIA VDPAU
-    curl -fsSL -o /tmp/vdpau-va-driver.deb "https://launchpad.net/~saiarcot895/+archive/ubuntu/chromium-dev/+files/vdpau-va-driver_0.7.4-6ubuntu2~ppa1~18.04.1_amd64.deb" && apt-get install --no-install-recommends -y /tmp/vdpau-va-driver.deb && rm -rf /tmp/* && \
     rm -rf /var/lib/apt/lists/* && \
     # Configure EGL manually
     mkdir -p /usr/share/glvnd/egl_vendor.d/ && \
