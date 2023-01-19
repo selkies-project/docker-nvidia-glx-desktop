@@ -1,3 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 # Ubuntu release versions 22.04, 20.04, and 18.04 are supported
 ARG UBUNTU_RELEASE=22.04
 ARG CUDA_VERSION=11.7.1
