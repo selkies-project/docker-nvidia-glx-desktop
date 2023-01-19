@@ -249,7 +249,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-ppa && \
         kubuntu-wallpapers \
         firefox \
         transmission-qt && \
-    apt-get update && apt-get install -y \
+    apt-get install -y \
         libreoffice \
         libreoffice-kf5 \
         libreoffice-plasma \
@@ -268,12 +268,12 @@ RUN if [ "${UBUNTU_RELEASE}" \< "20.04" ]; then add-apt-repository -y ppa:cyberm
     curl -fsSL -o "/etc/apt/sources.list.d/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" "https://dl.winehq.org/wine-builds/ubuntu/dists/$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2)/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" && \
     apt-get update && apt-get install --install-recommends -y \
         winehq-${WINE_BRANCH} && \
-    apt-get update && apt-get install --no-install-recommends -y \
+    apt-get install --no-install-recommends -y \
         q4wine \
         playonlinux && \
     LUTRIS_VERSION=$(curl -fsSL "https://api.github.com/repos/lutris/lutris/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g') && \
     curl -fsSL -O "https://github.com/lutris/lutris/releases/download/v${LUTRIS_VERSION}/lutris_${LUTRIS_VERSION}_all.deb" && \
-    apt-get update && apt-get install --no-install-recommends -y ./lutris_${LUTRIS_VERSION}_all.deb && rm -f "./lutris_${LUTRIS_VERSION}_all.deb" && \
+    apt-get install --no-install-recommends -y ./lutris_${LUTRIS_VERSION}_all.deb && rm -f "./lutris_${LUTRIS_VERSION}_all.deb" && \
     rm -rf /var/lib/apt/lists/* && \
     curl -fsSL -o /usr/bin/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" && \
     chmod 755 /usr/bin/winetricks && \
