@@ -250,6 +250,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-ppa && \
         kubuntu-restricted-extras \
         kubuntu-wallpapers \
         firefox \
+        pavucontrol-qt \
         transmission-qt && \
     apt-get install --install-recommends -y \
         libreoffice \
