@@ -142,33 +142,6 @@ kubectl create secret generic turn-password --from-literal=turn-password=MY_TURN
 ```
 > NOTES: It is possible to skip the first step and directly provide the TURN password with `value:`, but this exposes the TURN password in plain text. Set `TURN_PROTOCOL` to `tcp` if you were able to only open TCP ports while creating your own coTURN Deployment/DaemonSet, or if your client network throttles or blocks the UDP protocol.
 
-## Comparison
-
-<details>
-  <summary>Open Section</summary>
-[docker-nvidia-egl-desktop](https://github.com/selkies-project/docker-nvidia-egl-desktop): It's generally recommended to use docker-nvidia-glx-desktop when possible for maximum capabilities and performance. It starts its own X server inside the container without exposure to security risks. However, docker-nvidia-egl-desktop is versatile in various environments and has less processes running, meaning less possible complications in restricted environments. It is also possible to be used in HPC clusters with Apptainer/Singularity available, and sharing a GPU with multiple containers is also possible. Unofficial support for Intel and AMD GPUs is also available.
-
-[Sunshine](https://github.com/LizardByte/Sunshine): This repository is an open-source server for NVIDIA's GameStream protocol, supporting all clients that can install [Moonlight](https://github.com/moonlight-stream). Try it if you don't need username/password authentication and you don't need to use containers. [Games on Whales](https://github.com/games-on-whales/gow) is a container implementation of Sunshine. However, many container ports have to be accessible to the internet, and because of its requirement for the `/dev/uinput` device, unsafe `privileged` access for containers are required. The [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) project, which is integrated to our container, does not require more than one port open from the container (TURN server may be required but can be deployed in a different environment with flexibility), and has almost equal performance while using only a web browser as a client.
-
-[x11docker](https://github.com/mviereck/x11docker): This has a lot of features and is very solid if you are the sole user in full control of the host. However, it starts a lot of processes in the host and is nearly impossible to contain the environment. Kubernetes is also not supported. The docker-nvidia-glx-desktop repository contains everything in the container, with the only requirement being the NVIDIA Container Toolkit with adequate `NVIDIA_DRIVER_CAPABILITIES`, meaning that the container is portable anywhere Docker/Podman or Kubernetes can be run.
-
-[Xpra](https://github.com/Xpra-org/xpra): This is a feature-complete all-in-one remote desktop application optimized for Linux, although not exactly meant for full screen workloads and its HTML5 web interface is not optimized for intensive graphics workloads. Supports various protocols and various hardware acceleration methods.
-
-[KasmVNC](https://github.com/kasmtech/KasmVNC): This almost landed as a replacement for the existing [noVNC](https://github.com/novnc/noVNC) fallback installation, as it incorporates improved functionalities. However, performance compared to [x11vnc](https://github.com/LibVNC/x11vnc) combined with [noVNC](https://github.com/novnc/noVNC) was not much better.
-
-[Parsec](https://parsec.app): Parsec is not open-source. However, it brings top-level performance on Windows or Mac hosts. Try it if you don't need to use containers. But the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) project uses the same APIs and isn't that far back in terms of performance.
-
-[CloudRetro](https://github.com/giongto35/cloud-game) and [CloudMorph](https://github.com/giongto35/cloud-morph): This uses WebRTC in a web browser, like the [selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer) project. The principles of this project are pretty similar to our project. However, hardware acceleration across various GPUs is currently not implemented. Hardware acceleration is critical to remote desktop and workload performance, and therefore you should use our repository if you need hardware acceleration.
-
-[neko](https://github.com/m1k1o/neko): Uses WebRTC in a web browser with a text chat, and it is also designed for containers (uses GStreamer too), but I had a hard time in conditions where more than one port can't be exposed or when using reverse proxies. Use this if you want good performance while requiring multiple users to be able to access the screen. However, note that you can always use conference software such as [Zoom](https://zoom.us), [Jitsi](https://meet.jit.si), or [BigBlueButton](https://bigbluebutton.org) to share your screen while using our container.
-
-[RustDesk](https://github.com/rustdesk/rustdesk): This is an open-source TeamViewer or AnyDesk. You can use this to have other people control your node if you need to.
-
-[Weylus](https://github.com/H-M-H/Weylus): This is a very interesting project, and has many technologies in common. Use this if you want to turn your tablet or smartphone to a graphic tablet for your PC.
-
-[GamingAnywhere](https://github.com/chunying/gaminganywhere): This is the father of all open-source remote desktop and game streaming protocols. However, it has been created a long time ago and thus reached its end of life.
-</details>
-
 ## Troubleshooting
 
 ### The container does not work.

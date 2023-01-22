@@ -234,6 +234,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-ppa && \
         krdc \
         ktimer \
         kwalletmanager \
+        librsvg2-common \
         okular \
         okular-extra-backends \
         plasma-dataengines-addons \
