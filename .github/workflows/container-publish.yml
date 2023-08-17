@@ -12,7 +12,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: selkies-project/nvidia-glx-desktop
 jobs:
-  build-20.04:
+  build-2004:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -42,7 +42,7 @@ jobs:
         tags: |
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:20.04
         labels: ${{ steps.meta.outputs.labels }}
-  build-22.04:
+  build-2204:
     runs-on: ubuntu-latest
     permissions:
       contents: read
