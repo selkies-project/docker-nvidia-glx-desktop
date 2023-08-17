@@ -12,36 +12,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: selkies-project/nvidia-glx-desktop
 jobs:
-  build-bionic:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Log into registry ${{ env.REGISTRY }}
-      if: github.event_name != 'pull_request'
-      uses: docker/login-action@v2
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Extract Container metadata
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-    - name: Build and push Ubuntu 18.04 Container image
-      uses: docker/build-push-action@v3
-      with:
-        build-args: |
-          UBUNTU_RELEASE=18.04
-        context: .
-        push: ${{ github.event_name != 'pull_request' }}
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:18.04
-        labels: ${{ steps.meta.outputs.labels }}
-  build-focal:
+  build-20.04:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -71,7 +42,7 @@ jobs:
         tags: |
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:20.04
         labels: ${{ steps.meta.outputs.labels }}
-  build-jammy:
+  build-22.04:
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-# Ubuntu release versions 22.04, 20.04, and 18.04 are supported
+# Ubuntu release versions 22.04, and 20.04 are supported
 ARG UBUNTU_RELEASE=22.04
 ARG CUDA_VERSION=11.7.1
 FROM nvcr.io/nvidia/cuda:${CUDA_VERSION}-runtime-ubuntu${UBUNTU_RELEASE}
@@ -131,6 +131,7 @@ RUN dpkg --add-architecture i386 && \
         va-driver-all \
         xserver-xorg-input-all \
         xserver-xorg-video-all \
+        vulkan-tools \
         mesa-vulkan-drivers \
         libvulkan-dev \
         libvulkan-dev:i386 \
@@ -168,8 +169,6 @@ RUN dpkg --add-architecture i386 && \
         libpci3 \
         libelf-dev \
         xorg && \
-    # Install Vulkan utilities
-    if [ "${UBUNTU_RELEASE}" \< "20.04" ]; then apt-get install --no-install-recommends -y vulkan-utils; else apt-get install --no-install-recommends -y vulkan-tools; fi && \
     rm -rf /var/lib/apt/lists/* && \
     # Configure EGL manually
     mkdir -p /usr/share/glvnd/egl_vendor.d/ && \
@@ -265,8 +264,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-ppa && \
 
 # Wine, Winetricks, Lutris, and PlayOnLinux, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
-RUN if [ "${UBUNTU_RELEASE}" \< "20.04" ]; then add-apt-repository -y ppa:cybermax-dexter/sdl2-backport; fi && \
-    mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-archive.key "https://dl.winehq.org/wine-builds/winehq.key" && \
+RUN mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-archive.key "https://dl.winehq.org/wine-builds/winehq.key" && \
     curl -fsSL -o "/etc/apt/sources.list.d/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" "https://dl.winehq.org/wine-builds/ubuntu/dists/$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2)/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" && \
     apt-get update && apt-get install --install-recommends -y \
         winehq-${WINE_BRANCH} && \
