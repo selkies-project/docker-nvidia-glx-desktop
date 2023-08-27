@@ -17,6 +17,8 @@ ARG NVIDIA_VISIBLE_DEVICES=all
 ARG DEBIAN_FRONTEND=noninteractive
 # All NVIDIA driver capabilities should preferably be used, check `NVIDIA_DRIVER_CAPABILITIES` inside the container if things do not work
 ENV NVIDIA_DRIVER_CAPABILITIES all
+# Disable VSYNC for NVIDIA GPUs
+ENV __GL_SYNC_TO_VBLANK 0
 # Enable AppImage execution in a container
 ENV APPIMAGE_EXTRACT_AND_RUN 1
 # System defaults that should not be changed
@@ -62,6 +64,7 @@ RUN dpkg --add-architecture i386 && \
         apt-utils \
         build-essential \
         ca-certificates \
+        ssl-cert \
         cups-filters \
         cups-common \
         cups-pdf \
@@ -123,12 +126,16 @@ RUN dpkg --add-architecture i386 && \
         libglu1:i386 \
         libsm6 \
         libsm6:i386 \
-        vainfo \
-        vdpauinfo \
         pkg-config \
         mesa-utils \
         mesa-utils-extra \
         va-driver-all \
+        i965-va-driver-shaders \
+        intel-media-va-driver-non-free \
+        vainfo \
+        vdpauinfo \
+        libmfx-tools \
+        libva2 \
         xserver-xorg-input-all \
         xserver-xorg-video-all \
         vulkan-tools \
@@ -188,14 +195,15 @@ ENV KWIN_COMPOSE N
 ENV SUDO_EDITOR kate
 RUN mkdir -pm755 /etc/apt/preferences.d && \
     echo "Package: firefox*\n\
-Pin: release o=Ubuntu*\n\
-Pin-Priority: -1" > /etc/apt/preferences.d/firefox-ppa && \
+Pin: version 1:1snap*\n\
+Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
     add-apt-repository -y ppa:mozillateam/ppa && \
     apt-get update && apt-get install --no-install-recommends -y \
         kde-plasma-desktop \
         kwin-addons \
         kwin-x11 \
         kdeadmin \
+        adwaita-icon-theme-full \
         akregator \
         ark \
         baloo-kf5 \
@@ -256,6 +264,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-ppa && \
         libreoffice \
         libreoffice-style-breeze && \
     rm -rf /var/lib/apt/lists/* && \
+    update-alternatives --set x-www-browser /usr/bin/firefox && \
     # Fix KDE startup permissions issues in containers
     cp -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit /tmp/ && \
     rm -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
@@ -281,39 +290,57 @@ RUN mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-arc
 
 # Install latest selkies-gstreamer (https://github.com/selkies-project/selkies-gstreamer) build, Python application, and web application, should be consistent with selkies-gstreamer documentation
 RUN apt-get update && apt-get install --no-install-recommends -y \
-        adwaita-icon-theme-full \
-        build-essential \
+        # GStreamer dependencies
         python3-pip \
         python3-dev \
         python3-gi \
         python3-setuptools \
         python3-wheel \
-        tzdata \
-        sudo \
         udev \
-        xclip \
-        x11-utils \
-        xdotool \
         wmctrl \
         jq \
         gdebi-core \
-        x11-xserver-utils \
-        xserver-xorg-core \
+        glib-networking \
         libopus0 \
         libgdk-pixbuf2.0-0 \
-        libsrtp2-1 \
+        libgtk2.0-bin \
+        libgl-dev \
+        libgles-dev \
+        libglvnd-dev \
+        libgudev-1.0-0 \
+        xclip \
+        x11-utils \
+        xdotool \
+        x11-xserver-utils \
+        xserver-xorg-core \
+        wayland-protocols \
+        libwayland-dev \
+        libwayland-egl-backend-dev \
+        libx11-xcb1 \
+        libxkbcommon0 \
         libxdamage1 \
         libxml2-dev \
         libwebrtc-audio-processing1 \
+        libsrtp2-1 \
         libcairo-gobject2 \
         pulseaudio \
         libpulse0 \
         libpangocairo-1.0-0 \
         libgirepository1.0-dev \
         libjpeg-dev \
+        libwebp-dev \
         libvpx-dev \
         zlib1g-dev \
-        x264 && \
+        x264 \
+        # AMD/Intel graphics driver dependencies
+        va-driver-all \
+        i965-va-driver-shaders \
+        intel-media-va-driver-non-free \
+        libmfx-tools \
+        libva2 \
+        vainfo \
+        intel-gpu-tools \
+        radeontop && \
     if [ "${UBUNTU_RELEASE}" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt; fi && \
     rm -rf /var/lib/apt/lists/* && \
     cd /opt && \
@@ -362,11 +389,12 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 # Create user with password ${PASSWD} and assign adequate groups
 RUN apt-get update && apt-get install --no-install-recommends -y \
-        sudo && \
+        sudo \
+        tzdata && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd -g 1000 user && \
     useradd -ms /bin/bash user -u 1000 -g 1000 && \
-    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lp,lpadmin,plugdev,pulse-access,scanner,sudo,tape,tty,video,voice user && \
+    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lp,lpadmin,plugdev,pulse-access,scanner,ssl-cert,sudo,tape,tty,video,voice user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown user:user /home/user && \
     echo "user:${PASSWD}" | chpasswd && \
