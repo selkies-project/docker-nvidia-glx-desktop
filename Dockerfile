@@ -73,8 +73,10 @@ RUN dpkg --add-architecture i386 && \
         wget \
         bzip2 \
         gzip \
-        p7zip-full \
         xz-utils \
+        unar \
+        rar \
+        unrar \
         zip \
         unzip \
         zstd \
@@ -89,17 +91,23 @@ RUN dpkg --add-architecture i386 && \
         nano \
         vim \
         htop \
+        ibus-data \
         fonts-dejavu-core \
         fonts-freefont-ttf \
+        fonts-hack \
+        fonts-liberation \
         fonts-noto \
         fonts-noto-cjk \
         fonts-noto-cjk-extra \
         fonts-noto-color-emoji \
         fonts-noto-hinted \
         fonts-noto-mono \
+        fonts-noto-unhinted \
         fonts-opensymbol \
         fonts-symbola \
         fonts-ubuntu \
+        lame \
+        libavcodec-extra \
         libpulse0 \
         pulseaudio \
         supervisor \
@@ -130,16 +138,21 @@ RUN dpkg --add-architecture i386 && \
         mesa-utils \
         mesa-utils-extra \
         va-driver-all \
+        va-driver-all:i386 \
         i965-va-driver-shaders \
+        i965-va-driver-shaders:i386 \
         intel-media-va-driver-non-free \
+        intel-media-va-driver-non-free:i386 \
+        libva2 \
+        libva2:i386 \
         vainfo \
         vdpauinfo \
         libmfx-tools \
-        libva2 \
         xserver-xorg-input-all \
         xserver-xorg-video-all \
         vulkan-tools \
         mesa-vulkan-drivers \
+        mesa-vulkan-drivers:i386 \
         libvulkan-dev \
         libvulkan-dev:i386 \
         libxau6 \
@@ -191,6 +204,7 @@ RUN dpkg --add-architecture i386 && \
 # Install KDE and other GUI packages
 ENV XDG_CURRENT_DESKTOP KDE
 ENV KWIN_COMPOSE N
+ENV KWIN_X11_NO_SYNC_TO_VBLANK 1
 # Use sudoedit to change protected files instead of using sudo on kate
 ENV SUDO_EDITOR kate
 RUN mkdir -pm755 /etc/apt/preferences.d && \
@@ -200,76 +214,134 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
     add-apt-repository -y ppa:mozillateam/ppa && \
     apt-get update && apt-get install --no-install-recommends -y \
         kde-plasma-desktop \
-        kwin-addons \
-        kwin-x11 \
-        kdeadmin \
         adwaita-icon-theme-full \
         akregator \
+        appmenu-gtk3-module \
         ark \
         baloo-kf5 \
         breeze-cursor-theme \
+        breeze-gtk-theme \
         breeze-icon-theme \
         debconf-kde-helper \
         colord-kde \
         desktop-file-utils \
+        dolphin \
+        dolphin-plugins \
         filelight \
+        frameworkintegration \
         gwenview \
+        haveged \
         hspell \
+        im-config \
         kaddressbook \
-        kaffeine \
         kate \
         kcalc \
         kcharselect \
+        kdeadmin \
+        kde-cli-tools \
+        kde-config-cddb \
+        kde-config-gtk-style \
+        kde-config-gtk-style-preview \
+        kde-config-screenlocker \
+        kde-config-sddm \
         kdeconnect \
+        kdegraphics-thumbnailers \
+        kdenetwork-filesharing \
         kde-spectacle \
+        kde-style-oxygen-qt5 \
         kdf \
+        kdialog \
+        kgamma5 \
         kget \
         kgpg \
         khelpcenter \
         khotkeys \
         kimageformat-plugins \
         kinfocenter \
+        kio \
         kio-extras \
         kleopatra \
+        kmag \
         kmail \
         kmenuedit \
         kmix \
+        kmousetool \
+        kmouth \
         knotes \
         kontact \
         kopete \
         korganizer \
         krdc \
+        krfb \
+        kscreen \
+        ksshaskpass \
+        ksysguard \
+        ksystemlog \
         ktimer \
+        kubuntu-driver-manager \
+        kubuntu-settings-desktop \
+        kubuntu-wallpapers \
         kwalletmanager \
-        librsvg2-common \
+        kwin-addons \
+        kwin-x11 \
+        kwrited \
+        libpam-kwallet5 \
+        muon \
         okular \
         okular-extra-backends \
+        oxygen-sounds \
+        plasma-browser-integration \
+        plasma-calendar-addons \
         plasma-dataengines-addons \
         plasma-discover \
+        plasma-integration \
         plasma-runners-addons \
+        plasma-systemmonitor \
         plasma-wallpapers-addons \
         plasma-widgets-addons \
         plasma-workspace-wallpapers \
+        policykit-desktop-privileges \
+        polkit-kde-agent-1 \
+        powerdevil \
+        qapt-deb-installer \
+        qml-module-org-kde-qqc2desktopstyle \
+        qml-module-qtgraphicaleffects \
+        qt5-image-formats-plugins \
         qtvirtualkeyboard-plugin \
+        sddm \
+        sddm-theme-breeze \
+        software-properties-qt \
         sonnet-plugins \
         sweeper \
         systemsettings \
+        user-manager \
+        vlc \
+        vlc-l10n \
+        vlc-plugin-notify \
+        vlc-plugin-samba \
+        vlc-plugin-skins2 \
+        vlc-plugin-video-splitter \
+        vlc-plugin-visualization \
         xdg-desktop-portal-kde \
-        kubuntu-restricted-extras \
-        kubuntu-wallpapers \
+        xdg-user-dirs \
         firefox \
         pavucontrol-qt \
         transmission-qt && \
     apt-get install --install-recommends -y \
         libreoffice \
+        libreoffice-kf5 \
+        libreoffice-plasma \
         libreoffice-style-breeze && \
     rm -rf /var/lib/apt/lists/* && \
-    update-alternatives --set x-www-browser /usr/bin/firefox && \
     # Fix KDE startup permissions issues in containers
     cp -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit /tmp/ && \
     rm -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
     cp -r /tmp/start_kdeinit /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
-    rm -f /tmp/start_kdeinit
+    rm -f /tmp/start_kdeinit && \
+    # Disable KDE lock screen
+    kwriteconfig5 --file /usr/share/kubuntu-default-settings/kf5-settings/kscreenlockerrc --group Daemon --key Autolock false && \
+    # Ensure Firefox is the default web browser
+    update-alternatives --set x-www-browser /usr/bin/firefox
 
 # Wine, Winetricks, Lutris, and PlayOnLinux, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
