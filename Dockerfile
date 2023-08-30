@@ -275,10 +275,8 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         krfb \
         kscreen \
         ksshaskpass \
-        ksysguard \
         ksystemlog \
         ktimer \
-        kubuntu-driver-manager \
         kubuntu-settings-desktop \
         kubuntu-wallpapers \
         kwalletmanager \
@@ -296,7 +294,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         plasma-discover \
         plasma-integration \
         plasma-runners-addons \
-        plasma-systemmonitor \
         plasma-wallpapers-addons \
         plasma-widgets-addons \
         plasma-workspace-wallpapers \
@@ -314,7 +311,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         sonnet-plugins \
         sweeper \
         systemsettings \
-        user-manager \
+        ubuntu-drivers-common \
         vlc \
         vlc-l10n \
         vlc-plugin-notify \
