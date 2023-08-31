@@ -232,7 +232,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         breeze-gtk-theme \
         breeze-icon-theme \
         debconf-kde-helper \
-        colord-kde \
         desktop-file-utils \
         dolphin \
         dolphin-plugins \
@@ -249,7 +248,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         kcharselect \
         kdeadmin \
         kde-cli-tools \
-        kde-config-cddb \
         kde-config-gtk-style \
         kde-config-gtk-style-preview \
         kde-config-screenlocker \
@@ -259,7 +257,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         kde-spectacle \
         kdf \
         kdialog \
-        kgamma5 \
         kget \
         kgpg \
         khelpcenter \
@@ -304,9 +301,9 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         plasma-widgets-addons \
         policykit-desktop-privileges \
         polkit-kde-agent-1 \
-        powerdevil \
         qapt-deb-installer \
         qml-module-org-kde-runnermodel \
+        qml-module-org-kde-qqc2desktopstyle \
         qml-module-qtgraphicaleffects \
         qt5-image-formats-plugins \
         qtvirtualkeyboard-plugin \
@@ -338,8 +335,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
     rm -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
     cp -r /tmp/start_kdeinit /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
     rm -f /tmp/start_kdeinit && \
-    # Disable KDE lock screen
-    kwriteconfig5 --file /usr/share/kubuntu-default-settings/kf5-settings/kscreenlockerrc --group Daemon --key Autolock false && \
     # Ensure Firefox is the default web browser
     update-alternatives --set x-www-browser /usr/bin/firefox
 
