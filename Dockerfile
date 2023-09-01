@@ -43,7 +43,7 @@ ENV ENABLE_AUDIO true
 ENV ENABLE_BASIC_AUTH true
 
 # Set versions for components that should be manually checked before upgrading, other component versions are automatically determined by fetching the version online
-ARG NOVNC_VERSION=1.3.0
+ARG NOVNC_VERSION=1.4.0
 
 # Install locales to prevent X11 errors
 RUN apt-get clean && \
@@ -69,6 +69,7 @@ RUN dpkg --add-architecture i386 && \
         cups-common \
         cups-filters \
         cups-pdf \
+        print-manager \
         curl \
         file \
         wget \
@@ -92,6 +93,7 @@ RUN dpkg --add-architecture i386 && \
         nano \
         vim \
         htop \
+        ibus \
         ibus-data \
         fakeroot \
         fonts-dejavu-core \
@@ -149,15 +151,18 @@ RUN dpkg --add-architecture i386 && \
         i965-va-driver-shaders:i386 \
         intel-media-va-driver-non-free \
         intel-media-va-driver-non-free:i386 \
+        libmfx-tools \
         libva2 \
         libva2:i386 \
         vainfo \
         vdpau-driver-all \
         vdpau-driver-all:i386 \
         vdpauinfo \
-        libmfx-tools \
         xserver-xorg-input-all \
+        xserver-xorg-input-wacom \
         xserver-xorg-video-all \
+        xserver-xorg-video-intel \
+        xserver-xorg-video-qxl \
         vulkan-tools \
         mesa-vulkan-drivers \
         mesa-vulkan-drivers:i386 \
@@ -224,16 +229,21 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
     add-apt-repository -y ppa:mozillateam/ppa && \
     apt-get update && apt-get install --no-install-recommends -y \
         kde-plasma-desktop \
+        accountwizard \
         adwaita-icon-theme-full \
+        akonadi-backend-mysql \
+        akonadi-server \
         akregator \
         appmenu-gtk3-module \
         ark \
+        aspell-en \
         baloo-kf5 \
+        breeze \
         breeze-cursor-theme \
         breeze-gtk-theme \
         breeze-icon-theme \
-        debconf-kde-helper \
         colord-kde \
+        debconf-kde-helper \
         desktop-file-utils \
         dolphin \
         dolphin-plugins \
@@ -241,10 +251,13 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         frameworkintegration \
         gwenview \
         haveged \
-        hspell \
+        hunspell \
         im-config \
+        kaccounts-integration \
+        kaccounts-providers \
         kactivities-bin \
         kaddressbook \
+        kamera \
         kate \
         kcalc \
         kcharselect \
@@ -252,7 +265,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         kde-config-cddb \
         kde-config-gtk-style \
         kde-config-gtk-style-preview \
-        kde-config-screenlocker \
         kdeconnect \
         kdegraphics-thumbnailers \
         kdenetwork-filesharing \
@@ -263,7 +275,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         kgamma5 \
         kgpg \
         khelpcenter \
-        khotkeys \
         kimageformat-plugins \
         kinfocenter \
         kio \
@@ -283,22 +294,23 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         krfb \
         ksshaskpass \
         ktimer \
-        kubuntu-settings-desktop \
         kwalletmanager \
+        libpam-kwallet5 \
         kwin-addons \
         kwin-x11 \
         kwrited \
         libgdk-pixbuf2.0-bin \
-        libpam-kwallet5 \
         muon \
         okular \
         okular-extra-backends \
+        partitionmanager \
         plasma-browser-integration \
         plasma-calendar-addons \
         plasma-dataengines-addons \
         plasma-discover \
         plasma-integration \
         plasma-runners-addons \
+        plasma-vault \
         plasma-widgets-addons \
         policykit-desktop-privileges \
         polkit-kde-agent-1 \
@@ -307,7 +319,9 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         qml-module-org-kde-runnermodel \
         qml-module-org-kde-qqc2desktopstyle \
         qml-module-qtgraphicaleffects \
+        qml-module-qtquick-xmllistmodel \
         qt5-image-formats-plugins \
+        qtspeech5-flite-plugin \
         qtvirtualkeyboard-plugin \
         software-properties-qt \
         sonnet-plugins \
