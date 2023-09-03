@@ -228,34 +228,26 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
     add-apt-repository -y ppa:mozillateam/ppa && \
     apt-get update && apt-get install --no-install-recommends -y \
         kde-plasma-desktop \
-        accountwizard \
         adwaita-icon-theme-full \
-        akonadi-backend-mysql \
-        akonadi-server \
-        akregator \
         appmenu-gtk3-module \
         ark \
+        aspell \
         aspell-en \
-        baloo-kf5 \
         breeze \
         breeze-cursor-theme \
         breeze-gtk-theme \
         breeze-icon-theme \
-        colord-kde \
         debconf-kde-helper \
         desktop-file-utils \
         dolphin \
         dolphin-plugins \
+        dbus-x11 \
         filelight \
         frameworkintegration \
         gwenview \
         haveged \
         hunspell \
         im-config \
-        kaccounts-integration \
-        kaccounts-providers \
-        kactivities-bin \
-        kaddressbook \
         kate \
         kcalc \
         kcharselect \
@@ -270,44 +262,29 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         kdf \
         kdialog \
         kget \
-        kgpg \
-        khelpcenter \
         kimageformat-plugins \
         kinfocenter \
         kio \
         kio-extras \
-        kleopatra \
         kmag \
-        kmail \
         kmenuedit \
         kmix \
         kmousetool \
         kmouth \
-        knotes \
-        kontact \
-        kopete \
-        korganizer \
-        krdc \
-        krfb \
         ksshaskpass \
         ktimer \
-        kwalletmanager \
-        libpam-kwallet5 \
         kwin-addons \
         kwin-x11 \
-        kwrited \
         libgdk-pixbuf2.0-bin \
         muon \
         okular \
         okular-extra-backends \
         partitionmanager \
         plasma-browser-integration \
-        plasma-calendar-addons \
         plasma-dataengines-addons \
         plasma-discover \
         plasma-integration \
         plasma-runners-addons \
-        plasma-vault \
         plasma-widgets-addons \
         policykit-desktop-privileges \
         polkit-kde-agent-1 \
@@ -368,7 +345,7 @@ RUN mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-arc
     chmod 755 /usr/bin/winetricks && \
     curl -fsSL -o /usr/share/bash-completion/completions/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks.bash-completion"
 
-# Install latest selkies-gstreamer (https://github.com/selkies-project/selkies-gstreamer) build, Python application, and web application, should be consistent with selkies-gstreamer documentation
+# Install latest Selkies-GStreamer (https://github.com/selkies-project/selkies-gstreamer) build, Python application, and web application, should be consistent with selkies-gstreamer documentation
 RUN apt-get update && apt-get install --no-install-recommends -y \
         # GStreamer dependencies
         python3-pip \
