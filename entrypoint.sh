@@ -127,11 +127,8 @@ if [ "${NOVNC_ENABLE,,}" = "true" ]; then
   /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 8080 --heartbeat 10 &
 fi
 
-# Choose startplasma-x11 or startkde for KDE startup
-if [ -x "$(command -v startplasma-x11)" ]; then export KDE_START="startplasma-x11"; else export KDE_START="startkde"; fi
-
 # Start KDE desktop environment
-$KDE_START &
+/usr/bin/dbus-launch /usr/bin/startplasma-x11 &
 
 # Add custom processes right below this line, or within `supervisord.conf` to perform service management similar to systemd
 

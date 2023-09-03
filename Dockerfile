@@ -256,7 +256,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         kaccounts-providers \
         kactivities-bin \
         kaddressbook \
-        kamera \
         kate \
         kcalc \
         kcharselect \
@@ -271,7 +270,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         kdf \
         kdialog \
         kget \
-        kgamma5 \
         kgpg \
         khelpcenter \
         kimageformat-plugins \
@@ -313,7 +311,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         plasma-widgets-addons \
         policykit-desktop-privileges \
         polkit-kde-agent-1 \
-        powerdevil \
         print-manager \
         qapt-deb-installer \
         qml-module-org-kde-runnermodel \
