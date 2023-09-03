@@ -69,7 +69,6 @@ RUN dpkg --add-architecture i386 && \
         cups-common \
         cups-filters \
         cups-pdf \
-        print-manager \
         curl \
         file \
         wget \
@@ -315,6 +314,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         policykit-desktop-privileges \
         polkit-kde-agent-1 \
         powerdevil \
+        print-manager \
         qapt-deb-installer \
         qml-module-org-kde-runnermodel \
         qml-module-org-kde-qqc2desktopstyle \
