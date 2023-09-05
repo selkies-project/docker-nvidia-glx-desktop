@@ -244,6 +244,10 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         dolphin-plugins \
         dbus-x11 \
         fcitx \
+        fcitx-module-dbus \
+        fcitx-module-kimpanel \
+        fcitx-module-lua \
+        fcitx-module-x11 \
         fcitx-tools \
         filelight \
         frameworkintegration \
