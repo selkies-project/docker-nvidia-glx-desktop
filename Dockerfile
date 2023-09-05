@@ -343,6 +343,16 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
     rm -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
     cp -r /tmp/start_kdeinit /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
     rm -f /tmp/start_kdeinit && \
+    # KDE disable screen lock, double-click to open instead of single-click
+    echo "[Daemon]\n\
+Autolock=false\n\
+LockOnResume=false" > /etc/xdg/kscreenlockerrc && \
+    echo "[KDE]\n\
+SingleClick=false\n\
+\n\
+[KDE Action Restrictions]\n\
+action/lock_screen=false\n\
+logout=false" > /etc/xdg/kdeglobals && \
     # Ensure Firefox is the default web browser
     update-alternatives --set x-www-browser /usr/bin/firefox
 
