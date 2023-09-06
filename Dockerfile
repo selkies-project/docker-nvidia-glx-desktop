@@ -385,8 +385,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         wmctrl \
         jq \
         gdebi-core \
-        glib-networking \
-        libopus0 \
         libgdk-pixbuf2.0-0 \
         libgtk2.0-bin \
         libgl-dev \
@@ -400,18 +398,22 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         xserver-xorg-core \
         wayland-protocols \
         libwayland-dev \
-        libwayland-egl-backend-dev \
+        libwayland-egl1 \
         libx11-xcb1 \
         libxkbcommon0 \
         libxdamage1 \
-        libxml2-dev \
-        libwebrtc-audio-processing1 \
+        libsoup2.4-1 \
+        libsoup-gnome2.4-1 \
         libsrtp2-1 \
-        libcairo-gobject2 \
+        lame \
+        libopus0 \
+        libwebrtc-audio-processing1 \
         pulseaudio \
         libpulse0 \
+        libcairo-gobject2 \
         libpangocairo-1.0-0 \
-        libgirepository1.0-dev \
+        libgirepository1.0-1 \
+        libopenjp2-7 \
         libjpeg-dev \
         libwebp-dev \
         libvpx-dev \

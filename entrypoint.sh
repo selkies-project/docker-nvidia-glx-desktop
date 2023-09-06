@@ -111,7 +111,7 @@ echo -e "Section \"ServerFlags\"\n    Option \"AutoAddGPU\" \"false\"\nEndSectio
 # Default display is :0 across the container
 export DISPLAY=":0"
 # Run Xorg server with required extensions
-Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DPI}" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" "${DISPLAY}" &
+/usr/bin/Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DPI}" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" "${DISPLAY}" &
 
 # Wait for X11 to start
 echo "Waiting for X socket"
@@ -121,12 +121,15 @@ echo "X socket is ready"
 # Run the x11vnc + noVNC fallback web interface if enabled
 if [ "${NOVNC_ENABLE,,}" = "true" ]; then
   if [ -n "$NOVNC_VIEWPASS" ]; then export NOVNC_VIEWONLY="-viewpasswd ${NOVNC_VIEWPASS}"; else unset NOVNC_VIEWONLY; fi
-  x11vnc -display "${DISPLAY}" -passwd "${BASIC_AUTH_PASSWORD:-$PASSWD}" -shared -forever -repeat -xkb -snapfb -threads -xrandr "resize" -rfbport 5900 ${NOVNC_VIEWONLY} &
+  /usr/local/bin/x11vnc -display "${DISPLAY}" -passwd "${BASIC_AUTH_PASSWORD:-$PASSWD}" -shared -forever -repeat -xkb -snapfb -threads -xrandr "resize" -rfbport 5900 ${NOVNC_VIEWONLY} &
   /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 8080 --heartbeat 10 &
 fi
 
 # Start KDE desktop environment
 /usr/bin/dbus-launch /usr/bin/startplasma-x11 &
+
+# Start Fcitx input method framework
+/usr/bin/fcitx &
 
 # Add custom processes right below this line, or within `supervisord.conf` to perform service management similar to systemd
 
