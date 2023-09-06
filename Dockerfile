@@ -412,7 +412,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libpulse0 \
         libcairo-gobject2 \
         libpangocairo-1.0-0 \
-        libgirepository1.0-1 \
+        libgirepository-1.0-1 \
         libopenjp2-7 \
         libjpeg-dev \
         libwebp-dev \
