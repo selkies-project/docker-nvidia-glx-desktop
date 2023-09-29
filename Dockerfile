@@ -353,7 +353,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         libreoffice-style-breeze && \
     rm -rf /var/lib/apt/lists/* && \
     # Ensure Firefox is the default web browser
-    update-alternatives --set x-www-browser /usr/bin/firefox
+    update-alternatives --set x-www-browser /usr/bin/firefox && \
     # Fix KDE startup permissions issues in containers
     cp -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit /tmp/ && \
     rm -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
@@ -368,7 +368,7 @@ SingleClick=false\n\
 \n\
 [KDE Action Restrictions]\n\
 action/lock_screen=false\n\
-logout=false" > /etc/xdg/kdeglobals && \
+logout=false" > /etc/xdg/kdeglobals
 
 # Wine, Winetricks, Lutris, and PlayOnLinux, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
