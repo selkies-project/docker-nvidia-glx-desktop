@@ -9,8 +9,13 @@ source /opt/gstreamer/gst-env
 # Add CUDA library path
 export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 
-# Default display is :0 across this setup
-export DISPLAY=":0"
+# Set default display
+export DISPLAY="${DISPLAY:-:0}"
+
+# Configure joystick interposer
+sudo mkdir -pm755 /dev/input
+sudo touch /dev/input/{js0,js1,js2,js3}
+
 # Show debug logs for GStreamer
 export GST_DEBUG="${GST_DEBUG:-*:2}"
 # Set password for basic authentication

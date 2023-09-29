@@ -19,13 +19,17 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_DRIVER_CAPABILITIES all
 # Disable VSYNC for NVIDIA GPUs
 ENV __GL_SYNC_TO_VBLANK 0
+# Expose CUDA libraries
+ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 # Enable AppImage execution in a container
 ENV APPIMAGE_EXTRACT_AND_RUN 1
+# Add configuration for Selkies-GStreamer joystick interposer
+ENV LD_PRELOAD /usr/local/lib/selkies-js-interposer/joystick_interposer.so${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+ENV SDL_JOYSTICK_DEVICE /dev/input/js0
 # System defaults that should not be changed
 ENV DISPLAY :0
 ENV XDG_RUNTIME_DIR /tmp/runtime-user
 ENV PULSE_SERVER unix:/run/pulse/native
-ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
 # Default environment variables (password is "mypasswd")
 ENV TZ UTC
@@ -348,6 +352,8 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         libreoffice-plasma \
         libreoffice-style-breeze && \
     rm -rf /var/lib/apt/lists/* && \
+    # Ensure Firefox is the default web browser
+    update-alternatives --set x-www-browser /usr/bin/firefox
     # Fix KDE startup permissions issues in containers
     cp -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit /tmp/ && \
     rm -f /usr/lib/x86_64-linux-gnu/libexec/kf5/start_kdeinit && \
@@ -363,8 +369,6 @@ SingleClick=false\n\
 [KDE Action Restrictions]\n\
 action/lock_screen=false\n\
 logout=false" > /etc/xdg/kdeglobals && \
-    # Ensure Firefox is the default web browser
-    update-alternatives --set x-www-browser /usr/bin/firefox
 
 # Wine, Winetricks, Lutris, and PlayOnLinux, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
@@ -446,6 +450,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.tgz" | tar -zxf - && \
     curl -O -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && pip3 install "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && rm -f "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && \
     curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-web-v${SELKIES_VERSION}.tgz" | tar -zxf - && \
+    curl -O -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-js-interposer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.deb" && apt-get update && apt-get install --no-install-recommends -y "./selkies-js-interposer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.deb" && rm -f "selkies-js-interposer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.deb" && rm -rf /var/lib/apt/lists/* && \
     cd /usr/local/cuda/lib64 && sudo find . -maxdepth 1 -type l -name "*libnvrtc.so.*" -exec sh -c 'ln -snf $(basename {}) libnvrtc.so' \;
 
 # Install the noVNC web interface and the latest x11vnc for fallback
