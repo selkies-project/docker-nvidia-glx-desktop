@@ -150,7 +150,6 @@ RUN dpkg --add-architecture i386 && \
         i965-va-driver-shaders:i386 \
         intel-media-va-driver-non-free \
         intel-media-va-driver-non-free:i386 \
-        libmfx-tools \
         libva2 \
         libva2:i386 \
         vainfo \
@@ -227,7 +226,11 @@ RUN mkdir -pm755 /etc/apt/preferences.d && \
     echo "Package: firefox*\n\
 Pin: version 1:1snap*\n\
 Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
-    add-apt-repository -y ppa:mozillateam/ppa && \
+    # Add Mozilla Firefox PPA
+    mkdir -pm755 /etc/apt/trusted.gpg.d && \
+    curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x0AB215679C571D1C8325275B9BDB3D89CE49EC21" | gpg --dearmor -o /etc/apt/trusted.gpg.d/mozillateam-ubuntu-ppa.gpg && \
+    mkdir -pm755 /etc/apt/sources.list.d && \
+    echo "deb https://ppa.launchpadcontent.net/mozillateam/ppa/ubuntu $(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2) main" > "/etc/apt/sources.list.d/mozillateam-ubuntu-ppa-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2).list" && \
     apt-get update && apt-get install --no-install-recommends -y \
         kde-plasma-desktop \
         adwaita-icon-theme-full \
@@ -370,7 +373,7 @@ logout=false" > /etc/xdg/kdeglobals
 # Wine, Winetricks, Lutris, and PlayOnLinux, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
 RUN mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-archive.key "https://dl.winehq.org/wine-builds/winehq.key" && \
-    curl -fsSL -o "/etc/apt/sources.list.d/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" "https://dl.winehq.org/wine-builds/ubuntu/dists/$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2)/winehq-$(grep VERSION_CODENAME= /etc/os-release | cut -d= -f2).sources" && \
+    curl -fsSL -o "/etc/apt/sources.list.d/winehq-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2).sources" "https://dl.winehq.org/wine-builds/ubuntu/dists/$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2)/winehq-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2).sources" && \
     apt-get update && apt-get install --install-recommends -y \
         winehq-${WINE_BRANCH} && \
     apt-get install --no-install-recommends -y \
@@ -434,7 +437,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         va-driver-all \
         i965-va-driver-shaders \
         intel-media-va-driver-non-free \
-        libmfx-tools \
         libva2 \
         vainfo \
         intel-gpu-tools \

@@ -25,6 +25,8 @@ export LD_LIBRARY_PATH="/usr/lib/libreoffice/program:${LD_LIBRARY_PATH}"
 
 # This symbolic link enables running Xorg inside a container with `-sharevts`
 sudo ln -snf /dev/ptmx /dev/tty7
+# Start DBus without systemd
+sudo /etc/init.d/dbus start
 # Configure environment for selkies-gstreamer utilities
 source /opt/gstreamer/gst-env
 
@@ -126,7 +128,7 @@ if [ "${NOVNC_ENABLE,,}" = "true" ]; then
 fi
 
 # Start KDE desktop environment
-/usr/bin/dbus-launch /usr/bin/startplasma-x11 &
+/usr/bin/startplasma-x11 &
 
 # Start Fcitx input method framework
 /usr/bin/fcitx &
