@@ -63,8 +63,6 @@ spec:
           value: "nvh264enc"
         - name: WEBRTC_ENABLE_RESIZE
           value: "false"
-        - name: ENABLE_AUDIO
-          value: "true"
         - name: ENABLE_BASIC_AUTH
           value: "true"
         # Defaults to `PASSWD` if unspecified, choose either `value:` or `secretKeyRef:` but not both at the same time
