@@ -13,6 +13,7 @@ env:
   IMAGE_NAME: selkies-project/nvidia-glx-desktop
 jobs:
   build:
+    name: Build and push Ubuntu ${{ matrix.os_version }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,9 +22,8 @@ jobs:
       matrix:
         include:
         - os_version: "20.04"
-          latest_version: false
         - os_version: "22.04"
-          latest_version: true
+          latest_tag: true
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -51,5 +51,5 @@ jobs:
         tags: |
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.os_version }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.os_version }}-${{ env.COMMIT_TIME_GIT }}
-          ${{ matrix.latest_version == 'true' && format('{0}/{1}:latest', env.REGISTRY, env.IMAGE_NAME) || '' }}
+          ${{ matrix.latest_tag && format('{0}/{1}:latest', env.REGISTRY, env.IMAGE_NAME) || '' }}
         labels: ${{ steps.meta.outputs.labels }}
