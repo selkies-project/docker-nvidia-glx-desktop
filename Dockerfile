@@ -4,75 +4,48 @@
 
 # Ubuntu release versions 22.04, and 20.04 are supported
 ARG UBUNTU_RELEASE=22.04
-ARG CUDA_VERSION=11.7.1
-FROM nvcr.io/nvidia/cuda:${CUDA_VERSION}-runtime-ubuntu${UBUNTU_RELEASE}
+FROM ubuntu:${UBUNTU_RELEASE}
 
 LABEL maintainer "https://github.com/ehfd,https://github.com/danisla"
 
 ARG UBUNTU_RELEASE
-ARG CUDA_VERSION
-# Make all NVIDIA GPUs visible by default
-ARG NVIDIA_VISIBLE_DEVICES=all
 # Use noninteractive mode to skip confirmation when installing packages
 ARG DEBIAN_FRONTEND=noninteractive
-# All NVIDIA driver capabilities should preferably be used, check `NVIDIA_DRIVER_CAPABILITIES` inside the container if things do not work
-ENV NVIDIA_DRIVER_CAPABILITIES all
-# Disable VSYNC for NVIDIA GPUs
-ENV __GL_SYNC_TO_VBLANK 0
-# Expose CUDA libraries
-ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-# Enable AppImage execution in a container
-ENV APPIMAGE_EXTRACT_AND_RUN 1
 # System defaults that should not be changed
 ENV DISPLAY :0
 ENV XDG_RUNTIME_DIR /tmp/runtime-user
 ENV PULSE_SERVER unix:/run/pulse/native
 
-# Default environment variables (password is "mypasswd")
-ENV TZ UTC
-ENV SIZEW 1920
-ENV SIZEH 1080
-ENV REFRESH 60
-ENV DPI 96
-ENV CDEPTH 24
-ENV VIDEO_PORT DFP
-ENV PASSWD mypasswd
-ENV NOVNC_ENABLE false
-ENV WEBRTC_ENCODER nvh264enc
-ENV WEBRTC_ENABLE_RESIZE false
-ENV ENABLE_BASIC_AUTH true
-
-# Set versions for components that should be manually checked before upgrading, other component versions are automatically determined by fetching the version online
-ARG NOVNC_VERSION=1.4.0
-
-# Install locales to prevent X11 errors
-RUN apt-get clean && \
-    apt-get update && apt-get install --no-install-recommends -y locales && \
-    rm -rf /var/lib/apt/lists/* && \
-    locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-
-# Install Xorg and other important libraries or packages
-RUN dpkg --add-architecture i386 && \
-    apt-get update && apt-get install --no-install-recommends -y \
-        software-properties-common \
-        alsa-base \
-        alsa-utils \
+# Install fundamental packages
+RUN apt-get clean && apt-get update && apt-get upgrade -y && apt-get install --no-install-recommends -y \
         apt-transport-https \
         apt-utils \
         build-essential \
         ca-certificates \
-        ssl-cert \
+        curl \
+        gnupg \
+        locales \
+        make \
+        software-properties-common \
+        wget && \
+    rm -rf /var/lib/apt/lists/* && \
+    locale-gen en_US.UTF-8
+# Set locales
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+# Install operating system libraries or packages
+RUN dpkg --add-architecture i386 && \
+    apt-get update && apt-get install --no-install-recommends -y \
+        alsa-base \
+        alsa-utils \
         cups-browsed \
         cups-bsd \
         cups-common \
         cups-filters \
         cups-pdf \
-        curl \
         file \
-        wget \
         bzip2 \
         gzip \
         xz-utils \
@@ -85,10 +58,10 @@ RUN dpkg --add-architecture i386 && \
         gcc \
         git \
         jq \
-        make \
         python3 \
         python3-cups \
         python3-numpy \
+        ssl-cert \
         mlocate \
         nano \
         vim \
@@ -117,30 +90,8 @@ RUN dpkg --add-architecture i386 && \
         pulseaudio \
         supervisor \
         net-tools \
-        libglvnd-dev \
-        libglvnd-dev:i386 \
-        libgl1-mesa-dev \
-        libgl1-mesa-dev:i386 \
-        libegl1-mesa-dev \
-        libegl1-mesa-dev:i386 \
-        libgles2-mesa-dev \
-        libgles2-mesa-dev:i386 \
-        libglvnd0 \
-        libglvnd0:i386 \
-        libgl1 \
-        libgl1:i386 \
-        libglx0 \
-        libglx0:i386 \
-        libegl1 \
-        libegl1:i386 \
-        libgles2 \
-        libgles2:i386 \
-        libglu1 \
-        libglu1:i386 \
-        libsm6 \
-        libsm6:i386 \
-        pkg-config \
         packagekit-tools \
+        pkg-config \
         mesa-utils \
         mesa-utils-extra \
         va-driver-all \
@@ -155,16 +106,36 @@ RUN dpkg --add-architecture i386 && \
         vdpau-driver-all \
         vdpau-driver-all:i386 \
         vdpauinfo \
+        mesa-vulkan-drivers \
+        mesa-vulkan-drivers:i386 \
+        libvulkan-dev \
+        libvulkan-dev:i386 \
+        vulkan-tools \
+        ocl-icd-libopencl1 \
+        clinfo \
+        dbus-user-session \
+        dbus-x11 \
+        libdbus-c++-1-0v5 \
+        xkb-data \
+        xauth \
+        xbitmaps \
+        xdg-user-dirs \
+        xdg-utils \
+        xfonts-base \
+        xfonts-scalable \
+        xinit \
+        xsettingsd \
+        libxrandr-dev \
+        x11-xkb-utils \
+        x11-xserver-utils \
+        x11-utils \
+        x11-apps \
         xserver-xorg-input-all \
         xserver-xorg-input-wacom \
         xserver-xorg-video-all \
         xserver-xorg-video-intel \
         xserver-xorg-video-qxl \
-        vulkan-tools \
-        mesa-vulkan-drivers \
-        mesa-vulkan-drivers:i386 \
-        libvulkan-dev \
-        libvulkan-dev:i386 \
+        # Install OpenGL libraries
         libxau6 \
         libxau6:i386 \
         libxdmcp6 \
@@ -179,41 +150,82 @@ RUN dpkg --add-architecture i386 && \
         libxv1:i386 \
         libxtst6 \
         libxtst6:i386 \
-        xdg-user-dirs \
-        xdg-utils \
-        dbus-user-session \
-        dbus-x11 \
-        libdbus-c++-1-0v5 \
-        xkb-data \
-        x11-xkb-utils \
-        x11-xserver-utils \
-        x11-utils \
-        x11-apps \
-        xauth \
-        xbitmaps \
-        xfonts-base \
-        xfonts-scalable \
-        xinit \
-        xsettingsd \
-        libxrandr-dev \
-        # Install essential Xorg and NVIDIA packages, packages above this line should be the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
-        kmod \
-        libc6-dev \
-        libc6:i386 \
-        libpci3 \
-        libelf-dev \
-        xorg && \
+        libglvnd0 \
+        libglvnd0:i386 \
+        libgl1 \
+        libgl1:i386 \
+        libglx0 \
+        libglx0:i386 \
+        libegl1 \
+        libegl1:i386 \
+        libgles2 \
+        libgles2:i386 \
+        libglu1 \
+        libglu1:i386 \
+        libsm6 \
+        libsm6:i386 && \
     rm -rf /var/lib/apt/lists/* && \
+    echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf && \
+    # Configure OpenCL manually
+    mkdir -pm755 /etc/OpenCL/vendors && echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd && \
+    # Configure Vulkan manually
+    VULKAN_API_VERSION=$(dpkg -s libvulkan1 | grep -oP 'Version: [0-9|\.]+' | grep -oP '[0-9]+(\.[0-9]+)(\.[0-9]+)') && \
+    mkdir -pm755 /etc/vulkan/icd.d/ && echo "{\n\
+    \"file_format_version\" : \"1.0.0\",\n\
+    \"ICD\": {\n\
+        \"library_path\": \"libGLX_nvidia.so.0\",\n\
+        \"api_version\" : \"${VULKAN_API_VERSION}\"\n\
+    }\n\
+}" > /etc/vulkan/icd.d/nvidia_icd.json && \
     # Configure EGL manually
-    mkdir -p /usr/share/glvnd/egl_vendor.d/ && \
-    echo "{\n\
+    mkdir -pm755 /usr/share/glvnd/egl_vendor.d/ && echo "{\n\
     \"file_format_version\" : \"1.0.0\",\n\
     \"ICD\": {\n\
         \"library_path\": \"libEGL_nvidia.so.0\"\n\
     }\n\
 }" > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+# Expose NVIDIA libraries and paths
+ENV PATH /usr/local/nvidia/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+# Make all NVIDIA GPUs visible by default
+ENV NVIDIA_VISIBLE_DEVICES all
+# All NVIDIA driver capabilities should preferably be used, check `NVIDIA_DRIVER_CAPABILITIES` inside the container if things do not work
+ENV NVIDIA_DRIVER_CAPABILITIES all
+# Disable VSYNC for NVIDIA GPUs
+ENV __GL_SYNC_TO_VBLANK 0
 
-# Anything below this line should be always kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
+# Anything above this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
+
+# Default environment variables (password is "mypasswd")
+ENV TZ UTC
+ENV SIZEW 1920
+ENV SIZEH 1080
+ENV REFRESH 60
+ENV DPI 96
+ENV CDEPTH 24
+ENV VIDEO_PORT DFP
+ENV PASSWD mypasswd
+ENV NOVNC_ENABLE false
+ENV WEBRTC_ENCODER nvh264enc
+ENV WEBRTC_ENABLE_RESIZE false
+ENV ENABLE_BASIC_AUTH true
+
+# Set versions for components that should be manually checked before upgrading, other component versions are automatically determined by fetching the version online
+ARG NOVNC_VERSION=1.4.0
+
+# Install Xorg and NVIDIA driver installer dependencies
+RUN apt-get update && apt-get install --no-install-recommends -y \
+        kmod \
+        libc6-dev \
+        libc6:i386 \
+        libpci3 \
+        libelf-dev \
+        pkg-config \
+        xorg && \
+    rm -rf /var/lib/apt/lists/*
+
+# Anything below this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
 
 # Install KDE and other GUI packages
 ENV XDG_CURRENT_DESKTOP KDE
@@ -221,13 +233,13 @@ ENV KWIN_COMPOSE N
 ENV KWIN_X11_NO_SYNC_TO_VBLANK 1
 # Use sudoedit to change protected files instead of using sudo on kate
 ENV SUDO_EDITOR kate
-RUN mkdir -pm755 /etc/apt/preferences.d && \
-    echo "Package: firefox*\n\
+# Enable AppImage execution in containers
+ENV APPIMAGE_EXTRACT_AND_RUN 1
+RUN mkdir -pm755 /etc/apt/preferences.d && echo "Package: firefox*\n\
 Pin: version 1:1snap*\n\
 Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
-    # Add Mozilla Firefox PPA
     mkdir -pm755 /etc/apt/trusted.gpg.d && curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x0AB215679C571D1C8325275B9BDB3D89CE49EC21" | gpg --dearmor -o /etc/apt/trusted.gpg.d/mozillateam-ubuntu-ppa.gpg && \
-    mkdir -pm755 /etc/apt/sources.list.d && echo "deb https://ppa.launchpadcontent.net/mozillateam/ppa/ubuntu $(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2) main" > "/etc/apt/sources.list.d/mozillateam-ubuntu-ppa-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2).list" && \
+    mkdir -pm755 /etc/apt/sources.list.d && echo "deb https://ppa.launchpadcontent.net/mozillateam/ppa/ubuntu $(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"') main" > "/etc/apt/sources.list.d/mozillateam-ubuntu-ppa-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"').list" && \
     apt-get update && apt-get install --no-install-recommends -y \
         kde-plasma-desktop \
         adwaita-icon-theme-full \
@@ -370,13 +382,13 @@ logout=false" > /etc/xdg/kdeglobals
 # Wine, Winetricks, Lutris, and PlayOnLinux, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
 RUN mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-archive.key "https://dl.winehq.org/wine-builds/winehq.key" && \
-    curl -fsSL -o "/etc/apt/sources.list.d/winehq-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2).sources" "https://dl.winehq.org/wine-builds/ubuntu/dists/$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2)/winehq-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2).sources" && \
+    curl -fsSL -o "/etc/apt/sources.list.d/winehq-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"').sources" "https://dl.winehq.org/wine-builds/ubuntu/dists/$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"')/winehq-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"').sources" && \
     apt-get update && apt-get install --install-recommends -y \
         winehq-${WINE_BRANCH} && \
     apt-get install --no-install-recommends -y \
         q4wine \
         playonlinux && \
-    LUTRIS_VERSION=$(curl -fsSL "https://api.github.com/repos/lutris/lutris/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g') && \
+    LUTRIS_VERSION="$(curl -fsSL "https://api.github.com/repos/lutris/lutris/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
     curl -fsSL -O "https://github.com/lutris/lutris/releases/download/v${LUTRIS_VERSION}/lutris_${LUTRIS_VERSION}_all.deb" && \
     apt-get install --no-install-recommends -y ./lutris_${LUTRIS_VERSION}_all.deb && rm -f "./lutris_${LUTRIS_VERSION}_all.deb" && \
     rm -rf /var/lib/apt/lists/* && \
@@ -438,16 +450,16 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         vainfo \
         intel-gpu-tools \
         radeontop && \
-    if [ "${UBUNTU_RELEASE}" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt; fi && \
+    if [ "$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt; fi && \
     rm -rf /var/lib/apt/lists/* && \
-    cd /opt && \
     # Automatically fetch the latest selkies-gstreamer version and install the components
-    SELKIES_VERSION=$(curl -fsSL "https://api.github.com/repos/selkies-project/selkies-gstreamer/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g') && \
-    curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.tgz" | tar -zxf - && \
-    curl -O -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && pip3 install "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && rm -f "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && \
-    curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-web-v${SELKIES_VERSION}.tgz" | tar -zxf - && \
-    curl -O -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-js-interposer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.deb" && apt-get update && apt-get install --no-install-recommends -y "./selkies-js-interposer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.deb" && rm -f "selkies-js-interposer-v${SELKIES_VERSION}-ubuntu${UBUNTU_RELEASE}.deb" && rm -rf /var/lib/apt/lists/* && \
-    cd /usr/local/cuda/lib64 && sudo find . -maxdepth 1 -type l -name "*libnvrtc.so.*" -exec sh -c 'ln -snf $(basename {}) libnvrtc.so' \;
+    SELKIES_VERSION="$(curl -fsSL "https://api.github.com/repos/selkies-project/selkies-gstreamer/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
+    cd /opt && curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-v${SELKIES_VERSION}-ubuntu$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"').tgz" | tar -zxf - && \
+    # Extract NVRTC dependency, https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvrtc/LICENSE.txt
+    cd /tmp && curl -fsSL -o nvidia_cuda_nvrtc_linux_x86_64.whl "https://developer.download.nvidia.com/compute/redist/nvidia-cuda-nvrtc/nvidia_cuda_nvrtc-11.0.221-cp36-cp36m-linux_x86_64.whl" && unzip -joq -d ./nvrtc nvidia_cuda_nvrtc_linux_x86_64.whl && cd nvrtc && chmod 755 libnvrtc* && find . -maxdepth 1 -type f -name "*libnvrtc.so.*" -exec sh -c 'ln -snf $(basename {}) libnvrtc.so' \; && mv -f libnvrtc* /opt/gstreamer/lib/x86_64-linux-gnu/ && cd /tmp && rm -rf /tmp/* && \
+    cd /tmp && curl -fsSL -O "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && pip3 install "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && rm -f "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && \
+    cd /opt && curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-web-v${SELKIES_VERSION}.tgz" | tar -zxf - && \
+    cd /tmp && curl -fsSL -o selkies-js-interposer.deb "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-js-interposer-v${SELKIES_VERSION}-ubuntu$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"').deb" && apt-get update && apt-get install --no-install-recommends -y ./selkies-js-interposer.deb && rm -f ./selkies-js-interposer.deb && rm -rf /var/lib/apt/lists/* /tmp/*
 # Add configuration for Selkies-GStreamer Joystick interposer
 ENV LD_PRELOAD /usr/local/lib/selkies-js-interposer/joystick_interposer.so${LD_PRELOAD:+:${LD_PRELOAD}}
 ENV SDL_JOYSTICK_DEVICE /dev/input/js0
@@ -482,7 +494,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     cd /tmp/x11vnc && autoreconf -fi && ./configure && make install && cd / && rm -rf /tmp/* && \
     curl -fsSL "https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz" | tar -xzf - -C /opt && \
     mv -f "/opt/noVNC-${NOVNC_VERSION}" /opt/noVNC && \
-    ln -snf /opt/noVNC/vnc.html /opt/noVNC/index.html && \
+    cd /opt/noVNC && ln -snf vnc.html index.html && \
     # Use the latest Websockify source to expose noVNC
     git clone "https://github.com/novnc/websockify.git" /opt/noVNC/utils/websockify
 
@@ -511,7 +523,7 @@ RUN chmod 755 /etc/supervisord.conf
 
 EXPOSE 8080
 
-USER user
+USER 1000
 ENV SHELL /bin/bash
 ENV USER user
 WORKDIR /home/user

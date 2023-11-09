@@ -6,8 +6,6 @@
 
 # Source environment for GStreamer
 source /opt/gstreamer/gst-env
-# Add CUDA library path
-export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 
 # Set default display
 export DISPLAY="${DISPLAY:-:0}"
@@ -39,8 +37,8 @@ sudo sed -i \
     -e "s|PWA_CACHE|${PWA_APP_SHORT_NAME}-webrtc-pwa|g" \
 /opt/gst-web/sw.js
 
-# Clear the cache registry to force the CUDA elements to refresh
-rm -f "${HOME}/.cache/gstreamer-1.0/registry.x86_64.bin"
+# Clear the cache registry
+rm -rf "${HOME}/.cache/gstreamer-1.0"
 
 # Start the selkies-gstreamer WebRTC HTML5 remote desktop application
 selkies-gstreamer \

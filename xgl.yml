@@ -65,6 +65,13 @@ spec:
           value: "false"
         - name: ENABLE_BASIC_AUTH
           value: "true"
+        - name: ENABLE_HTTPS_WEB
+          value: "false"
+        # Volume mount trusted HTTPS certificate to new path for no web browser warnings
+#        - name: HTTPS_WEB_CERT
+#          value: /etc/ssl/certs/ssl-cert-snakeoil.pem
+#        - name: HTTPS_WEB_KEY
+#          value: /etc/ssl/private/ssl-cert-snakeoil.key
         # Defaults to `PASSWD` if unspecified, choose either `value:` or `secretKeyRef:` but not both at the same time
 #        - name: BASIC_AUTH_PASSWORD
 #          value: "mypasswd"
