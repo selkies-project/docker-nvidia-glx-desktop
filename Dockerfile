@@ -233,6 +233,11 @@ ENV KWIN_COMPOSE N
 ENV KWIN_X11_NO_SYNC_TO_VBLANK 1
 # Use sudoedit to change protected files instead of using sudo on kate
 ENV SUDO_EDITOR kate
+# Set input to fcitx
+ENV GTK_IM_MODULE fcitx
+ENV QT_IM_MODULE fcitx
+ENV XIM fcitx
+ENV XMODIFIERS "@im=fcitx"
 # Enable AppImage execution in containers
 ENV APPIMAGE_EXTRACT_AND_RUN 1
 RUN mkdir -pm755 /etc/apt/preferences.d && echo "Package: firefox*\n\
@@ -266,6 +271,12 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         fcitx-module-lua \
         fcitx-module-x11 \
         fcitx-tools \
+        fcitx-hangul \
+        fcitx-libpinyin \
+        fcitx-m17n \
+        fcitx-mozc \
+        fcitx-sayura \
+        fcitx-unikey \
         filelight \
         frameworkintegration \
         gwenview \
