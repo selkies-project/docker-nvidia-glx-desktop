@@ -11,7 +11,7 @@ sudo -u user mkdir -pm700 /tmp/runtime-user
 sudo chown user:user /tmp/runtime-user
 sudo -u user chmod 700 /tmp/runtime-user
 # Make user directory owned by the user in case it is not
-sudo chown user:user /home/user
+sudo chown user:user /home/user || sudo chown user:user /home/user/* || { echo "Failed to change user directory permissions. There may be permission issues."; }
 # Change operating system password to environment variable
 echo "user:$PASSWD" | sudo chpasswd
 # Remove directories to make sure the desktop environment starts
