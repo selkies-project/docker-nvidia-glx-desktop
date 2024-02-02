@@ -95,7 +95,8 @@ fi
 HEX_ID="$(sudo nvidia-smi --query-gpu=pci.bus_id --id="$GPU_SELECT" --format=csv | sed -n 2p)"
 IFS=":." ARR_ID=($HEX_ID)
 unset IFS
-BUS_ID="PCI:$((16#${ARR_ID[1]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))"
+# Construct fully qualified PCI bus ID, including domain.
+BUS_ID="PCI:$((16#${ARR_ID[1]}))@$((16#${ARR_ID[0]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))"
 # A custom modeline should be generated because there is no monitor to fetch this information normally
 export MODELINE="$(cvt -r "${SIZEW}" "${SIZEH}" "${REFRESH}" | sed -n 2p)"
 # Generate /etc/X11/xorg.conf with nvidia-xconfig
