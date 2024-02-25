@@ -44,7 +44,7 @@ RUN dpkg --add-architecture i386 && \
         cups-bsd \
         cups-common \
         cups-filters \
-        cups-pdf \
+        printer-driver-cups-pdf \
         file \
         bzip2 \
         gzip \
@@ -62,7 +62,6 @@ RUN dpkg --add-architecture i386 && \
         python3-cups \
         python3-numpy \
         ssl-cert \
-        mlocate \
         nano \
         vim \
         htop \
@@ -93,7 +92,6 @@ RUN dpkg --add-architecture i386 && \
         packagekit-tools \
         pkg-config \
         mesa-utils \
-        mesa-utils-extra \
         va-driver-all \
         va-driver-all:i386 \
         i965-va-driver-shaders \
