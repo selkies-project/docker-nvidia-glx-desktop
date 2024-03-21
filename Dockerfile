@@ -380,7 +380,7 @@ Pin-Priority: 1000" > /etc/apt/preferences.d/mozilla && \
     MULTI_ARCH=$(dpkg --print-architecture | sed -e 's/arm64/aarch64-linux-gnu/' -e 's/armhf/arm-linux-gnueabihf/' -e 's/riscv64/riscv64-linux-gnu/' -e 's/ppc64el/powerpc64le-linux-gnu/' -e 's/s390x/s390x-linux-gnu/' -e 's/i.*86/i386-linux-gnu/' -e 's/amd64/x86_64-linux-gnu/' -e 's/unknown/x86_64-linux-gnu/') && \
     cp -f /usr/lib/${MULTI_ARCH}/libexec/kf5/start_kdeinit /tmp/ && \
     rm -f /usr/lib/${MULTI_ARCH}/libexec/kf5/start_kdeinit && \
-    cp -r /tmp/start_kdeinit /usr/lib/${MULTI_ARCH}/libexec/kf5/start_kdeinit && \
+    cp -f /tmp/start_kdeinit /usr/lib/${MULTI_ARCH}/libexec/kf5/start_kdeinit && \
     rm -f /tmp/start_kdeinit && \
     # KDE disable screen lock, double-click to open instead of single-click
     echo "[Daemon]\n\
