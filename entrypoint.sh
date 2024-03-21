@@ -31,7 +31,7 @@ sudo /etc/init.d/dbus start
 # Install NVIDIA userspace driver components including X graphic libraries
 if ! command -v nvidia-xconfig &> /dev/null; then
   # Driver version is provided by the kernel through the container toolkit
-  export DRIVER_ARCH="$(dpkg --print-architecture | sed -e 's/arm64/aarch64/'  -e 's/i.*86/x86/' -e 's/amd64/x86_64/' -e 's/unknown/x86_64/')"
+  export DRIVER_ARCH="$(dpkg --print-architecture | sed -e 's/arm64/aarch64/' -e 's/armhf/32bit-ARM/' -e 's/i.*86/x86/' -e 's/amd64/x86_64/' -e 's/unknown/x86_64/')"
   export DRIVER_VERSION="$(head -n1 </proc/driver/nvidia/version | awk '{print $8}')"
   cd /tmp
   # If version is different, new installer will overwrite the existing components
