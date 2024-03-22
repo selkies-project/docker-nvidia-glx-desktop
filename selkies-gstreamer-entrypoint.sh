@@ -5,7 +5,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 # Source environment for GStreamer
-source /opt/gstreamer/gst-env
+. /opt/gstreamer/gst-env
 
 # Set default display
 export DISPLAY="${DISPLAY:-:0}"
