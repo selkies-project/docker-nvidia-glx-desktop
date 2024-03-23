@@ -99,9 +99,9 @@ BUS_ID="PCI:$((16#${ARR_ID[1]}))@$((16#${ARR_ID[0]})):$((16#${ARR_ID[2]})):$((16
 # A custom modeline should be generated because there is no monitor to fetch this information normally
 export MODELINE="$(cvt -r "${SIZEW}" "${SIZEH}" "${REFRESH}" | sed -n 2p)"
 # Generate /etc/X11/xorg.conf with nvidia-xconfig
-sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --mode="$(echo "$MODELINE" | awk '{print $2}' | tr -d '\"')" --allow-empty-initial-configuration --no-probe-all-gpus --busid="$BUS_ID" --composite --no-sli --no-base-mosaic --only-one-x-screen ${CONNECTED_MONITOR}
+sudo nvidia-xconfig --virtual="${SIZEW}x${SIZEH}" --depth="$CDEPTH" --mode="$(echo "$MODELINE" | awk '{print $2}' | tr -d '\"')" --allow-empty-initial-configuration --no-probe-all-gpus --busid="$BUS_ID" --include-implicit-metamodes --mode-debug --no-sli --no-base-mosaic --only-one-x-screen ${CONNECTED_MONITOR}
 # Guarantee that the X server starts without a monitor by adding more options to the configuration
-sudo sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "AllowNon60HzDFPModes,NoMaxPClkCheck,NoEdidMaxPClkCheck,AllowInterlacedModes,NoMaxSizeCheck,NoHorizSyncCheck,NoVertRefreshCheck,NoWidthAlignmentCheck,NoDFPNativeResolutionCheck,NoVirtualSizeCheck,NoExtendedGpuCapabilitiesCheck,NoTotalSizeCheck,NoDualLinkDVICheck,NoDisplayPortBandwidthCheck,AllowNonEdidModes"\n    Option         "HardDPMS" "False"' /etc/X11/xorg.conf
+sudo sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "NoMaxPClkCheck,NoEdidMaxPClkCheck,NoMaxSizeCheck,NoHorizSyncCheck,NoVertRefreshCheck,NoVirtualSizeCheck,NoExtendedGpuCapabilitiesCheck,NoTotalSizeCheck,NoDualLinkDVICheck,NoDisplayPortBandwidthCheck,AllowNon3DVisionModes,AllowNonHDMI3DModes,AllowNonEdidModes,NoEdidHDMI2Check,AllowDpInterlaced"' /etc/X11/xorg.conf
 # Add custom generated modeline to the configuration
 sudo sed -i '/Section\s\+"Monitor"/a\    '"$MODELINE" /etc/X11/xorg.conf
 # Prevent interference between GPUs, add this to the host or other containers running Xorg as well
@@ -110,7 +110,7 @@ echo -e "Section \"ServerFlags\"\n    Option \"AutoAddGPU\" \"false\"\nEndSectio
 # Default display is :0 across the container
 export DISPLAY=":0"
 # Run Xorg server with required extensions
-/usr/bin/Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DPI}" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" "${DISPLAY}" &
+/usr/bin/Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DPI}" +extension "COMPOSITE" +extension "DAMAGE" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" +extension "XFIXES" +extension "XTEST" "${DISPLAY}" &
 
 # Wait for X11 to start
 echo "Waiting for X socket"
