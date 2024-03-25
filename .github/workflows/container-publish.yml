@@ -60,6 +60,15 @@ jobs:
         push: ${{ github.event_name != 'pull_request' }}
         tags: |
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.os_version }}
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.os_version }}-${COMMIT_TIME_GIT}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.os_version }}-${{ env.COMMIT_TIME_GIT }}
           ${{ matrix.latest_tag && format('{0}/{1}:latest', env.REGISTRY, env.IMAGE_NAME) || '' }}
         labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Docker Scout
+      uses: docker/scout-action@v1
+      with:
+        command: quickview,cves,recommendations
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        image: ${{ steps.meta.outputs.tags }}
+        only-severities: critical,high,medium,low
+        only-fixed: true
