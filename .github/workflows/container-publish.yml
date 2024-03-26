@@ -55,7 +55,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         build-args: |
-          UBUNTU_RELEASE=${{ matrix.os_version }}
+          DISTRIB_RELEASE=${{ matrix.os_version }}
         context: .
         push: ${{ github.event_name != 'pull_request' }}
         tags: |

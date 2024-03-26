@@ -3,12 +3,12 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 # Ubuntu release versions 22.04, and 20.04 are supported
-ARG UBUNTU_RELEASE=22.04
-FROM ubuntu:${UBUNTU_RELEASE}
+ARG DISTRIB_RELEASE=22.04
+FROM ubuntu:${DISTRIB_RELEASE}
 
 LABEL maintainer "https://github.com/ehfd,https://github.com/danisla"
 
-ARG UBUNTU_RELEASE
+ARG DISTRIB_RELEASE
 # Use noninteractive mode to skip confirmation when installing packages
 ARG DEBIAN_FRONTEND=noninteractive
 # System defaults that should not be changed
