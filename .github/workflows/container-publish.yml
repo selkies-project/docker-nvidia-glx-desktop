@@ -57,9 +57,10 @@ jobs:
         build-args: |
           DISTRIB_RELEASE=${{ matrix.os_version }}
         context: .
+        labels: ${{ steps.meta.outputs.labels }}
+        no-cache: true
         push: ${{ github.event_name != 'pull_request' }}
         tags: |
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.os_version }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.os_version }}-${{ env.COMMIT_TIME_GIT }}
           ${{ matrix.latest_tag && format('{0}/{1}:latest', env.REGISTRY, env.IMAGE_NAME) || '' }}
-        labels: ${{ steps.meta.outputs.labels }}
