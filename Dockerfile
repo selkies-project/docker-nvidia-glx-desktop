@@ -462,7 +462,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         vainfo \
         intel-gpu-tools \
         radeontop && \
-    if [ "$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt; fi && \
+    if [ "$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt; else apt-get install --no-install-recommends -y mesa-utils-extra; fi && \
     rm -rf /var/lib/apt/lists/* && \
     # Automatically fetch the latest selkies-gstreamer version and install the components
     SELKIES_VERSION="1.5.2" && \
@@ -521,7 +521,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     rm -rf /var/lib/apt/lists/* && \
     groupadd -g 1000 user && \
     useradd -ms /bin/bash user -u 1000 -g 1000 && \
-    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lp,lpadmin,plugdev,pulse-access,scanner,ssl-cert,sudo,tape,tty,video,voice user && \
+    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lp,lpadmin,plugdev,pulse-access,render,scanner,ssl-cert,sudo,tape,tty,video,voice user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     chown user:user /home/user && \
     echo "user:${PASSWD}" | chpasswd && \
