@@ -8,7 +8,7 @@
 . /opt/gstreamer/gst-env
 
 # Set default display
-export DISPLAY="${DISPLAY:-\:0}"
+export DISPLAY="${DISPLAY:-:0}"
 
 # Configure joystick interposer
 sudo mkdir -pm755 /dev/input
@@ -17,7 +17,7 @@ sudo touch /dev/input/{js0,js1,js2,js3}
 # Show debug logs for GStreamer
 export GST_DEBUG="${GST_DEBUG:-*:2}"
 # Set password for basic authentication
-if [ "${ENABLE_BASIC_AUTH,,}" = "true" ] && [ -z "$BASIC_AUTH_PASSWORD" ]; then export BASIC_AUTH_PASSWORD="$PASSWD"; fi
+if [ "${ENABLE_BASIC_AUTH,,}" = "true" ] && [ -z "${BASIC_AUTH_PASSWORD}" ]; then export BASIC_AUTH_PASSWORD="${PASSWD}"; fi
 
 # Wait for X11 to start
 echo "Waiting for X socket"

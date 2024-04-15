@@ -19,9 +19,9 @@ sudo rm -rf /tmp/.X* ~/.cache
 # Change time zone from environment variable
 sudo ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | sudo tee /etc/timezone > /dev/null
 # Add Lutris directories to path
-export PATH="${PATH}:/usr/local/games:/usr/games"
+export PATH="${PATH:+${PATH}:}/usr/local/games:/usr/games"
 # Add LibreOffice to library path
-export LD_LIBRARY_PATH="/usr/lib/libreoffice/program:${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="/usr/lib/libreoffice/program${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 
 # This symbolic link enables running Xorg inside a container with `-sharevts`
 sudo ln -snf /dev/ptmx /dev/tty7
