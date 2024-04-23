@@ -11,8 +11,8 @@
 export DISPLAY="${DISPLAY:-:0}"
 
 # Configure joystick interposer
-sudo mkdir -pm755 /dev/input
-sudo touch /dev/input/{js0,js1,js2,js3}
+sudo mkdir -pm755 /dev/input || true
+sudo touch /dev/input/js0 /dev/input/js1 /dev/input/js2 /dev/input/js3 || true
 
 # Show debug logs for GStreamer
 export GST_DEBUG="${GST_DEBUG:-*:2}"
