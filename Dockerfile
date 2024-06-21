@@ -2,50 +2,67 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-# Ubuntu release versions 22.04, and 20.04 are supported
-ARG DISTRIB_RELEASE=22.04
+# Supported base images: Ubuntu 24.04, 22.04, 20.04
+ARG DISTRIB_RELEASE=24.04
 FROM ubuntu:${DISTRIB_RELEASE}
+ARG DISTRIB_RELEASE
 
 LABEL maintainer "https://github.com/ehfd,https://github.com/danisla"
 
-ARG DISTRIB_RELEASE
-# Use noninteractive mode to skip confirmation when installing packages
 ARG DEBIAN_FRONTEND=noninteractive
-# System defaults that should not be changed
-ENV DISPLAY :0
-ENV XDG_RUNTIME_DIR /tmp/runtime-user
-ENV PULSE_SERVER unix:/run/pulse/native
+# Configure rootless user environment for constrained conditions without escalated root privileges inside containers
+ARG TZ=UTC
+ARG PASSWD=mypasswd
+RUN apt-get clean && apt-get update && apt-get dist-upgrade -y && apt-get install --no-install-recommends -y \
+    apt-utils \
+    dbus-user-session \
+    fakeroot \
+    fuse \
+    locales \
+    ssl-cert \
+    sudo \
+    udev \
+    tzdata && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
+    locale-gen en_US.UTF-8 && \
+    ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone && \
+    # Only use sudo-root for root-owned directory (/dev, /proc, /sys) or user/group permission operations, not for apt-get installation or file/directory operations
+    mv -f /usr/bin/sudo /usr/bin/sudo-root && \
+    ln -snf /usr/bin/fakeroot /usr/bin/sudo && \
+    groupadd -g 1000 ubuntu || true && \
+    useradd -ms /bin/bash ubuntu -u 1000 -g 1000 || true && \
+    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,games,input,lp,plugdev,render,ssl-cert,sudo,tape,tty,video,voice ubuntu && \
+    echo "ubuntu ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    echo "ubuntu:${PASSWD}" | chpasswd && \
+    chown -R -f --no-preserve-root ubuntu:ubuntu / || true && \
+    chown -R -f --no-preserve-root root:root /usr/bin/sudo-root /etc/sudo.conf /etc/sudoers /etc/sudoers.d /etc/sudo_logsrvd.conf /usr/libexec/sudo || true && chmod -f 4755 /usr/bin/sudo-root || true
 
-# Install fundamental packages
-RUN apt-get clean && apt-get update && apt-get upgrade -y && apt-get install --no-install-recommends -y \
-        apt-transport-https \
-        apt-utils \
-        build-essential \
-        ca-certificates \
-        curl \
-        gnupg \
-        locales \
-        make \
-        software-properties-common \
-        wget && \
-    rm -rf /var/lib/apt/lists/* && \
-    locale-gen en_US.UTF-8
 # Set locales
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
+USER 1000
+# Use BUILDAH_FORMAT=docker in buildah
+SHELL ["/usr/bin/fakeroot", "--", "/bin/sh", "-c"]
+
 # Install operating system libraries or packages
-RUN dpkg --add-architecture i386 && \
-    apt-get update && apt-get install --no-install-recommends -y \
-        alsa-base \
-        alsa-utils \
+RUN apt-get update && apt-get install --no-install-recommends -y \
+        # Operating system packages
+        software-properties-common \
+        build-essential \
+        ca-certificates \
         cups-browsed \
         cups-bsd \
         cups-common \
         cups-filters \
         printer-driver-cups-pdf \
+        alsa-base \
+        alsa-utils \
         file \
+        gnupg \
+        curl \
+        wget \
         bzip2 \
         gzip \
         xz-utils \
@@ -57,15 +74,14 @@ RUN dpkg --add-architecture i386 && \
         zstd \
         gcc \
         git \
+        coturn \
         jq \
         python3 \
         python3-cups \
         python3-numpy \
-        ssl-cert \
         nano \
         vim \
         htop \
-        fakeroot \
         fonts-dejavu \
         fonts-freefont-ttf \
         fonts-hack \
@@ -86,32 +102,23 @@ RUN dpkg --add-architecture i386 && \
         less \
         libavcodec-extra \
         libpulse0 \
-        pulseaudio \
         supervisor \
         net-tools \
         packagekit-tools \
         pkg-config \
         mesa-utils \
-        va-driver-all \
-        va-driver-all:i386 \
-        i965-va-driver-shaders \
-        i965-va-driver-shaders:i386 \
-        intel-media-va-driver-non-free \
-        intel-media-va-driver-non-free:i386 \
+        mesa-va-drivers \
         libva2 \
-        libva2:i386 \
         vainfo \
         vdpau-driver-all \
-        vdpau-driver-all:i386 \
+        libvdpau-va-gl1 \
         vdpauinfo \
         mesa-vulkan-drivers \
-        mesa-vulkan-drivers:i386 \
-        libvulkan-dev \
-        libvulkan-dev:i386 \
         vulkan-tools \
+        radeontop \
+        libvulkan-dev \
         ocl-icd-libopencl1 \
         clinfo \
-        dbus-user-session \
         dbus-x11 \
         libdbus-c++-1-0v5 \
         xkb-data \
@@ -133,36 +140,77 @@ RUN dpkg --add-architecture i386 && \
         xserver-xorg-video-all \
         xserver-xorg-video-intel \
         xserver-xorg-video-qxl \
-        # Install OpenGL libraries
+        # OpenGL libraries
         libxau6 \
-        libxau6:i386 \
         libxdmcp6 \
-        libxdmcp6:i386 \
         libxcb1 \
-        libxcb1:i386 \
         libxext6 \
-        libxext6:i386 \
         libx11-6 \
-        libx11-6:i386 \
         libxv1 \
-        libxv1:i386 \
         libxtst6 \
-        libxtst6:i386 \
-        libglvnd0 \
-        libglvnd0:i386 \
-        libgl1 \
-        libgl1:i386 \
-        libglx0 \
-        libglx0:i386 \
+        libdrm2 \
         libegl1 \
-        libegl1:i386 \
+        libgl1 \
+        libopengl0 \
+        libgles1 \
         libgles2 \
-        libgles2:i386 \
+        libglvnd0 \
+        libglx0 \
         libglu1 \
+        libsm6 && \
+    # PipeWire and WirePlumber
+    mkdir -pm755 /etc/apt/trusted.gpg.d && curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xFC43B7352BCC0EC8AF2EEB8B25088A0359807596" | gpg --dearmor -o /etc/apt/trusted.gpg.d/pipewire-debian-ubuntu-pipewire-upstream.gpg && \
+    mkdir -pm755 /etc/apt/sources.list.d && echo "deb https://ppa.launchpadcontent.net/pipewire-debian/pipewire-upstream/ubuntu $(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"') main" > "/etc/apt/sources.list.d/pipewire-debian-ubuntu-pipewire-upstream-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"').list" && \
+    mkdir -pm755 /etc/apt/sources.list.d && echo "deb https://ppa.launchpadcontent.net/pipewire-debian/wireplumber-upstream/ubuntu $(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"') main" > "/etc/apt/sources.list.d/pipewire-debian-ubuntu-wireplumber-upstream-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"').list" && \
+    apt-get update && apt-get install --no-install-recommends -y \
+        pipewire \
+        pipewire-alsa \
+        pipewire-audio-client-libraries \
+        pipewire-jack \
+        pipewire-locales \
+        pipewire-v4l2 \
+        pipewire-libcamera \
+        gstreamer1.0-pipewire \
+        libpipewire-0.3-modules \
+        libpipewire-module-x11-bell \
+        libspa-0.2-jack \
+        libspa-0.2-modules \
+        wireplumber \
+        wireplumber-locales \
+        gir1.2-wp-0.4 && \
+    # Packages only meant for x86_64
+    if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
+    dpkg --add-architecture i386 && apt-get update && apt-get install --no-install-recommends -y \
+        intel-gpu-tools \
+        nvtop \
+        va-driver-all \
+        i965-va-driver-shaders \
+        intel-media-va-driver-non-free \
+        va-driver-all:i386 \
+        i965-va-driver-shaders:i386 \
+        intel-media-va-driver-non-free:i386 \
+        libva2:i386 \
+        vdpau-driver-all:i386 \
+        mesa-vulkan-drivers:i386 \
+        libvulkan-dev:i386 \
+        libxau6:i386 \
+        libxdmcp6:i386 \
+        libxcb1:i386 \
+        libxext6:i386 \
+        libx11-6:i386 \
+        libxv1:i386 \
+        libxtst6:i386 \
+        libdrm2:i386 \
+        libegl1:i386 \
+        libgl1:i386 \
+        libopengl0:i386 \
+        libgles1:i386 \
+        libgles2:i386 \
+        libglvnd0:i386 \
+        libglx0:i386 \
         libglu1:i386 \
-        libsm6 \
-        libsm6:i386 && \
-    rm -rf /var/lib/apt/lists/* && \
+        libsm6:i386; fi && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
     echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
     echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf && \
     # Configure OpenCL manually
@@ -192,45 +240,47 @@ ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES all
 # Disable VSYNC for NVIDIA GPUs
 ENV __GL_SYNC_TO_VBLANK 0
+# Set default DISPLAY environment
+ENV DISPLAY ":0"
 
 # Anything above this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
 
 # Default environment variables (password is "mypasswd")
-ENV TZ UTC
-ENV SIZEW 1920
-ENV SIZEH 1080
-ENV REFRESH 60
-ENV DPI 96
-ENV CDEPTH 24
+ENV DESKTOP_SIZEW 1920
+ENV DESKTOP_SIZEH 1080
+ENV DESKTOP_REFRESH 60
+ENV DESKTOP_DPI 96
+ENV DESKTOP_CDEPTH 24
 ENV VIDEO_PORT DFP
-ENV PASSWD mypasswd
 ENV NOVNC_ENABLE false
-ENV WEBRTC_ENCODER nvh264enc
-ENV WEBRTC_ENABLE_RESIZE false
-ENV ENABLE_BASIC_AUTH true
+ENV SELKIES_ENCODER nvh264enc
+ENV SELKIES_ENABLE_RESIZE false
+ENV SELKIES_ENABLE_BASIC_AUTH true
 
 # Set versions for components that should be manually checked before upgrading, other component versions are automatically determined by fetching the version online
-ARG NOVNC_VERSION=1.4.0
+ARG NOVNC_VERSION=1.5.0
 
 # Install Xorg and NVIDIA driver installer dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
         kmod \
         libc6-dev \
-        libc6:i386 \
         libpci3 \
         libelf-dev \
         pkg-config \
         xorg && \
-    rm -rf /var/lib/apt/lists/*
+    if [ "$(dpkg --print-architecture)" = "amd64" ]; then apt-get install --no-install-recommends -y libc6:i386; fi && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/*
 
 # Anything below this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
 
 # Install KDE and other GUI packages
-ENV XDG_CURRENT_DESKTOP KDE
-ENV XDG_SESSION_DESKTOP KDE
-ENV XDG_SESSION_TYPE x11
 ENV DESKTOP_SESSION plasma
+ENV XDG_SESSION_DESKTOP KDE
+ENV XDG_CURRENT_DESKTOP KDE
+ENV XDG_SESSION_TYPE x11
+ENV XDG_SESSION_ID ${DISPLAY#*:}
 ENV KDE_FULL_SESSION true
+ENV KDE_APPLICATIONS_AS_SCOPE 1
 ENV KWIN_COMPOSE N
 ENV KWIN_X11_NO_SYNC_TO_VBLANK 1
 # Use sudoedit to change protected files instead of using sudo on kate
@@ -366,14 +416,13 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         xdg-desktop-portal-kde \
         xdg-user-dirs \
         firefox \
-        pavucontrol-qt \
         transmission-qt && \
     apt-get install --install-recommends -y \
         libreoffice \
         libreoffice-kf5 \
         libreoffice-plasma \
         libreoffice-style-breeze && \
-    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
     # Fix KDE startup permissions issues in containers
     MULTI_ARCH=$(dpkg --print-architecture | sed -e 's/arm64/aarch64-linux-gnu/' -e 's/armhf/arm-linux-gnueabihf/' -e 's/riscv64/riscv64-linux-gnu/' -e 's/ppc64el/powerpc64le-linux-gnu/' -e 's/s390x/s390x-linux-gnu/' -e 's/i.*86/i386-linux-gnu/' -e 's/amd64/x86_64-linux-gnu/' -e 's/unknown/x86_64-linux-gnu/') && \
     cp -f /usr/lib/${MULTI_ARCH}/libexec/kf5/start_kdeinit /tmp/ && \
@@ -393,7 +442,8 @@ logout=false" > /etc/xdg/kdeglobals
 
 # Wine, Winetricks, Lutris, and PlayOnLinux, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
-RUN mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-archive.key "https://dl.winehq.org/wine-builds/winehq.key" && \
+RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
+    mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-archive.key "https://dl.winehq.org/wine-builds/winehq.key" && \
     curl -fsSL -o "/etc/apt/sources.list.d/winehq-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"').sources" "https://dl.winehq.org/wine-builds/ubuntu/dists/$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"')/winehq-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"').sources" && \
     apt-get update && apt-get install --install-recommends -y \
         winehq-${WINE_BRANCH} && \
@@ -403,12 +453,13 @@ RUN mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-arc
     LUTRIS_VERSION="$(curl -fsSL "https://api.github.com/repos/lutris/lutris/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
     curl -fsSL -O "https://github.com/lutris/lutris/releases/download/v${LUTRIS_VERSION}/lutris_${LUTRIS_VERSION}_all.deb" && \
     apt-get install --no-install-recommends -y ./lutris_${LUTRIS_VERSION}_all.deb && rm -f "./lutris_${LUTRIS_VERSION}_all.deb" && \
-    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
     curl -fsSL -o /usr/bin/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" && \
     chmod 755 /usr/bin/winetricks && \
-    curl -fsSL -o /usr/share/bash-completion/completions/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks.bash-completion"
+    curl -fsSL -o /usr/share/bash-completion/completions/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks.bash-completion"; fi
 
-# Install latest Selkies-GStreamer (https://github.com/selkies-project/selkies-gstreamer) build, Python application, and web application, should be consistent with selkies-gstreamer documentation
+# Install latest Selkies-GStreamer (https://github.com/selkies-project/selkies-gstreamer) build, Python application, and web application, should be consistent with Selkies-GStreamer documentation
+ARG PIP_BREAK_SYSTEM_PACKAGES=1
 RUN apt-get update && apt-get install --no-install-recommends -y \
         # GStreamer dependencies
         python3-pip \
@@ -416,66 +467,68 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         python3-gi \
         python3-setuptools \
         python3-wheel \
-        udev \
-        wmctrl \
-        jq \
-        gdebi-core \
+        libaa1 \
+        bzip2 \
+        libgcrypt20 \
+        libcairo-gobject2 \
+        libpangocairo-1.0-0 \
         libgdk-pixbuf2.0-0 \
-        libgtk2.0-bin \
-        libgl-dev \
-        libgles-dev \
-        libglvnd-dev \
+        libsoup2.4-1 \
+        libsoup-gnome2.4-1 \
+        libgirepository-1.0-1 \
+        glib-networking \
+        libglib2.0-0 \
+        libjson-glib-1.0-0 \
         libgudev-1.0-0 \
-        xclip \
-        x11-utils \
-        xdotool \
-        x11-xserver-utils \
-        xserver-xorg-core \
+        alsa-utils \
+        jackd2 \
+        libjack-jackd2-0 \
+        libpulse0 \
+        libogg0 \
+        libopus0 \
+        libvorbis-dev \
+        libjpeg-turbo8 \
+        libopenjp2-7 \
+        libvpx-dev \
+        libwebp-dev \
+        x264 \
+        x265 \
+        libdrm2 \
+        libegl1 \
+        libgl1 \
+        libopengl0 \
+        libgles1 \
+        libgles2 \
+        libglvnd0 \
+        libglx0 \
         wayland-protocols \
         libwayland-dev \
         libwayland-egl1 \
+        wmctrl \
+        xsel \
+        xdotool \
+        x11-utils \
+        x11-xserver-utils \
+        xserver-xorg-core \
         libx11-xcb1 \
+        libxcb-dri3-0 \
         libxkbcommon0 \
         libxdamage1 \
-        libsoup2.4-1 \
-        libsoup-gnome2.4-1 \
-        libsrtp2-1 \
-        lame \
-        libopus0 \
-        libwebrtc-audio-processing1 \
-        pulseaudio \
-        libpulse0 \
-        libcairo-gobject2 \
-        libpangocairo-1.0-0 \
-        libgirepository-1.0-1 \
-        libopenjp2-7 \
-        libjpeg-dev \
-        libwebp-dev \
-        libvpx-dev \
-        zlib1g-dev \
-        x264 \
-        # AMD/Intel graphics driver dependencies
-        va-driver-all \
-        i965-va-driver-shaders \
-        intel-media-va-driver-non-free \
-        libva2 \
-        vainfo \
-        intel-gpu-tools \
-        radeontop && \
-    if [ "$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt; else apt-get install --no-install-recommends -y mesa-utils-extra; fi && \
-    rm -rf /var/lib/apt/lists/* && \
+        libxfixes3 \
+        libxv1 \
+        libxtst6 \
+        libxext6 && \
+    if [ "$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt libopenh264-dev libde265-0 svt-av1 aom-tools; else apt-get install --no-install-recommends -y mesa-utils-extra; fi && \
     # Automatically fetch the latest selkies-gstreamer version and install the components
-    SELKIES_VERSION="1.5.2" && \
-    cd /opt && curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-v${SELKIES_VERSION}-ubuntu$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"').tgz" | tar -zxf - && \
-    # Extract NVRTC dependency, https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvrtc/LICENSE.txt
-    NVRTC_VERSION="11.4.152" && \
-    NVRTC_ARCH="$(dpkg --print-architecture | sed -e 's/arm64/sbsa/' -e 's/ppc64el/ppc64le/' -e 's/i.*86/x86/' -e 's/amd64/x86_64/' -e 's/unknown/x86_64/')" && \
-    cd /tmp && curl -fsSL "https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvrtc/linux-${NVRTC_ARCH}/cuda_nvrtc-linux-${NVRTC_ARCH}-${NVRTC_VERSION}-archive.tar.xz" | tar -xJf - -C /tmp && mv -f cuda_nvrtc* cuda_nvrtc && cd cuda_nvrtc/lib && chmod 755 libnvrtc* && mv -f libnvrtc* /opt/gstreamer/lib/$(dpkg --print-architecture | sed -e 's/arm64/aarch64-linux-gnu/' -e 's/armhf/arm-linux-gnueabihf/' -e 's/riscv64/riscv64-linux-gnu/' -e 's/ppc64el/powerpc64le-linux-gnu/' -e 's/s390x/s390x-linux-gnu/' -e 's/i.*86/i386-linux-gnu/' -e 's/amd64/x86_64-linux-gnu/' -e 's/unknown/x86_64-linux-gnu/')/ && cd /tmp && rm -rf /tmp/cuda_nvrtc && \
-    cd /tmp && curl -fsSL -O "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && pip3 install "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && rm -f "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && \
-    cd /opt && curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-web-v${SELKIES_VERSION}.tgz" | tar -zxf - && \
-    cd /tmp && curl -fsSL -o selkies-js-interposer.deb "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-js-interposer-v${SELKIES_VERSION}-ubuntu$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"').deb" && apt-get update && apt-get install --no-install-recommends -y ./selkies-js-interposer.deb && rm -f ./selkies-js-interposer.deb && rm -rf /var/lib/apt/lists/* /tmp/*
+    SELKIES_VERSION="$(curl -fsSL "https://api.github.com/repos/selkies-project/selkies-gstreamer/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
+    cd /opt && curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/gstreamer-selkies_gpl_v${SELKIES_VERSION}_ubuntu$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')_$(dpkg --print-architecture).tar.gz" | tar -xzf - && \
+    cd /tmp && curl -O -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && pip3 install --no-cache-dir --force-reinstall "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && rm -f "selkies_gstreamer-${SELKIES_VERSION}-py3-none-any.whl" && \
+    cd /opt && curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-gstreamer-web_v${SELKIES_VERSION}.tar.gz" | tar -xzf - && \
+    cd /tmp && curl -o selkies-js-interposer.deb -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-js-interposer_v${SELKIES_VERSION}_ubuntu$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')_$(dpkg --print-architecture).deb" && sudo apt-get update && sudo apt-get install --no-install-recommends -y ./selkies-js-interposer.deb && rm -f selkies-js-interposer.deb && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/*
 # Add configuration for Selkies-GStreamer Joystick interposer
-ENV LD_PRELOAD /usr/local/lib/selkies-js-interposer/joystick_interposer.so${LD_PRELOAD:+:${LD_PRELOAD}}
+ENV SELKIES_INTERPOSER '/usr/$LIB/selkies_joystick_interposer.so'
+ENV LD_PRELOAD "${SELKIES_INTERPOSER}${LD_PRELOAD:+:${LD_PRELOAD}}"
 ENV SDL_JOYSTICK_DEVICE /dev/input/js0
 
 # Install the noVNC web interface and the latest x11vnc for fallback
@@ -502,7 +555,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libxss-dev \
         libxtst-dev \
         libavahi-client-dev && \
-    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
     # Build the latest x11vnc source to avoid various errors
     git clone "https://github.com/LibVNC/x11vnc.git" /tmp/x11vnc && \
     cd /tmp/x11vnc && autoreconf -fi && ./configure && make install && cd / && rm -rf /tmp/* && \
@@ -514,32 +567,46 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 # Add custom packages right below this comment, or use FROM in a new container and replace entrypoint.sh or supervisord.conf, and set ENTRYPOINT to /usr/bin/supervisord
 
-# Create user with password ${PASSWD} and assign adequate groups
-RUN apt-get update && apt-get install --no-install-recommends -y \
-        sudo \
-        tzdata && \
-    rm -rf /var/lib/apt/lists/* && \
-    groupadd -g 1000 user && \
-    useradd -ms /bin/bash user -u 1000 -g 1000 && \
-    usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,input,lp,lpadmin,plugdev,pulse-access,render,scanner,ssl-cert,sudo,tape,tty,video,voice user && \
-    echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
-    chown user:user /home/user && \
-    echo "user:${PASSWD}" | chpasswd && \
-    ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
-
-# Copy scripts and configurations used to start the container
-COPY entrypoint.sh /etc/entrypoint.sh
+# Copy scripts and configurations used to start the container with `--chown=1000:1000`
+COPY --chown=1000:1000 entrypoint.sh /etc/entrypoint.sh
 RUN chmod 755 /etc/entrypoint.sh
-COPY selkies-gstreamer-entrypoint.sh /etc/selkies-gstreamer-entrypoint.sh
+COPY --chown=1000:1000 selkies-gstreamer-entrypoint.sh /etc/selkies-gstreamer-entrypoint.sh
 RUN chmod 755 /etc/selkies-gstreamer-entrypoint.sh
-COPY supervisord.conf /etc/supervisord.conf
+COPY --chown=1000:1000 supervisord.conf /etc/supervisord.conf
 RUN chmod 755 /etc/supervisord.conf
 
-EXPOSE 8080
+# Configure coTURN script
+RUN echo "#!/bin/bash\n\
+set -e\n\
+exec turnserver\n\
+    --verbose\n\
+    --listening-ip=0.0.0.0\n\
+    --listening-ip=::\n\
+    --listening-port=\${SELKIES_TURN_PORT:-3478}\n\
+    --realm=\${TURN_REALM:-example.com}\n\
+    --min-port=\${TURN_MIN_PORT:-49152}\n\
+    --max-port=\${TURN_MAX_PORT:-65535}\n\
+    --lt-cred-mech\n\
+    --user selkies:\${TURN_RANDOM_PASSWORD}\n\
+    --no-cli\n\
+    --allow-loopback-peers\n\
+    --db /tmp/coturn-turndb\n\
+    \${TURN_EXTRA_ARGS} \$@\
+" > /etc/start-turnserver.sh && chmod 755 /etc/start-turnserver.sh
+
+SHELL ["/bin/sh", "-c"]
+
+ENV PIPEWIRE_LATENCY "32/48000"
+ENV XDG_RUNTIME_DIR /tmp/runtime-ubuntu
+ENV PIPEWIRE_RUNTIME_DIR "${PIPEWIRE_RUNTIME_DIR:-${XDG_RUNTIME_DIR:-/tmp}}"
+ENV PULSE_RUNTIME_PATH "${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}"
+ENV PULSE_SERVER "${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
 USER 1000
 ENV SHELL /bin/bash
-ENV USER user
-WORKDIR /home/user
+ENV USER ubuntu
+WORKDIR /home/ubuntu
+
+EXPOSE 8080
 
 ENTRYPOINT ["/usr/bin/supervisord"]

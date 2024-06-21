@@ -23,6 +23,7 @@ jobs:
         include:
         - os_version: "20.04"
         - os_version: "22.04"
+        - os_version: "24.04"
           latest_tag: true
     steps:
     - name: Checkout repository

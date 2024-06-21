@@ -25,15 +25,15 @@ spec:
         env:
         - name: TZ
           value: "UTC"
-        - name: SIZEW
+        - name: DESKTOP_SIZEW
           value: "1920"
-        - name: SIZEH
+        - name: DESKTOP_SIZEH
           value: "1080"
-        - name: REFRESH
+        - name: DESKTOP_REFRESH
           value: "60"
-        - name: DPI
+        - name: DESKTOP_DPI
           value: "96"
-        - name: CDEPTH
+        - name: DESKTOP_CDEPTH
           value: "24"
         # Change to DP-0 or any other DP-* port for larger resolution support if you are NOT using datacenter GPUs
         - name: VIDEO_PORT
@@ -45,7 +45,7 @@ spec:
 #            secretKeyRef:
 #              name: my-pass
 #              key: my-pass
-        # Uncomment this to enable noVNC, disabing selkies-gstreamer and ignoring all its parameters except `BASIC_AUTH_PASSWORD`, which will be used for authentication with noVNC, `BASIC_AUTH_PASSWORD` defaults to `PASSWD` if not provided
+        # Uncomment this to enable noVNC, disabing Selkies-GStreamer and ignoring all its parameters except `SELKIES_BASIC_AUTH_PASSWORD`, which will be used for authentication with noVNC, `SELKIES_BASIC_AUTH_PASSWORD` defaults to `PASSWD` if not provided
 #        - name: NOVNC_ENABLE
 #          value: "true"
         # Additional view-only password only applicable to the noVNC interface, choose either `value:` or `secretKeyRef:` but not both at the same time
@@ -56,24 +56,24 @@ spec:
 #              name: my-pass
 #              key: my-pass
         ###
-        # selkies-gstreamer parameters, for additional configurations see lines that start with "parser.add_argument" in https://github.com/selkies-project/selkies-gstreamer/blob/master/src/selkies_gstreamer/__main__.py
+        # Selkies-GStreamer parameters, for additional configurations see `selkies-gstreamer --help`
         ###
-        # Change `WEBRTC_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` if your GPU doesn't support `H.264 (AVCHD)` under the `NVENC - Encoding` section in https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new
-        - name: WEBRTC_ENCODER
+        # Change `SELKIES_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` if your GPU doesn't support `H.264 (AVCHD)` under the `NVENC - Encoding` section in https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new
+        - name: SELKIES_ENCODER
           value: "nvh264enc"
-        - name: WEBRTC_ENABLE_RESIZE
+        - name: SELKIES_ENABLE_RESIZE
           value: "false"
-        - name: ENABLE_BASIC_AUTH
+        - name: SELKIES_ENABLE_BASIC_AUTH
           value: "true"
-        - name: ENABLE_HTTPS_WEB
+        - name: SELKIES_ENABLE_HTTPS_WEB
           value: "false"
         # Volume mount trusted HTTPS certificate to new path for no web browser warnings
-#        - name: HTTPS_WEB_CERT
+#        - name: SELKIES_HTTPS_WEB_CERT
 #          value: /etc/ssl/certs/ssl-cert-snakeoil.pem
-#        - name: HTTPS_WEB_KEY
+#        - name: SELKIES_HTTPS_WEB_KEY
 #          value: /etc/ssl/private/ssl-cert-snakeoil.key
         # Defaults to `PASSWD` if unspecified, choose either `value:` or `secretKeyRef:` but not both at the same time
-#        - name: BASIC_AUTH_PASSWORD
+#        - name: SELKIES_BASIC_AUTH_PASSWORD
 #          value: "mypasswd"
 #          valueFrom:
 #            secretKeyRef:
@@ -82,30 +82,30 @@ spec:
         ###
         # Uncomment below to use a TURN server for improved network compatibility
         ###
-#        - name: TURN_HOST
+#        - name: SELKIES_TURN_HOST
 #          value: "turn.example.com"
-#        - name: TURN_PORT
+#        - name: SELKIES_TURN_PORT
 #          value: "3478"
-        # Provide only `TURN_SHARED_SECRET` for time-limited shared secret authentication or both `TURN_USERNAME` and `TURN_PASSWORD` for legacy long-term authentication, but do not provide both authentication methods at the same time
-#        - name: TURN_SHARED_SECRET
+        # Provide only `SELKIES_TURN_SHARED_SECRET` for time-limited shared secret authentication or both `SELKIES_TURN_USERNAME` and `SELKIES_TURN_PASSWORD` for legacy long-term authentication, but do not provide both authentication methods at the same time
+#        - name: SELKIES_TURN_SHARED_SECRET
 #          valueFrom:
 #            secretKeyRef:
 #              name: turn-shared-secret
 #              key: turn-shared-secret
-#        - name: TURN_USERNAME
+#        - name: SELKIES_TURN_USERNAME
 #          value: "username"
         # Choose either `value:` or `secretKeyRef:` but not both at the same time
-#        - name: TURN_PASSWORD
+#        - name: SELKIES_TURN_PASSWORD
 #          value: "mypasswd"
 #          valueFrom:
 #            secretKeyRef:
 #              name: turn-password
 #              key: turn-password
         # Change to `tcp` if the UDP protocol is throttled or blocked in your client network, or when the TURN server does not support UDP
-#        - name: TURN_PROTOCOL
+#        - name: SELKIES_TURN_PROTOCOL
 #          value: "udp"
         # You need a valid hostname and a certificate from authorities such as ZeroSSL (Let's Encrypt may have issues) to enable this
-#        - name: TURN_TLS
+#        - name: SELKIES_TURN_TLS
 #          value: "false"
         stdin: true
         tty: true
@@ -126,7 +126,7 @@ spec:
           name: dshm
         - mountPath: /cache
           name: xgl-cache-vol
-        - mountPath: /home/user
+        - mountPath: /home/ubuntu
           name: xgl-root-vol
       volumes:
       - name: dshm
