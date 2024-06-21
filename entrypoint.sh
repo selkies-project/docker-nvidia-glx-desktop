@@ -13,7 +13,7 @@ mkdir -pm700 /tmp/runtime-ubuntu
 chown ubuntu:ubuntu /tmp/runtime-ubuntu
 chmod 700 /tmp/runtime-ubuntu
 # Make user directory owned by the user in case it is not
-chown ubuntu:ubuntu /home/ubuntu || sudo chown ubuntu:ubuntu /home/ubuntu || sudo-root chown ubuntu:ubuntu /home/ubuntu || chown user:user /home/ubuntu/* || sudo chown user:user /home/ubuntu/* || sudo-root chown user:user /home/ubuntu/* || echo 'Failed to change user directory permissions, there may be permission issues'
+chown ubuntu:ubuntu /home/ubuntu || sudo-root chown ubuntu:ubuntu /home/ubuntu || chown user:user /home/ubuntu/* || sudo-root chown user:user /home/ubuntu/* || echo 'Failed to change user directory permissions, there may be permission issues'
 # Change operating system password to environment variable
 echo "ubuntu:$PASSWD" | chpasswd
 # Remove directories to make sure the desktop environment starts
@@ -121,7 +121,7 @@ sed -i '/Section\s\+"Monitor"/a\    '"$MODELINE" /etc/X11/xorg.conf
 echo -e "Section \"ServerFlags\"\n    Option \"AutoAddGPU\" \"false\"\nEndSection" | tee -a /etc/X11/xorg.conf > /dev/null
 
 # This symbolic link enables running Xorg inside a container with `-sharevts`
-ln -snf /dev/ptmx /dev/tty7 || sudo ln -snf /dev/ptmx /dev/tty7 || sudo-root ln -snf /dev/ptmx /dev/tty7 || echo 'Failed to create /dev/tty7 device'
+ln -snf /dev/ptmx /dev/tty7 || sudo-root ln -snf /dev/ptmx /dev/tty7 || echo 'Failed to create /dev/tty7 device'
 
 # Run Xorg server with required extensions
 /usr/bin/Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DESKTOP_DPI}" +extension "COMPOSITE" +extension "DAMAGE" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" +extension "XFIXES" +extension "XTEST" "${DISPLAY}" &
