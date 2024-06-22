@@ -138,6 +138,7 @@ fi
 
 # Start KDE desktop environment
 export XDG_SESSION_ID="${DISPLAY#*:}"
+export QT_LOGGING_RULES='*.debug=false;qt.qpa.*=false'
 /usr/bin/startplasma-x11 &
 
 # Start Fcitx input method framework
