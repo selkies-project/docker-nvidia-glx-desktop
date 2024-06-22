@@ -28,7 +28,7 @@ export GSTREAMER_PATH=/opt/gstreamer
 export SELKIES_ENCODER="${SELKIES_ENCODER:-x264enc}"
 export SELKIES_ENABLE_RESIZE="${SELKIES_ENABLE_RESIZE:-false}"
 if ( [ -z "${SELKIES_TURN_USERNAME}" ] || [ -z "${SELKIES_TURN_PASSWORD}" ] ) && [ -z "${SELKIES_TURN_SHARED_SECRET}" ] || [ -z "${SELKIES_TURN_HOST}" ] || [ -z "${SELKIES_TURN_PORT}" ]; then
-  export TURN_RANDOM_PASSWORD="$(cat /dev/urandom | tr -dc 'A-Za-z0-9' | fold -w 24 | head -n 1)"
+  export TURN_RANDOM_PASSWORD="$(tr -dc 'A-Za-z0-9' < /dev/urandom 2>/dev/null | head -c 24)"
   export SELKIES_TURN_HOST="$(curl -fsSL checkip.amazonaws.com)"
   export SELKIES_TURN_PORT="3478"
   export SELKIES_TURN_USERNAME="selkies"
@@ -38,7 +38,7 @@ fi
 export SELKIES_TURN_PROTOCOL="${SELKIES_TURN_PROTOCOL:-tcp}"
 
 # Wait for X server to start
-echo 'Waiting for X socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do sleep 0.5; done && echo 'X Server is ready'
+echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do sleep 0.5; done && echo 'X Server is ready'
 
 # Clear the cache registry
 rm -rf "${HOME}/.cache/gstreamer-1.0"

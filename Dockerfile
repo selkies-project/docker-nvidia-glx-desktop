@@ -7,7 +7,7 @@ ARG DISTRIB_RELEASE=24.04
 FROM ubuntu:${DISTRIB_RELEASE}
 ARG DISTRIB_RELEASE
 
-LABEL maintainer "https://github.com/ehfd,https://github.com/danisla"
+LABEL maintainer="https://github.com/ehfd,https://github.com/danisla"
 
 ARG DEBIAN_FRONTEND=noninteractive
 # Configure rootless user environment for constrained conditions without escalated root privileges inside containers
@@ -38,9 +38,9 @@ RUN apt-get clean && apt-get update && apt-get dist-upgrade -y && apt-get instal
     chown -R -f --no-preserve-root root:root /usr/bin/sudo-root /etc/sudo.conf /etc/sudoers /etc/sudoers.d /etc/sudo_logsrvd.conf /usr/libexec/sudo || true && chmod -f 4755 /usr/bin/sudo-root || true
 
 # Set locales
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG="en_US.UTF-8"
+ENV LANGUAGE="en_US:en"
+ENV LC_ALL="en_US.UTF-8"
 
 USER 1000
 # Use BUILDAH_FORMAT=docker in buildah
@@ -232,30 +232,30 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     }\n\
 }" > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 # Expose NVIDIA libraries and paths
-ENV PATH /usr/local/nvidia/bin${PATH:+:${PATH}}
-ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}:}/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+ENV PATH="/usr/local/nvidia/bin${PATH:+:${PATH}}"
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}:}/usr/local/nvidia/lib:/usr/local/nvidia/lib64"
 # Make all NVIDIA GPUs visible by default
-ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_VISIBLE_DEVICES=all
 # All NVIDIA driver capabilities should preferably be used, check `NVIDIA_DRIVER_CAPABILITIES` inside the container if things do not work
-ENV NVIDIA_DRIVER_CAPABILITIES all
+ENV NVIDIA_DRIVER_CAPABILITIES=all
 # Disable VSYNC for NVIDIA GPUs
-ENV __GL_SYNC_TO_VBLANK 0
+ENV __GL_SYNC_TO_VBLANK=0
 # Set default DISPLAY environment
-ENV DISPLAY ":0"
+ENV DISPLAY=":0"
 
 # Anything above this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
 
 # Default environment variables (password is "mypasswd")
-ENV DESKTOP_SIZEW 1920
-ENV DESKTOP_SIZEH 1080
-ENV DESKTOP_REFRESH 60
-ENV DESKTOP_DPI 96
-ENV DESKTOP_CDEPTH 24
-ENV VIDEO_PORT DFP
-ENV NOVNC_ENABLE false
-ENV SELKIES_ENCODER nvh264enc
-ENV SELKIES_ENABLE_RESIZE false
-ENV SELKIES_ENABLE_BASIC_AUTH true
+ENV DESKTOP_SIZEW=1920
+ENV DESKTOP_SIZEH=1080
+ENV DESKTOP_REFRESH=60
+ENV DESKTOP_DPI=96
+ENV DESKTOP_CDEPTH=24
+ENV VIDEO_PORT=DFP
+ENV NOVNC_ENABLE=false
+ENV SELKIES_ENCODER=nvh264enc
+ENV SELKIES_ENABLE_RESIZE=false
+ENV SELKIES_ENABLE_BASIC_AUTH=true
 
 # Set versions for components that should be manually checked before upgrading, other component versions are automatically determined by fetching the version online
 ARG NOVNC_VERSION=1.5.0
@@ -274,24 +274,24 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 # Anything below this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
 
 # Install KDE and other GUI packages
-ENV DESKTOP_SESSION plasma
-ENV XDG_SESSION_DESKTOP KDE
-ENV XDG_CURRENT_DESKTOP KDE
-ENV XDG_SESSION_TYPE x11
-ENV XDG_SESSION_ID ${DISPLAY#*:}
-ENV KDE_FULL_SESSION true
-ENV KDE_APPLICATIONS_AS_SCOPE 1
-ENV KWIN_COMPOSE N
-ENV KWIN_X11_NO_SYNC_TO_VBLANK 1
+ENV DESKTOP_SESSION=plasma
+ENV XDG_SESSION_DESKTOP=KDE
+ENV XDG_CURRENT_DESKTOP=KDE
+ENV XDG_SESSION_TYPE=x11
+ENV XDG_SESSION_ID="${DISPLAY#*:}"
+ENV KDE_FULL_SESSION=true
+ENV KDE_APPLICATIONS_AS_SCOPE=1
+ENV KWIN_COMPOSE=N
+ENV KWIN_X11_NO_SYNC_TO_VBLANK=1
 # Use sudoedit to change protected files instead of using sudo on kate
-ENV SUDO_EDITOR kate
+ENV SUDO_EDITOR=kate
 # Set input to fcitx
-ENV GTK_IM_MODULE fcitx
-ENV QT_IM_MODULE fcitx
-ENV XIM fcitx
-ENV XMODIFIERS "@im=fcitx"
+ENV GTK_IM_MODULE=fcitx
+ENV QT_IM_MODULE=fcitx
+ENV XIM=fcitx
+ENV XMODIFIERS="@im=fcitx"
 # Enable AppImage execution in containers
-ENV APPIMAGE_EXTRACT_AND_RUN 1
+ENV APPIMAGE_EXTRACT_AND_RUN=1
 RUN mkdir -pm755 /etc/apt/preferences.d && echo "Package: firefox*\n\
 Pin: version 1:1snap*\n\
 Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
@@ -527,9 +527,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     cd /tmp && curl -o selkies-js-interposer.deb -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/selkies-js-interposer_v${SELKIES_VERSION}_ubuntu$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')_$(dpkg --print-architecture).deb" && sudo apt-get update && sudo apt-get install --no-install-recommends -y ./selkies-js-interposer.deb && rm -f selkies-js-interposer.deb && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/*
 # Add configuration for Selkies-GStreamer Joystick interposer
-ENV SELKIES_INTERPOSER '/usr/$LIB/selkies_joystick_interposer.so'
-ENV LD_PRELOAD "${SELKIES_INTERPOSER}${LD_PRELOAD:+:${LD_PRELOAD}}"
-ENV SDL_JOYSTICK_DEVICE /dev/input/js0
+ENV SELKIES_INTERPOSER='/usr/$LIB/selkies_joystick_interposer.so'
+ENV LD_PRELOAD="${SELKIES_INTERPOSER}${LD_PRELOAD:+:${LD_PRELOAD}}"
+ENV SDL_JOYSTICK_DEVICE=/dev/input/js0
 
 # Install the noVNC web interface and the latest x11vnc for fallback
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -578,33 +578,35 @@ RUN chmod 755 /etc/supervisord.conf
 # Configure coTURN script
 RUN echo "#!/bin/bash\n\
 set -e\n\
-exec turnserver\n\
-    --verbose\n\
-    --listening-ip=0.0.0.0\n\
-    --listening-ip=::\n\
-    --listening-port=\${SELKIES_TURN_PORT:-3478}\n\
-    --realm=\${TURN_REALM:-example.com}\n\
-    --min-port=\${TURN_MIN_PORT:-49152}\n\
-    --max-port=\${TURN_MAX_PORT:-65535}\n\
-    --lt-cred-mech\n\
-    --user selkies:\${TURN_RANDOM_PASSWORD}\n\
-    --no-cli\n\
-    --allow-loopback-peers\n\
-    --db /tmp/coturn-turndb\n\
+turnserver \
+    --verbose \
+    --listening-ip=\"0.0.0.0\" \
+    --listening-ip=\"::\" \
+    --listening-port=\"\${SELKIES_TURN_PORT:-3478}\" \
+    --realm=\"\${TURN_REALM:-example.com}\" \
+    --external-ip=\"\${SELKIES_TURN_HOST:-\$(curl -fsSL checkip.amazonaws.com)}\" \
+    --min-port=\"\${TURN_MIN_PORT:-49152}\" \
+    --max-port=\"\${TURN_MAX_PORT:-65535}\" \
+    --channel-lifetime=\"\${TURN_CHANNEL_LIFETIME:--1}\" \
+    --lt-cred-mech \
+    --user \"selkies:\${TURN_RANDOM_PASSWORD}\" \
+    --no-cli \
+    --cli-password=\"\${TURN_RANDOM_PASSWORD:-\$(tr -dc 'A-Za-z0-9' < /dev/urandom 2>/dev/null | head -c 24)}\" \
+    --allow-loopback-peers \
     \${TURN_EXTRA_ARGS} \$@\
 " > /etc/start-turnserver.sh && chmod 755 /etc/start-turnserver.sh
 
 SHELL ["/bin/sh", "-c"]
 
-ENV PIPEWIRE_LATENCY "32/48000"
-ENV XDG_RUNTIME_DIR /tmp/runtime-ubuntu
-ENV PIPEWIRE_RUNTIME_DIR "${PIPEWIRE_RUNTIME_DIR:-${XDG_RUNTIME_DIR:-/tmp}}"
-ENV PULSE_RUNTIME_PATH "${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}"
-ENV PULSE_SERVER "${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
+ENV PIPEWIRE_LATENCY="32/48000"
+ENV XDG_RUNTIME_DIR=/tmp/runtime-ubuntu
+ENV PIPEWIRE_RUNTIME_DIR="${PIPEWIRE_RUNTIME_DIR:-${XDG_RUNTIME_DIR:-/tmp}}"
+ENV PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}"
+ENV PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
 USER 1000
-ENV SHELL /bin/bash
-ENV USER ubuntu
+ENV SHELL=/bin/bash
+ENV USER=ubuntu
 WORKDIR /home/ubuntu
 
 EXPOSE 8080

@@ -12,8 +12,8 @@ trap "echo TRAPed signal" HUP INT QUIT TERM
 mkdir -pm700 /tmp/runtime-ubuntu
 chown ubuntu:ubuntu /tmp/runtime-ubuntu
 chmod 700 /tmp/runtime-ubuntu
-# Make user directory owned by the user in case it is not
-chown ubuntu:ubuntu /home/ubuntu || sudo-root chown ubuntu:ubuntu /home/ubuntu || chown user:user /home/ubuntu/* || sudo-root chown user:user /home/ubuntu/* || echo 'Failed to change user directory permissions, there may be permission issues'
+# Make user directory owned by the default ubuntu user
+chown ubuntu:ubuntu /home/ubuntu || sudo-root chown ubuntu:ubuntu /home/ubuntu || chown ubuntu:ubuntu /home/ubuntu/* || sudo-root chown ubuntu:ubuntu /home/ubuntu/* || echo 'Failed to change user directory permissions, there may be permission issues'
 # Change operating system password to environment variable
 echo "ubuntu:$PASSWD" | chpasswd
 # Remove directories to make sure the desktop environment starts
@@ -127,7 +127,7 @@ ln -snf /dev/ptmx /dev/tty7 || sudo-root ln -snf /dev/ptmx /dev/tty7 || echo 'Fa
 /usr/bin/Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DESKTOP_DPI}" +extension "COMPOSITE" +extension "DAMAGE" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" +extension "XFIXES" +extension "XTEST" "${DISPLAY}" &
 
 # Wait for X server to start
-echo 'Waiting for X socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do sleep 0.5; done && echo 'X Server is ready'
+echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do sleep 0.5; done && echo 'X Server is ready'
 
 # Run the x11vnc + noVNC fallback web interface if enabled
 if [ "${NOVNC_ENABLE,,}" = "true" ]; then
@@ -137,6 +137,7 @@ if [ "${NOVNC_ENABLE,,}" = "true" ]; then
 fi
 
 # Start KDE desktop environment
+export XDG_SESSION_ID="${DISPLAY#*:}"
 /usr/bin/dbus-launch --exit-with-session /usr/bin/startplasma-x11 &
 
 # Start Fcitx input method framework
