@@ -56,7 +56,7 @@ if ! command -v nvidia-xconfig &> /dev/null; then
   sh "NVIDIA-Linux-${DRIVER_ARCH}-${DRIVER_VERSION}.run" -x
   cd "NVIDIA-Linux-${DRIVER_ARCH}-${DRIVER_VERSION}"
   # Run installation without the kernel modules and host components
-  ./nvidia-installer --silent \
+  sudo ./nvidia-installer --silent \
                     --no-kernel-module \
                     --install-compat32-libs \
                     --no-nouveau-check \
