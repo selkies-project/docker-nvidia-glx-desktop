@@ -304,6 +304,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         breeze-cursor-theme \
         breeze-gtk-theme \
         breeze-icon-theme \
+        dbus-x11 \
         debconf-kde-helper \
         desktop-file-utils \
         dolphin \
