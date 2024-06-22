@@ -17,7 +17,6 @@ RUN apt-get clean && apt-get update && apt-get dist-upgrade -y && apt-get instal
     apt-utils \
     dbus-user-session \
     fakeroot \
-    fuse \
     locales \
     ssl-cert \
     sudo \
@@ -118,8 +117,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libvulkan-dev \
         ocl-icd-libopencl1 \
         clinfo \
-        dbus-x11 \
-        libdbus-c++-1-0v5 \
         xkb-data \
         xauth \
         xbitmaps \
@@ -311,7 +308,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         desktop-file-utils \
         dolphin \
         dolphin-plugins \
-        dbus-x11 \
         enchant-2 \
         fcitx \
         fcitx-frontend-gtk2 \

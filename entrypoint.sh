@@ -138,7 +138,7 @@ fi
 
 # Start KDE desktop environment
 export XDG_SESSION_ID="${DISPLAY#*:}"
-/usr/bin/dbus-launch --exit-with-session /usr/bin/startplasma-x11 &
+/usr/bin/startplasma-x11 &
 
 # Start Fcitx input method framework
 /usr/bin/fcitx &
