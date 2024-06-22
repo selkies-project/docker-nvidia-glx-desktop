@@ -15,7 +15,7 @@ chmod 700 /tmp/runtime-ubuntu
 # Make user directory owned by the default ubuntu user
 chown ubuntu:ubuntu /home/ubuntu || sudo-root chown ubuntu:ubuntu /home/ubuntu || chown ubuntu:ubuntu /home/ubuntu/* || sudo-root chown ubuntu:ubuntu /home/ubuntu/* || echo 'Failed to change user directory permissions, there may be permission issues'
 # Change operating system password to environment variable
-echo "ubuntu:$PASSWD" | chpasswd
+(echo "$PASSWD"; echo "$PASSWD";) | sudo passwd ubuntu
 # Remove directories to make sure the desktop environment starts
 rm -rf /tmp/.X* ~/.cache
 # Change time zone from environment variable
