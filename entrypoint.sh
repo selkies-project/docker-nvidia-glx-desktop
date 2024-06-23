@@ -42,19 +42,30 @@ export PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}
 export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
 # Install NVIDIA userspace driver components including X graphic libraries
-if ! command -v nvidia-xconfig &> /dev/null; then
+if ! command -v nvidia-xconfig >/dev/null 2>&1; then
   # Driver version is provided by the kernel through the container toolkit
-  export DRIVER_ARCH="$(dpkg --print-architecture | sed -e 's/arm64/aarch64/' -e 's/armhf/32bit-ARM/' -e 's/i.*86/x86/' -e 's/amd64/x86_64/' -e 's/unknown/x86_64/')"
-  export DRIVER_VERSION="$(head -n1 </proc/driver/nvidia/version | awk '{for(i=1;i<=NF;i++) if ($i ~ /^[0-9]+\.[0-9\.]+/) {print $i; exit}}')"
+  export NVIDIA_DRIVER_ARCH="$(dpkg --print-architecture | sed -e 's/arm64/aarch64/' -e 's/armhf/32bit-ARM/' -e 's/i.*86/x86/' -e 's/amd64/x86_64/' -e 's/unknown/x86_64/')"
+  if [ -z "${NVIDIA_DRIVER_VERSION}" ]; then
+    # Prioritize kernel driver version if available
+    if [ -f "/proc/driver/nvidia/version" ]; then
+      export NVIDIA_DRIVER_VERSION="$(head -n1 </proc/driver/nvidia/version | awk '{for(i=1;i<=NF;i++) if ($i ~ /^[0-9]+\.[0-9\.]+/) {print $i; exit}}')"
+    # Use NVML version for compatibility with Windows Subsystem for Linux
+    elif command -v nvidia-smi >/dev/null 2>&1; then
+      export NVIDIA_DRIVER_VERSION="$(nvidia-smi --version | grep 'NVML version' | cut -d: -f2 | tr -d ' ')"
+    else
+      echo "Failed to find NVIDIA GPU driver version. You might not be using the NVIDIA container toolkit. Exiting."
+      exit 1
+    fi
+  fi
   cd /tmp
   # If version is different, new installer will overwrite the existing components
-  if [ ! -f "/tmp/NVIDIA-Linux-${DRIVER_ARCH}-${DRIVER_VERSION}.run" ]; then
+  if [ ! -f "/tmp/NVIDIA-Linux-${NVIDIA_DRIVER_ARCH}-${NVIDIA_DRIVER_VERSION}.run" ]; then
     # Check multiple sources in order to probe both consumer and datacenter driver versions
-    curl -fsSL -O "https://international.download.nvidia.com/XFree86/Linux-${DRIVER_ARCH}/${DRIVER_VERSION}/NVIDIA-Linux-${DRIVER_ARCH}-${DRIVER_VERSION}.run" || curl -fsSL -O "https://international.download.nvidia.com/tesla/${DRIVER_VERSION}/NVIDIA-Linux-${DRIVER_ARCH}-${DRIVER_VERSION}.run" || { echo "Failed NVIDIA GPU driver download. Exiting."; exit 1; }
+    curl -fsSL -O "https://international.download.nvidia.com/XFree86/Linux-${NVIDIA_DRIVER_ARCH}/${NVIDIA_DRIVER_VERSION}/NVIDIA-Linux-${NVIDIA_DRIVER_ARCH}-${NVIDIA_DRIVER_VERSION}.run" || curl -fsSL -O "https://international.download.nvidia.com/tesla/${NVIDIA_DRIVER_VERSION}/NVIDIA-Linux-${NVIDIA_DRIVER_ARCH}-${NVIDIA_DRIVER_VERSION}.run" || { echo "Failed NVIDIA GPU driver download. Exiting."; exit 1; }
   fi
   # Extract installer before installing
-  sh "NVIDIA-Linux-${DRIVER_ARCH}-${DRIVER_VERSION}.run" -x
-  cd "NVIDIA-Linux-${DRIVER_ARCH}-${DRIVER_VERSION}"
+  sh "NVIDIA-Linux-${NVIDIA_DRIVER_ARCH}-${NVIDIA_DRIVER_VERSION}.run" -x
+  cd "NVIDIA-Linux-${NVIDIA_DRIVER_ARCH}-${NVIDIA_DRIVER_VERSION}"
   # Run installation without the kernel modules and host components
   sudo ./nvidia-installer --silent \
                     --no-kernel-module \
@@ -82,12 +93,12 @@ fi
 
 # Get first GPU device if all devices are available or `NVIDIA_VISIBLE_DEVICES` is not set
 if [ "$NVIDIA_VISIBLE_DEVICES" == "all" ] || [ -z "$NVIDIA_VISIBLE_DEVICES" ]; then
-  export GPU_SELECT="$(nvidia-smi --query-gpu=uuid --format=csv | sed -n 2p)"
+  export GPU_SELECT="$(nvidia-smi --query-gpu=uuid --format=csv,noheader | head -n1)"
 # Get first GPU device out of the visible devices in other situations
 else
-  export GPU_SELECT="$(nvidia-smi --id=$(echo "$NVIDIA_VISIBLE_DEVICES" | cut -d ',' -f1) --query-gpu=uuid --format=csv | sed -n 2p)"
+  export GPU_SELECT="$(nvidia-smi --id=$(echo "$NVIDIA_VISIBLE_DEVICES" | cut -d ',' -f1) --query-gpu=uuid --format=csv,noheader | head -n1)"
   if [ -z "$GPU_SELECT" ]; then
-    export GPU_SELECT="$(nvidia-smi --query-gpu=uuid --format=csv | sed -n 2p)"
+    export GPU_SELECT="$(nvidia-smi --query-gpu=uuid --format=csv,noheader | head -n1)"
   fi
 fi
 
@@ -105,26 +116,29 @@ else
 fi
 
 # Bus ID from nvidia-smi is in hexadecimal format and should be converted to decimal format (including the domain) which Xorg understands, required because nvidia-xconfig doesn't work as intended in a container
-HEX_ID="$(nvidia-smi --query-gpu=pci.bus_id --id="$GPU_SELECT" --format=csv | sed -n 2p)"
+HEX_ID="$(nvidia-smi --query-gpu=pci.bus_id --id="$GPU_SELECT" --format=csv,noheader | head -n1)"
 IFS=":." ARR_ID=($HEX_ID)
 unset IFS
 BUS_ID="PCI:$((16#${ARR_ID[1]}))@$((16#${ARR_ID[0]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))"
 # A custom modeline should be generated because there is no monitor to fetch this information normally
-export MODELINE="$(cvt -r "${DESKTOP_SIZEW}" "${DESKTOP_SIZEH}" "${DESKTOP_REFRESH}" | sed -n 2p)"
+export MODELINE="$(cvt -r "${DISPLAY_SIZEW}" "${DISPLAY_SIZEH}" "${DISPLAY_REFRESH}" | sed -n 2p)"
 # Generate /etc/X11/xorg.conf with nvidia-xconfig
-nvidia-xconfig --virtual="${DESKTOP_SIZEW}x${DESKTOP_SIZEH}" --depth="$DESKTOP_CDEPTH" --mode="$(echo "$MODELINE" | awk '{print $2}' | tr -d '\"')" --allow-empty-initial-configuration --no-probe-all-gpus --busid="$BUS_ID" --include-implicit-metamodes --mode-debug --no-sli --no-base-mosaic --only-one-x-screen ${CONNECTED_MONITOR}
+nvidia-xconfig --virtual="${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" --depth="$DISPLAY_CDEPTH" --mode="$(echo "$MODELINE" | awk '{print $2}' | tr -d '\"')" --allow-empty-initial-configuration --no-probe-all-gpus --busid="$BUS_ID" --include-implicit-metamodes --mode-debug --no-sli --no-base-mosaic --only-one-x-screen ${CONNECTED_MONITOR}
 # Guarantee that the X server starts without a monitor by adding more options to the configuration
 sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "NoMaxPClkCheck,NoEdidMaxPClkCheck,NoMaxSizeCheck,NoHorizSyncCheck,NoVertRefreshCheck,NoVirtualSizeCheck,NoExtendedGpuCapabilitiesCheck,NoTotalSizeCheck,NoDualLinkDVICheck,NoDisplayPortBandwidthCheck,AllowNon3DVisionModes,AllowNonHDMI3DModes,AllowNonEdidModes,NoEdidHDMI2Check,AllowDpInterlaced"' /etc/X11/xorg.conf
+sed -i '/Driver\s\+"nvidia"/a\    Option         "PrimaryGPU" "True"' /etc/X11/xorg.conf
+# Support external GPUs
+sed -i '/Driver\s\+"nvidia"/a\    Option         "AllowExternalGpus" "True"' /etc/X11/xorg.conf
 # Add custom generated modeline to the configuration
 sed -i '/Section\s\+"Monitor"/a\    '"$MODELINE" /etc/X11/xorg.conf
 # Prevent interference between GPUs, add this to the host or other containers running Xorg as well
-echo -e "Section \"ServerFlags\"\n    Option \"AutoAddGPU\" \"false\"\nEndSection" | tee -a /etc/X11/xorg.conf > /dev/null
+echo -e "Section \"ServerFlags\"\n    Option \"DontVTSwitch\" \"true\"\n    Option \"AllowMouseOpenFail\" \"true\"\n    Option \"AutoAddGPU\" \"false\"\nEndSection" | tee -a /etc/X11/xorg.conf > /dev/null
 
 # This symbolic link enables running Xorg inside a container with `-sharevts`
 ln -snf /dev/ptmx /dev/tty7 || sudo-root ln -snf /dev/ptmx /dev/tty7 || echo 'Failed to create /dev/tty7 device'
 
 # Run Xorg server with required extensions
-/usr/bin/Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DESKTOP_DPI}" +extension "COMPOSITE" +extension "DAMAGE" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" +extension "XFIXES" +extension "XTEST" "${DISPLAY}" &
+/usr/bin/Xorg vt7 -noreset -novtswitch -sharevts -dpi "${DISPLAY_DPI}" +extension "COMPOSITE" +extension "DAMAGE" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" +extension "XFIXES" +extension "XTEST" "${DISPLAY}" &
 
 # Wait for X server to start
 echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do sleep 0.5; done && echo 'X Server is ready'

@@ -242,11 +242,11 @@ ENV DISPLAY=":0"
 # Anything above this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
 
 # Default environment variables (password is "mypasswd")
-ENV DESKTOP_SIZEW=1920
-ENV DESKTOP_SIZEH=1080
-ENV DESKTOP_REFRESH=60
-ENV DESKTOP_DPI=96
-ENV DESKTOP_CDEPTH=24
+ENV DISPLAY_SIZEW=1920
+ENV DISPLAY_SIZEH=1080
+ENV DISPLAY_REFRESH=60
+ENV DISPLAY_DPI=96
+ENV DISPLAY_CDEPTH=24
 ENV VIDEO_PORT=DFP
 ENV NOVNC_ENABLE=false
 ENV SELKIES_ENCODER=nvh264enc

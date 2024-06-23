@@ -25,15 +25,15 @@ spec:
         env:
         - name: TZ
           value: "UTC"
-        - name: DESKTOP_SIZEW
+        - name: DISPLAY_SIZEW
           value: "1920"
-        - name: DESKTOP_SIZEH
+        - name: DISPLAY_SIZEH
           value: "1080"
-        - name: DESKTOP_REFRESH
+        - name: DISPLAY_REFRESH
           value: "60"
-        - name: DESKTOP_DPI
+        - name: DISPLAY_DPI
           value: "96"
-        - name: DESKTOP_CDEPTH
+        - name: DISPLAY_CDEPTH
           value: "24"
         # Change to DP-0 or any other DP-* port for larger resolution support if you are NOT using datacenter GPUs
         - name: VIDEO_PORT
