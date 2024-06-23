@@ -26,8 +26,6 @@ export PATH="${PATH:+${PATH}:}/usr/local/games:/usr/games"
 export LD_LIBRARY_PATH="/usr/lib/libreoffice/program${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 
 # Configure joystick interposer
-export SELKIES_INTERPOSER='/usr/$LIB/selkies_joystick_interposer.so'
-export LD_PRELOAD="${SELKIES_INTERPOSER}${LD_PRELOAD:+:${LD_PRELOAD}}"
 export SDL_JOYSTICK_DEVICE=/dev/input/js0
 mkdir -pm777 /dev/input || sudo-root mkdir -pm777 /dev/input || echo 'Failed to create joystick interposer directory'
 touch /dev/input/js0 /dev/input/js1 /dev/input/js2 /dev/input/js3 || sudo-root touch /dev/input/js0 /dev/input/js1 /dev/input/js2 /dev/input/js3 || echo 'Failed to create joystick interposer devices'
@@ -41,12 +39,11 @@ export PIPEWIRE_RUNTIME_DIR="${PIPEWIRE_RUNTIME_DIR:-${XDG_RUNTIME_DIR:-/tmp}}"
 export PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}"
 export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
-# Install NVIDIA userspace driver components including X graphic libraries
 if ! command -v nvidia-xconfig >/dev/null 2>&1; then
-  # Driver version is provided by the kernel through the container toolkit
+  # Install NVIDIA userspace driver components including X graphic libraries, keep contents same as docker-nvidia-egl-desktop
   export NVIDIA_DRIVER_ARCH="$(dpkg --print-architecture | sed -e 's/arm64/aarch64/' -e 's/armhf/32bit-ARM/' -e 's/i.*86/x86/' -e 's/amd64/x86_64/' -e 's/unknown/x86_64/')"
   if [ -z "${NVIDIA_DRIVER_VERSION}" ]; then
-    # Prioritize kernel driver version if available
+    # Driver version is provided by the kernel through the container toolkit, prioritize kernel driver version if available
     if [ -f "/proc/driver/nvidia/version" ]; then
       export NVIDIA_DRIVER_VERSION="$(head -n1 </proc/driver/nvidia/version | awk '{for(i=1;i<=NF;i++) if ($i ~ /^[0-9]+\.[0-9\.]+/) {print $i; exit}}')"
     # Use NVML version for compatibility with Windows Subsystem for Linux
@@ -66,12 +63,14 @@ if ! command -v nvidia-xconfig >/dev/null 2>&1; then
   # Extract installer before installing
   sh "NVIDIA-Linux-${NVIDIA_DRIVER_ARCH}-${NVIDIA_DRIVER_VERSION}.run" -x
   cd "NVIDIA-Linux-${NVIDIA_DRIVER_ARCH}-${NVIDIA_DRIVER_VERSION}"
-  # Run installation without the kernel modules and host components
+  # Run NVIDIA driver installation without the kernel modules and host components
   sudo ./nvidia-installer --silent \
+                    --accept-license \
                     --no-kernel-module \
                     --install-compat32-libs \
                     --no-nouveau-check \
                     --no-nvidia-modprobe \
+                    --no-systemd \
                     --no-rpms \
                     --no-backup \
                     --no-check-for-alternate-installs
