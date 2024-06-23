@@ -45,11 +45,11 @@ spec:
 #            secretKeyRef:
 #              name: my-pass
 #              key: my-pass
-        # Uncomment this to enable noVNC, disabing Selkies-GStreamer and ignoring all its parameters except `SELKIES_BASIC_AUTH_PASSWORD`, which will be used for authentication with noVNC, `SELKIES_BASIC_AUTH_PASSWORD` defaults to `PASSWD` if not provided
-#        - name: NOVNC_ENABLE
+        # Uncomment this to enable KasmVNC, disabing Selkies-GStreamer and ignoring all its parameters except `SELKIES_BASIC_AUTH_PASSWORD`, which will be used for authentication with KasmVNC, `SELKIES_BASIC_AUTH_PASSWORD` defaults to `PASSWD` if not provided
+#        - name: KASMVNC_ENABLE
 #          value: "true"
-        # Additional view-only password only applicable to the noVNC interface, choose either `value:` or `secretKeyRef:` but not both at the same time
-#        - name: NOVNC_VIEWPASS
+        # Additional view-only password only applicable to the KasmVNC interface, choose either `value:` or `secretKeyRef:` but not both at the same time
+#        - name: KASMVNC_VIEWPASS
 #          value: "mypasswd"
 #          valueFrom:
 #            secretKeyRef:

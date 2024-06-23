@@ -206,6 +206,16 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libglx0:i386 \
         libglu1:i386 \
         libsm6:i386; fi && \
+    # Install nvidia-vaapi-driver
+    apt-get update && apt-get install --no-install-recommends -y \
+        meson \
+        gstreamer1.0-plugins-bad \
+        libffmpeg-nvenc-dev \
+        libva-dev \
+        libegl-dev \
+        libgstreamer-plugins-bad1.0-dev && \
+    NVIDIA_VAAPI_DRIVER_VERSION="$(curl -fsSL "https://api.github.com/elFarto/nvidia-vaapi-driver/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
+    cd /tmp && curl -fsSL "https://github.com/elFarto/nvidia-vaapi-driver/archive/v${NVIDIA_VAAPI_DRIVER_VERSION}.tar.gz" | tar -xzf - && mv -f nvidia-vaapi-driver* nvidia-vaapi-driver && cd nvidia-vaapi-driver && meson setup build && meson install -C build && rm -rf /tmp/* && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
     echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
     echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf && \
@@ -248,13 +258,10 @@ ENV DISPLAY_REFRESH=60
 ENV DISPLAY_DPI=96
 ENV DISPLAY_CDEPTH=24
 ENV VIDEO_PORT=DFP
-ENV NOVNC_ENABLE=false
+ENV KASMVNC_ENABLE=false
 ENV SELKIES_ENCODER=nvh264enc
 ENV SELKIES_ENABLE_RESIZE=false
 ENV SELKIES_ENABLE_BASIC_AUTH=true
-
-# Set versions for components that should be manually checked before upgrading, other component versions are automatically determined by fetching the version online
-ARG NOVNC_VERSION=1.5.0
 
 # Install Xorg and NVIDIA driver installer dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -418,6 +425,8 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         libreoffice-kf5 \
         libreoffice-plasma \
         libreoffice-style-breeze && \
+    # Install Google Chrome for supported architectures
+    if [ "$(dpkg --print-architecture)" = "amd64" ]; then cd /tmp && curl -o google-chrome-stable.deb -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_$(dpkg --print-architecture).deb" && apt-get update && apt-get install --no-install-recommends -y ./google-chrome-stable.deb && rm -f google-chrome-stable.deb && sed -i '/^Exec=/ s/$/ --password-store=basic/' /usr/share/applications/google-chrome.desktop; fi && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
     # Fix KDE startup permissions issues in containers
     MULTI_ARCH=$(dpkg --print-architecture | sed -e 's/arm64/aarch64-linux-gnu/' -e 's/armhf/arm-linux-gnueabihf/' -e 's/riscv64/riscv64-linux-gnu/' -e 's/ppc64el/powerpc64le-linux-gnu/' -e 's/s390x/s390x-linux-gnu/' -e 's/i.*86/i386-linux-gnu/' -e 's/amd64/x86_64-linux-gnu/' -e 's/unknown/x86_64-linux-gnu/') && \
@@ -447,12 +456,13 @@ RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
         q4wine \
         playonlinux && \
     LUTRIS_VERSION="$(curl -fsSL "https://api.github.com/repos/lutris/lutris/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
-    curl -fsSL -O "https://github.com/lutris/lutris/releases/download/v${LUTRIS_VERSION}/lutris_${LUTRIS_VERSION}_all.deb" && \
-    apt-get install --no-install-recommends -y ./lutris_${LUTRIS_VERSION}_all.deb && rm -f "./lutris_${LUTRIS_VERSION}_all.deb" && \
+    curl -o lutris.deb -fsSL "https://github.com/lutris/lutris/releases/download/v${LUTRIS_VERSION}/lutris_${LUTRIS_VERSION}_all.deb" && apt-get install --no-install-recommends -y ./lutris.deb && rm -f lutris.deb && \
+    HEROIC_VERSION="$(curl -fsSL "https://api.github.com/repos/Heroic-Games-Launcher/HeroicGamesLauncher/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
+    curl -o heroic_launcher.deb -fsSL "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/v${HEROIC_VERSION}/heroic_${HEROIC_VERSION}_$(dpkg --print-architecture).deb" && apt-get install --no-install-recommends -y ./heroic_launcher.deb && rm -f heroic_launcher.deb && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
-    curl -fsSL -o /usr/bin/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" && \
+    curl -o /usr/bin/winetricks -fsSL "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" && \
     chmod 755 /usr/bin/winetricks && \
-    curl -fsSL -o /usr/share/bash-completion/completions/winetricks "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks.bash-completion"; fi
+    curl -o /usr/share/bash-completion/completions/winetricks -fsSL "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks.bash-completion"; fi
 
 # Install latest Selkies-GStreamer (https://github.com/selkies-project/selkies-gstreamer) build, Python application, and web application, should be consistent with Selkies-GStreamer documentation
 ARG PIP_BREAK_SYSTEM_PACKAGES=1
@@ -527,39 +537,17 @@ ENV SELKIES_INTERPOSER='/usr/$LIB/selkies_joystick_interposer.so'
 ENV LD_PRELOAD="${SELKIES_INTERPOSER}${LD_PRELOAD:+:${LD_PRELOAD}}"
 ENV SDL_JOYSTICK_DEVICE=/dev/input/js0
 
-# Install the noVNC web interface and the latest x11vnc for fallback
-RUN apt-get update && apt-get install --no-install-recommends -y \
-        autoconf \
-        automake \
-        autotools-dev \
-        chrpath \
-        debhelper \
-        git \
-        jq \
-        python3 \
-        python3-numpy \
-        libc6-dev \
-        libcairo2-dev \
-        libjpeg-turbo8-dev \
-        libssl-dev \
-        libv4l-dev \
-        libvncserver-dev \
-        libtool-bin \
-        libxdamage-dev \
-        libxinerama-dev \
-        libxrandr-dev \
-        libxss-dev \
-        libxtst-dev \
-        libavahi-client-dev && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
-    # Build the latest x11vnc source to avoid various errors
-    git clone "https://github.com/LibVNC/x11vnc.git" /tmp/x11vnc && \
-    cd /tmp/x11vnc && autoreconf -fi && ./configure && make install && cd / && rm -rf /tmp/* && \
-    curl -fsSL "https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz" | tar -xzf - -C /opt && \
-    mv -f "/opt/noVNC-${NOVNC_VERSION}" /opt/noVNC && \
-    cd /opt/noVNC && ln -snf vnc.html index.html && \
-    # Use the latest Websockify source to expose noVNC
-    git clone "https://github.com/novnc/websockify.git" /opt/noVNC/utils/websockify
+# Install the KasmVNC web interface and RustDesk for fallback
+ARG PIP_BREAK_SYSTEM_PACKAGES=1
+RUN YQ_VERSION="$(curl -fsSL "https://api.github.com/repos/mikefarah/yq/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
+    cd /tmp && curl -o yq -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_$(dpkg --print-architecture)" && install ./yq /usr/bin/ && rm -f yq && \
+    KASMVNC_VERSION="$(curl -fsSL "https://api.github.com/repos/kasmtech/KasmVNC/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
+    cd /tmp && curl -o kasmvncserver.deb -fsSL "https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"' | sed 's/noble/jammy/')_${KASMVNC_VERSION}_$(dpkg --print-architecture).deb" && apt-get update && apt-get install --no-install-recommends -y ./kasmvncserver.deb && rm -f kasmvncserver.deb && \
+    RUSTDESK_VERSION="$(curl -fsSL "https://api.github.com/repos/rustdesk/rustdesk/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
+    cd /tmp && curl -o rustdesk.deb -fsSL "https://github.com/rustdesk/rustdesk/releases/download/${RUSTDESK_VERSION}/rustdesk-${RUSTDESK_VERSION}-$(uname -m).deb" && apt-get update && apt-get install --no-install-recommends -y ./rustdesk.deb && rm -f rustdesk.deb && \
+    pip3 install --no-cache-dir --force-reinstall yq && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/*
+ENV PATH="${PATH:+${PATH}:}/usr/lib/rustdesk"
 
 # Add custom packages right below this comment, or use FROM in a new container and replace entrypoint.sh or supervisord.conf, and set ENTRYPOINT to /usr/bin/supervisord
 
