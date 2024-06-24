@@ -206,8 +206,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libglx0:i386 \
         libglu1:i386 \
         libsm6:i386; fi && \
-    if [ "$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')" \> "20.04" ]; then \
     # Install nvidia-vaapi-driver
+    if [ "$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')" \> "20.04" ]; then \
     apt-get update && apt-get install --no-install-recommends -y \
         meson \
         gstreamer1.0-plugins-bad \
@@ -546,7 +546,6 @@ RUN YQ_VERSION="$(curl -fsSL "https://api.github.com/repos/mikefarah/yq/releases
     cd /tmp && curl -o kasmvncserver.deb -fsSL "https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"' | sed 's/noble/jammy/')_${KASMVNC_VERSION}_$(dpkg --print-architecture).deb" && apt-get update && apt-get install --no-install-recommends -y ./kasmvncserver.deb && rm -f kasmvncserver.deb && \
     RUSTDESK_VERSION="$(curl -fsSL "https://api.github.com/repos/rustdesk/rustdesk/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
     cd /tmp && curl -o rustdesk.deb -fsSL "https://github.com/rustdesk/rustdesk/releases/download/${RUSTDESK_VERSION}/rustdesk-${RUSTDESK_VERSION}-$(uname -m).deb" && apt-get update && apt-get install --no-install-recommends -y ./rustdesk.deb && rm -f rustdesk.deb && \
-    pip3 install --no-cache-dir --force-reinstall yq && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/*
 ENV PATH="${PATH:+${PATH}:}/usr/lib/rustdesk"
 
