@@ -145,21 +145,20 @@ echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do 
 # Run the KasmVNC fallback web interface if enabled
 if [ "$(echo ${KASMVNC_ENABLE} | tr '[:upper:]' '[:lower:]')" = "true" ]; then
   export KASM_DISPLAY=":50"
-  yq -i '
+  yq -i "
   .command_line.prompt = false |
-  .desktop.allow_resize = '$(echo ${SELKIES_ENABLE_RESIZE-false} | tr '[:upper:]' '[:lower:]')' |
-  .logging.log_dest = "/tmp/kasmvnc.log" |
-  .network.interface = 0.0.0.0 |
-  .network.ssl.require_ssl = '$(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]')' |
-  .encoding.max_frame_rate = '${DISPLAY_REFRESH}'
-  ' /etc/kasmvnc/kasmvnc.yaml
-  if [ -n "${SELKIES_HTTPS_CERT}" ]; then yq -i '.network.ssl.pem_certificate = "'${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem}'"' /etc/kasmvnc/kasmvnc.yaml; fi
-  if [ -n "${SELKIES_HTTPS_KEY}" ]; then yq -i '.network.ssl.pem_certificate = "'${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key}'"' /etc/kasmvnc/kasmvnc.yaml; fi
+  .desktop.allow_resize = $(echo ${SELKIES_ENABLE_RESIZE-false} | tr '[:upper:]' '[:lower:]') |
+  .network.interface = \"0.0.0.0\" |
+  .network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]') |
+  .encoding.max_frame_rate = ${DISPLAY_REFRESH}
+  " /etc/kasmvnc/kasmvnc.yaml
+  if [ -n "${SELKIES_HTTPS_CERT}" ]; then yq -i ".network.ssl.pem_certificate = \"${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem}\"" /etc/kasmvnc/kasmvnc.yaml; fi
+  if [ -n "${SELKIES_HTTPS_KEY}" ]; then yq -i ".network.ssl.pem_key = \"${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key}\"" /etc/kasmvnc/kasmvnc.yaml; fi
   if [ "$(echo ${SELKIES_ENABLE_RESIZE} | tr '[:upper:]' '[:lower:]')" = "true" ]; then export KASM_RESIZE_FLAG="-r"; fi
   (echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}";) | kasmvncpasswd -u "${SELKIES_BASIC_AUTH_USER:-${USER}}" -o
   if [ "$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')" = "false" ]; then export NO_KASM_AUTH_FLAG="-disableBasicAuth"; fi
-  if [ -n "$KASMVNC_VIEWPASS" ]; then (echo "${KASMVNC_VIEWPASS}"; echo "${KASMVNC_VIEWPASS}";) | kasmvncpasswd -u "view"; fi
-  kasmvncserver "${KASM_DISPLAY}" -interface 0.0.0.0 -websocketPort 8080 -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -FrameRate "${DISPLAY_REFRESH}" -fg -noxstartup -AlwaysShared ${NO_KASM_AUTH_FLAG}
+  if [ -n "${KASMVNC_VIEWPASS}" ]; then (echo "${KASMVNC_VIEWPASS}"; echo "${KASMVNC_VIEWPASS}";) | kasmvncpasswd -u "view"; fi
+  kasmvncserver "${KASM_DISPLAY}" -interface 0.0.0.0 -websocketPort 8080 -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -FrameRate "${DISPLAY_REFRESH}" -noxstartup -AlwaysShared ${NO_KASM_AUTH_FLAG}
   until [ -S "/tmp/.X11-unix/X${KASM_DISPLAY#*:}" ]; do sleep 0.5; done;
   kasmxproxy -a "${DISPLAY}" -v "${KASM_DISPLAY}" -f "${DISPLAY_REFRESH}" ${KASM_RESIZE_FLAG} &
 fi
