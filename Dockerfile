@@ -50,6 +50,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         software-properties-common \
         build-essential \
         ca-certificates \
+        nginx \
         cups-browsed \
         cups-bsd \
         cups-common \
@@ -556,6 +557,8 @@ COPY --chown=1000:1000 entrypoint.sh /etc/entrypoint.sh
 RUN chmod 755 /etc/entrypoint.sh
 COPY --chown=1000:1000 selkies-gstreamer-entrypoint.sh /etc/selkies-gstreamer-entrypoint.sh
 RUN chmod 755 /etc/selkies-gstreamer-entrypoint.sh
+COPY --chown=1000:1000 kasmvnc-entrypoint.sh /etc/kasmvnc-entrypoint.sh
+RUN chmod 755 /etc/kasmvnc-entrypoint.sh
 COPY --chown=1000:1000 supervisord.conf /etc/supervisord.conf
 RUN chmod 755 /etc/supervisord.conf
 

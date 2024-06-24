@@ -18,6 +18,101 @@ export PIPEWIRE_RUNTIME_DIR="${PIPEWIRE_RUNTIME_DIR:-${XDG_RUNTIME_DIR:-/tmp}}"
 export PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}"
 export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
+# Configure NGINX
+echo "# Selkies-GStreamer NGINX Configuration
+server {
+    listen 8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"ssl\"; fi);
+    listen [::]:8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"ssl\"; fi);
+    ssl_certificate ${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem};
+    ssl_certificate_key ${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key};
+
+    location / {
+        alias /opt/gst-web;
+        index  index.html index.htm;
+    }
+
+    location /health {
+        proxy_http_version      1.1;
+        proxy_read_timeout      1800s;
+        proxy_send_timeout      1800s;
+        proxy_connect_timeout   1800s;
+        proxy_buffering         off;
+
+        client_max_body_size    10M;
+
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+    }
+
+    location /turn {
+        proxy_http_version      1.1;
+        proxy_read_timeout      1800s;
+        proxy_send_timeout      1800s;
+        proxy_connect_timeout   1800s;
+        proxy_buffering         off;
+
+        client_max_body_size    10M;
+
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+    }
+
+    location /ws {
+        proxy_set_header        Upgrade \$http_upgrade;
+        proxy_set_header        Connection \"upgrade\";
+
+        proxy_set_header        Host \$host;
+        proxy_set_header        X-Real-IP \$remote_addr;
+        proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto \$scheme;
+
+        proxy_http_version      1.1;
+        proxy_read_timeout      1800s;
+        proxy_send_timeout      1800s;
+        proxy_connect_timeout   1800s;
+        proxy_buffering         off;
+
+        client_max_body_size    10M;
+
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+    }
+
+    location /webrtc/signalling {
+        proxy_set_header        Upgrade \$http_upgrade;
+        proxy_set_header        Connection \"upgrade\";
+
+        proxy_set_header        Host \$host;
+        proxy_set_header        X-Real-IP \$remote_addr;
+        proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto \$scheme;
+
+        proxy_http_version      1.1;
+        proxy_read_timeout      1800s;
+        proxy_send_timeout      1800s;
+        proxy_connect_timeout   1800s;
+        proxy_buffering         off;
+
+        client_max_body_size    10M;
+
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+    }
+
+    location /metrics {
+        proxy_http_version      1.1;
+        proxy_read_timeout      1800s;
+        proxy_send_timeout      1800s;
+        proxy_connect_timeout   1800s;
+        proxy_buffering         off;
+
+        client_max_body_size    10M;
+
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+    }
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        alias /opt/gst-web;
+    }
+}" | tee /etc/nginx/sites-available/default > /dev/null
+
 # Export environment variables required for Selkies-GStreamer
 export GST_DEBUG="${GST_DEBUG:-*:2}"
 export GSTREAMER_PATH=/opt/gstreamer
@@ -46,5 +141,5 @@ rm -rf "${HOME}/.cache/gstreamer-1.0"
 # Start the Selkies-GStreamer WebRTC HTML5 remote desktop application
 selkies-gstreamer \
     --addr="0.0.0.0" \
-    --port="8080" \
+    --port="8081" \
     $@
