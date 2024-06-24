@@ -33,7 +33,7 @@ RUN apt-get clean && apt-get update && apt-get dist-upgrade -y && apt-get instal
     usermod -a -G adm,audio,cdrom,dialout,dip,fax,floppy,games,input,lp,plugdev,render,ssl-cert,sudo,tape,tty,video,voice ubuntu && \
     echo "ubuntu ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     echo "ubuntu:${PASSWD}" | chpasswd && \
-    chown -R -f --no-preserve-root ubuntu:ubuntu / || echo 'Failed to set filesystem ownership to ubuntu user'
+    chown -R -f --no-preserve-root ubuntu:ubuntu / || echo 'Failed to set filesystem ownership in some paths to ubuntu user'
 
 # Set locales
 ENV LANG="en_US.UTF-8"
@@ -584,9 +584,9 @@ SHELL ["/bin/sh", "-c"]
 
 USER 0
 # Enable sudo through sudo-root with uid 0
-RUN if [ -d "/usr/libexec/sudo" ]; then SUDO_LIB="/usr/libexec/sudo"; else SUDO_LIB="/usr/lib/sudo"; fi && \
+RUN if [ -d /usr/libexec/sudo ]; then SUDO_LIB="/usr/libexec/sudo"; else SUDO_LIB="/usr/lib/sudo"; fi && \
     chown -R -f --no-preserve-root root:root /usr/bin/sudo-root /etc/sudo.conf /etc/sudoers /etc/sudoers.d /etc/sudo_logsrvd.conf "${SUDO_LIB}" || echo 'Failed to provide root permissions to sudo' && \
-    chmod -f 4755 /usr/bin/sudo-root || echo 'Failed to set chmod to sudo-root'
+    chmod -f 4755 /usr/bin/sudo-root || echo 'Failed to set chmod in some paths with sudo-root'
 USER 1000
 
 ENV PIPEWIRE_LATENCY="32/48000"
