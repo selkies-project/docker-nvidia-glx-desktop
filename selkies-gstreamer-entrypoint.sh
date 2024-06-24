@@ -19,14 +19,16 @@ export PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}
 export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
 # Configure NGINX
+if [ "$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')" != "false" ]; then (echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}";) | htpasswd -cm "${XDG_RUNTIME_DIR}/.htpasswd" "${SELKIES_BASIC_AUTH_USER:-${USER}}"; fi
 echo "# Selkies-GStreamer NGINX Configuration
-error_log /dev/stderr error;
+access_log /dev/stdout;
+error_log /dev/stderr;
 server {
-    access_log /dev/stdout main;
     listen 8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"ssl\"; fi);
     listen [::]:8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"ssl\"; fi);
     ssl_certificate ${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem};
     ssl_certificate_key ${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key};
+    $(if [ \"$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')\" != \"false\" ]; then printf \"auth_basic_user_file ${XDG_RUNTIME_DIR}/.htpasswd;\"; fi)
 
     location / {
         alias /opt/gst-web;
@@ -144,4 +146,5 @@ rm -rf "${HOME}/.cache/gstreamer-1.0"
 selkies-gstreamer \
     --addr="0.0.0.0" \
     --port="8081" \
+    --enable_basic_auth="false" \
     $@

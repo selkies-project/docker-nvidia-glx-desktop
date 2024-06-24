@@ -50,7 +50,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         software-properties-common \
         build-essential \
         ca-certificates \
-        nginx \
         cups-browsed \
         cups-bsd \
         cups-common \
@@ -154,7 +153,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libglvnd0 \
         libglx0 \
         libglu1 \
-        libsm6 && \
+        libsm6 \
+        # NGINX web server
+        nginx \
+        apache2-utils && \
     # PipeWire and WirePlumber
     mkdir -pm755 /etc/apt/trusted.gpg.d && curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xFC43B7352BCC0EC8AF2EEB8B25088A0359807596" | gpg --dearmor -o /etc/apt/trusted.gpg.d/pipewire-debian-ubuntu-pipewire-upstream.gpg && \
     mkdir -pm755 /etc/apt/sources.list.d && echo "deb https://ppa.launchpadcontent.net/pipewire-debian/pipewire-upstream/ubuntu $(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"') main" > "/etc/apt/sources.list.d/pipewire-debian-ubuntu-pipewire-upstream-$(grep UBUNTU_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '\"').list" && \
