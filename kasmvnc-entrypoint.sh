@@ -66,6 +66,9 @@ if [ "$(echo ${SELKIES_ENABLE_RESIZE} | tr '[:upper:]' '[:lower:]')" = "true" ];
 if [ "$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')" = "false" ]; then export NO_KASM_AUTH_FLAG="-disableBasicAuth"; fi
 if [ -n "${KASMVNC_VIEWPASS}" ]; then (echo "${KASMVNC_VIEWPASS}"; echo "${KASMVNC_VIEWPASS}";) | kasmvncpasswd -u "view"; fi
 
+# Wait for X server to start
+echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do sleep 0.5; done && echo 'X Server is ready'
+
 # Run KasmVNC
 kasmvncserver "${KASM_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -noxstartup -FrameRate "${DISPLAY_REFRESH}" -websocketPort 8081 -AlwaysShared -BlacklistTimeout 0 ${NO_KASM_AUTH_FLAG}
 
