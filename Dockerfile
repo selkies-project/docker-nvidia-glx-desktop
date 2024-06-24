@@ -539,7 +539,6 @@ ENV LD_PRELOAD="${SELKIES_INTERPOSER}${LD_PRELOAD:+:${LD_PRELOAD}}"
 ENV SDL_JOYSTICK_DEVICE=/dev/input/js0
 
 # Install the KasmVNC web interface and RustDesk for fallback
-ARG PIP_BREAK_SYSTEM_PACKAGES=1
 RUN YQ_VERSION="$(curl -fsSL "https://api.github.com/repos/mikefarah/yq/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
     cd /tmp && curl -o yq -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_$(dpkg --print-architecture)" && install ./yq /usr/bin/ && rm -f yq && \
     KASMVNC_VERSION="$(curl -fsSL "https://api.github.com/repos/kasmtech/KasmVNC/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
@@ -585,8 +584,8 @@ SHELL ["/bin/sh", "-c"]
 USER 0
 # Enable sudo through sudo-root with uid 0
 RUN if [ -d /usr/libexec/sudo ]; then SUDO_LIB="/usr/libexec/sudo"; else SUDO_LIB="/usr/lib/sudo"; fi && \
-    chown -R -f --no-preserve-root root:root /usr/bin/sudo-root /etc/sudo.conf /etc/sudoers /etc/sudoers.d /etc/sudo_logsrvd.conf "${SUDO_LIB}" || echo 'Failed to provide root permissions to sudo' && \
-    chmod -f 4755 /usr/bin/sudo-root || echo 'Failed to set chmod in some paths with sudo-root'
+    chown -R -f --no-preserve-root root:root /usr/bin/sudo-root /etc/sudo.conf /etc/sudoers /etc/sudoers.d /etc/sudo_logsrvd.conf "${SUDO_LIB}" || echo 'Failed to provide root permissions in some paths relevant to sudo' && \
+    chmod -f 4755 /usr/bin/sudo-root || echo 'Failed to set chmod with sudo-root'
 USER 1000
 
 ENV PIPEWIRE_LATENCY="32/48000"
