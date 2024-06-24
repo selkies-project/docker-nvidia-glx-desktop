@@ -210,6 +210,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     apt-get update && apt-get install --no-install-recommends -y \
         meson \
         gstreamer1.0-plugins-bad \
+        libdrm-dev \
         libffmpeg-nvenc-dev \
         libva-dev \
         libegl-dev \
