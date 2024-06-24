@@ -7,7 +7,7 @@
 set -e
 
 # Set password for basic authentication
-if [ "${SELKIES_ENABLE_BASIC_AUTH,,}" = "true" ] && [ -z "${SELKIES_BASIC_AUTH_PASSWORD}" ]; then export SELKIES_BASIC_AUTH_PASSWORD="${PASSWD}"; fi
+if [ "$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')" = "true" ] && [ -z "${SELKIES_BASIC_AUTH_PASSWORD}" ]; then export SELKIES_BASIC_AUTH_PASSWORD="${PASSWD}"; fi
 
 # Set default display
 export DISPLAY="${DISPLAY:-:0}"
