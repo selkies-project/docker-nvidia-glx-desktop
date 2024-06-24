@@ -206,7 +206,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libglx0:i386 \
         libglu1:i386 \
         libsm6:i386; fi && \
-    # Install nvidia-vaapi-driver
+    # Install nvidia-vaapi-driver, requires the kernel parameter `nvidia_drm.modeset=1` set to run correctly
     if [ "$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')" \> "20.04" ]; then \
     apt-get update && apt-get install --no-install-recommends -y \
         meson \
