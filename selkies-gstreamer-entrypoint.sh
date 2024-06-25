@@ -21,42 +21,42 @@ export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DI
 # Configure NGINX
 if [ "$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')" != "false" ]; then htpasswd -bcm "${XDG_RUNTIME_DIR}/.htpasswd" "${SELKIES_BASIC_AUTH_USER:-${USER}}" "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; fi
 echo "# Selkies-GStreamer NGINX Configuration
-access_log /dev/stdout;
-error_log /dev/stderr;
 server {
-    listen 8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"ssl\"; fi);
-    listen [::]:8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"ssl\"; fi);
+    access_log /dev/stdout;
+    error_log /dev/stderr;
+    listen 8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "ssl"; fi);
+    listen [::]:8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "ssl"; fi);
     ssl_certificate ${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem};
     ssl_certificate_key ${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key};
-    $(if [ \"$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')\" != \"false\" ]; then printf \"auth_basic_user_file ${XDG_RUNTIME_DIR}/.htpasswd\;\"; fi)
+    $(if [ \"$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')\" != \"false\" ]; then echo "auth_basic \"Selkies\";"; echo -n "    auth_basic_user_file ${XDG_RUNTIME_DIR}/.htpasswd;"; fi)
 
     location / {
-        alias /opt/gst-web;
+        root /opt/gst-web/;
         index  index.html index.htm;
     }
 
     location /health {
         proxy_http_version      1.1;
-        proxy_read_timeout      1800s;
-        proxy_send_timeout      1800s;
-        proxy_connect_timeout   1800s;
+        proxy_read_timeout      3600s;
+        proxy_send_timeout      3600s;
+        proxy_connect_timeout   3600s;
         proxy_buffering         off;
 
         client_max_body_size    10M;
 
-        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8081;
     }
 
     location /turn {
         proxy_http_version      1.1;
-        proxy_read_timeout      1800s;
-        proxy_send_timeout      1800s;
-        proxy_connect_timeout   1800s;
+        proxy_read_timeout      3600s;
+        proxy_send_timeout      3600s;
+        proxy_connect_timeout   3600s;
         proxy_buffering         off;
 
         client_max_body_size    10M;
 
-        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8081;
     }
 
     location /ws {
@@ -69,14 +69,14 @@ server {
         proxy_set_header        X-Forwarded-Proto \$scheme;
 
         proxy_http_version      1.1;
-        proxy_read_timeout      1800s;
-        proxy_send_timeout      1800s;
-        proxy_connect_timeout   1800s;
+        proxy_read_timeout      3600s;
+        proxy_send_timeout      3600s;
+        proxy_connect_timeout   3600s;
         proxy_buffering         off;
 
         client_max_body_size    10M;
 
-        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8081;
     }
 
     location /webrtc/signalling {
@@ -89,31 +89,31 @@ server {
         proxy_set_header        X-Forwarded-Proto \$scheme;
 
         proxy_http_version      1.1;
-        proxy_read_timeout      1800s;
-        proxy_send_timeout      1800s;
-        proxy_connect_timeout   1800s;
+        proxy_read_timeout      3600s;
+        proxy_send_timeout      3600s;
+        proxy_connect_timeout   3600s;
         proxy_buffering         off;
 
         client_max_body_size    10M;
 
-        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8081;
     }
 
     location /metrics {
         proxy_http_version      1.1;
-        proxy_read_timeout      1800s;
-        proxy_send_timeout      1800s;
-        proxy_connect_timeout   1800s;
+        proxy_read_timeout      3600s;
+        proxy_send_timeout      3600s;
+        proxy_connect_timeout   3600s;
         proxy_buffering         off;
 
         client_max_body_size    10M;
 
-        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:9081;
     }
 
     error_page 500 502 503 504 /50x.html;
     location = /50x.html {
-        alias /opt/gst-web;
+        root /opt/gst-web/;
     }
 }" | tee /etc/nginx/sites-available/default > /dev/null
 
@@ -147,4 +147,6 @@ selkies-gstreamer \
     --addr="0.0.0.0" \
     --port="8081" \
     --enable_basic_auth="false" \
+    --enable_metrics_http="true" \
+    --metrics_http_port="9081" \
     $@

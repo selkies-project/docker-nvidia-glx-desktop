@@ -21,14 +21,14 @@ export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DI
 # Configure NGINX
 if [ "$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')" != "false" ]; then htpasswd -bcm "${XDG_RUNTIME_DIR}/.htpasswd" "${SELKIES_BASIC_AUTH_USER:-${USER}}" "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; fi
 echo "# Selkies KasmVNC NGINX Configuration
-access_log /dev/stdout;
-error_log /dev/stderr;
 server {
-    listen 8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"ssl\"; fi);
-    listen [::]:8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"ssl\"; fi);
+    access_log /dev/stdout;
+    error_log /dev/stderr;
+    listen 8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "ssl"; fi);
+    listen [::]:8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "ssl"; fi);
     ssl_certificate ${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem};
     ssl_certificate_key ${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key};
-    $(if [ \"$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')\" != \"false\" ]; then printf \"auth_basic_user_file ${XDG_RUNTIME_DIR}/.htpasswd\;\"; fi)
+    $(if [ \"$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')\" != \"false\" ]; then echo "auth_basic \"Selkies\";"; echo -n "    auth_basic_user_file ${XDG_RUNTIME_DIR}/.htpasswd;"; fi)
 
     location / {
         proxy_set_header        Upgrade \$http_upgrade;
@@ -40,14 +40,14 @@ server {
         proxy_set_header        X-Forwarded-Proto \$scheme;
 
         proxy_http_version      1.1;
-        proxy_read_timeout      1800s;
-        proxy_send_timeout      1800s;
-        proxy_connect_timeout   1800s;
+        proxy_read_timeout      3600s;
+        proxy_send_timeout      3600s;
+        proxy_connect_timeout   3600s;
         proxy_buffering         off;
 
         client_max_body_size    10M;
 
-        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"s\"; fi)://localhost:8081;
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8082;
     }
 }" | tee /etc/nginx/sites-available/default > /dev/null
 
@@ -56,7 +56,7 @@ export KASM_DISPLAY=":50"
 yq -i "
 .command_line.prompt = false |
 .network.interface = \"0.0.0.0\" |
-.network.websocket_port = 8081 |
+.network.websocket_port = 8082 |
 .network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]') |
 .encoding.max_frame_rate = ${DISPLAY_REFRESH}
 " /etc/kasmvnc/kasmvnc.yaml
@@ -70,7 +70,7 @@ if [ "$(echo ${SELKIES_ENABLE_RESIZE} | tr '[:upper:]' '[:lower:]')" = "true" ];
 echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do sleep 0.5; done && echo 'X Server is ready'
 
 # Run KasmVNC
-kasmvncserver "${KASM_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -noxstartup -FrameRate "${DISPLAY_REFRESH}" -websocketPort 8081 -disableBasicAuth -AlwaysShared -BlacklistTimeout 0 ${NO_KASM_AUTH_FLAG}
+kasmvncserver "${KASM_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -noxstartup -FrameRate "${DISPLAY_REFRESH}" -websocketPort 8082 -disableBasicAuth -AlwaysShared -BlacklistTimeout 0 ${NO_KASM_AUTH_FLAG}
 
 until [ -S "/tmp/.X11-unix/X${KASM_DISPLAY#*:}" ]; do sleep 0.5; done;
 
