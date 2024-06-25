@@ -45,16 +45,9 @@ spec:
 #            secretKeyRef:
 #              name: my-pass
 #              key: my-pass
-        # Uncomment this to enable KasmVNC, disabing Selkies-GStreamer and ignoring all its parameters except `SELKIES_BASIC_AUTH_PASSWORD`, which will be used for authentication with KasmVNC, `SELKIES_BASIC_AUTH_PASSWORD` defaults to `PASSWD` if not provided
-#        - name: KASMVNC_ENABLE
+        # Uncomment to make KasmVNC available only for screen viewing without desktop control
+#        - name: KASMVNC_VIEWONLY
 #          value: "true"
-        # Additional view-only password only applicable to the KasmVNC interface, choose either `value:` or `secretKeyRef:` but not both at the same time
-#        - name: KASMVNC_VIEWPASS
-#          value: "mypasswd"
-#          valueFrom:
-#            secretKeyRef:
-#              name: my-pass
-#              key: my-pass
         ###
         # Selkies-GStreamer parameters, for additional configurations see `selkies-gstreamer --help`
         ###

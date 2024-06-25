@@ -111,6 +111,26 @@ server {
         proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:9081;
     }
 
+    location /vnc {
+        proxy_set_header        Upgrade \$http_upgrade;
+        proxy_set_header        Connection \"upgrade\";
+
+        proxy_set_header        Host \$host;
+        proxy_set_header        X-Real-IP \$remote_addr;
+        proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto \$scheme;
+
+        proxy_http_version      1.1;
+        proxy_read_timeout      3600s;
+        proxy_send_timeout      3600s;
+        proxy_connect_timeout   3600s;
+        proxy_buffering         off;
+
+        client_max_body_size    10M;
+
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8082;
+    }
+
     error_page 500 502 503 504 /50x.html;
     location = /50x.html {
         root /opt/gst-web/;
@@ -144,7 +164,7 @@ rm -rf "${HOME}/.cache/gstreamer-1.0"
 
 # Start the Selkies-GStreamer WebRTC HTML5 remote desktop application
 selkies-gstreamer \
-    --addr="0.0.0.0" \
+    --addr="localhost" \
     --port="8081" \
     --enable_basic_auth="false" \
     --enable_metrics_http="true" \
