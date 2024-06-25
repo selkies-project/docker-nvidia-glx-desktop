@@ -6,9 +6,6 @@
 
 set -e
 
-# Set password for basic authentication
-if [ "$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')" = "true" ] && [ -z "${SELKIES_BASIC_AUTH_PASSWORD}" ]; then export SELKIES_BASIC_AUTH_PASSWORD="${PASSWD}"; fi
-
 # Set default display
 export DISPLAY="${DISPLAY:-:0}"
 # PipeWire-Pulse server socket path
@@ -17,6 +14,39 @@ export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
 export PIPEWIRE_RUNTIME_DIR="${PIPEWIRE_RUNTIME_DIR:-${XDG_RUNTIME_DIR:-/tmp}}"
 export PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}"
 export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
+
+# Configure NGINX
+if [ "$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')" != "false" ]; then htpasswd -bcm "${XDG_RUNTIME_DIR}/.htpasswd" "${SELKIES_BASIC_AUTH_USER:-${USER}}" "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; fi
+echo "# Selkies KasmVNC NGINX Configuration
+server {
+    access_log /dev/stdout;
+    error_log /dev/stderr;
+    listen 8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "ssl"; fi);
+    listen [::]:8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "ssl"; fi);
+    ssl_certificate ${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem};
+    ssl_certificate_key ${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key};
+    $(if [ \"$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')\" != \"false\" ]; then echo "auth_basic \"Selkies\";"; echo -n "    auth_basic_user_file ${XDG_RUNTIME_DIR}/.htpasswd;"; fi)
+
+    location / {
+        proxy_set_header        Upgrade \$http_upgrade;
+        proxy_set_header        Connection \"upgrade\";
+
+        proxy_set_header        Host \$host;
+        proxy_set_header        X-Real-IP 127.0.0.1;
+        proxy_set_header        X-Forwarded-For 127.0.0.1;
+        proxy_set_header        X-Forwarded-Proto \$scheme;
+
+        proxy_http_version      1.1;
+        proxy_read_timeout      3600s;
+        proxy_send_timeout      3600s;
+        proxy_connect_timeout   3600s;
+        proxy_buffering         off;
+
+        client_max_body_size    10M;
+
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8082;
+    }
+}" | tee /etc/nginx/sites-available/default > /dev/null
 
 # Configure KasmVNC
 export KASM_DISPLAY=":50"
@@ -36,7 +66,6 @@ if [ -n "${SELKIES_HTTPS_CERT}" ]; then yq -i ".network.ssl.pem_certificate = \"
 if [ -n "${SELKIES_HTTPS_KEY}" ]; then yq -i ".network.ssl.pem_key = \"${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key}\"" /etc/kasmvnc/kasmvnc.yaml; fi
 
 if [ "$(echo ${SELKIES_ENABLE_RESIZE} | tr '[:upper:]' '[:lower:]')" = "true" ]; then export KASM_PROXY_FLAG="${KASM_PROXY_FLAG} -r"; fi
-if [ "$(echo ${KASMVNC_VIEWONLY} | tr '[:upper:]' '[:lower:]')" = "true" ]; then export KASM_FLAG="${KASM_FLAG} -AcceptPointerEvents=0 -AcceptKeyEvents=0 -AcceptSetDesktopSize=0"; fi
 
 mkdir -pm700 ~/.vnc
 (echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}";) | kasmvncpasswd -u "${SELKIES_BASIC_AUTH_USER:-${USER}}" -ow ~/.kasmpasswd

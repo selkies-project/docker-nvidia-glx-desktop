@@ -6,9 +6,6 @@
 
 set -e
 
-# Set password for basic authentication
-if [ "$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')" = "true" ] && [ -z "${SELKIES_BASIC_AUTH_PASSWORD}" ]; then export SELKIES_BASIC_AUTH_PASSWORD="${PASSWD}"; fi
-
 # Set default display
 export DISPLAY="${DISPLAY:-:0}"
 # PipeWire-Pulse server socket path
@@ -109,28 +106,6 @@ server {
         client_max_body_size    10M;
 
         proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:9081;
-    }
-
-    location /vnc {
-        rewrite ^/vnc(.*)\$ \$1?\$args break;
-
-        proxy_set_header        Upgrade \$http_upgrade;
-        proxy_set_header        Connection \"upgrade\";
-
-        proxy_set_header        Host \$host;
-        proxy_set_header        X-Real-IP 127.0.0.1;
-        proxy_set_header        X-Forwarded-For 127.0.0.1;
-        proxy_set_header        X-Forwarded-Proto \$scheme;
-
-        proxy_http_version      1.1;
-        proxy_read_timeout      3600s;
-        proxy_send_timeout      3600s;
-        proxy_connect_timeout   3600s;
-        proxy_buffering         off;
-
-        client_max_body_size    10M;
-
-        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8082;
     }
 
     error_page 500 502 503 504 /50x.html;
