@@ -28,7 +28,7 @@ server {
     listen [::]:8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then printf \"ssl\"; fi);
     ssl_certificate ${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem};
     ssl_certificate_key ${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key};
-    $(if [ \"$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')\" != \"false\" ]; then printf \"auth_basic_user_file ${XDG_RUNTIME_DIR}/.htpasswd;\"; fi)
+    $(if [ \"$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')\" != \"false\" ]; then printf \"auth_basic_user_file ${XDG_RUNTIME_DIR}/.htpasswd\;\"; fi)
 
     location / {
         alias /opt/gst-web;
