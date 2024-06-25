@@ -47,8 +47,8 @@ echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do 
 
 # Run KasmVNC
 if ls ~/.vnc/*\:"${KASM_DISPLAY#*:}".pid >/dev/null 2>&1; then kasmvncserver -kill "${KASM_DISPLAY}"; fi
-kasmvncserver "${KASM_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -fg -noxstartup -FrameRate "${DISPLAY_REFRESH}" -interface 127.0.0.1 -rfbport 9082 -websocketPort 8082 -disableBasicAuth -AlwaysShared -BlacklistTimeout 0 ${KASM_FLAG} &
+kasmvncserver "${KASM_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -noxstartup -FrameRate "${DISPLAY_REFRESH}" -interface 127.0.0.1 -rfbport 9082 -websocketPort 8082 -disableBasicAuth -AlwaysShared -BlacklistTimeout 0 ${KASM_FLAG}
 
 until [ -S "/tmp/.X11-unix/X${KASM_DISPLAY#*:}" ]; do sleep 0.5; done;
 
-kasmxproxy -a "${DISPLAY}" -v "${KASM_DISPLAY}" -f "${DISPLAY_REFRESH}" ${KASM_PROXY_FLAG} &
+kasmxproxy -a "${DISPLAY}" -v "${KASM_DISPLAY}" -f "${DISPLAY_REFRESH}" ${KASM_PROXY_FLAG}
