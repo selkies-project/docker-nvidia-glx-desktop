@@ -432,6 +432,8 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         libreoffice-kf5 \
         libreoffice-plasma \
         libreoffice-style-breeze && \
+    # Ensure Firefox as the default web browser
+    update-alternatives --set x-www-browser /usr/bin/firefox && xdg-settings set default-web-browser firefox.desktop && \
     # Install Google Chrome for supported architectures
     if [ "$(dpkg --print-architecture)" = "amd64" ]; then cd /tmp && curl -o google-chrome-stable.deb -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_$(dpkg --print-architecture).deb" && apt-get update && apt-get install --no-install-recommends -y ./google-chrome-stable.deb && rm -f google-chrome-stable.deb && sed -i '/^Exec=/ s/$/ --password-store=basic/' /usr/share/applications/google-chrome.desktop; fi && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
