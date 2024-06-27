@@ -458,7 +458,7 @@ logout=false\n\
 [General]\n\
 BrowserApplication=firefox.desktop" > /etc/xdg/kdeglobals
 
-# Wine, Winetricks, Lutris, and PlayOnLinux, this process must be consistent with https://wiki.winehq.org/Ubuntu
+# Wine, Winetricks, and launchers, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
 RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
     mkdir -pm755 /etc/apt/keyrings && curl -fsSL -o /etc/apt/keyrings/winehq-archive.key "https://dl.winehq.org/wine-builds/winehq.key" && \

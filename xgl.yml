@@ -21,6 +21,7 @@ spec:
 #      hostNetwork: true
       containers:
       - name: xgl
+        # Change tag `latest` to Ubuntu version such as `24.04`
         image: ghcr.io/selkies-project/nvidia-glx-desktop:latest
         env:
         - name: TZ
@@ -35,7 +36,7 @@ spec:
           value: "96"
         - name: DISPLAY_CDEPTH
           value: "24"
-        # Change to DP-0 or any other DP-* port for larger resolution support if you are NOT using datacenter GPUs
+        # With driver versions lower than 550, change to `DP-0` or any other `DP-*` port for larger resolution support if NOT using datacenter GPUs
         - name: VIDEO_PORT
           value: "DFP"
         # Choose either `value:` or `secretKeyRef:` but not both at the same time
@@ -46,25 +47,23 @@ spec:
 #              name: my-pass
 #              key: my-pass
         # Uncomment to enable KasmVNC instead of Selkies-GStreamer, `SELKIES_BASIC_AUTH_PASSWORD` is used for authentication with KasmVNC, defaulting to `PASSWD` if not provided
+        # Uses: `SELKIES_ENABLE_BASIC_AUTH`, `SELKIES_BASIC_AUTH_USER`, `SELKIES_BASIC_AUTH_PASSWORD`, `SELKIES_ENABLE_RESIZE`, `SELKIES_ENABLE_HTTPS`, `SELKIES_HTTPS_CERT`, `SELKIES_HTTPS_KEY`
 #        - name: KASMVNC_ENABLE
 #          value: "true"
         ###
         # Selkies-GStreamer parameters, for additional configurations see `selkies-gstreamer --help`
         ###
-        # Change `SELKIES_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` if your GPU doesn't support `H.264 (AVCHD)` under the `NVENC - Encoding` section in https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new
+        # Change `SELKIES_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` if your GPU does not support `H.264 (AVCHD)` under the `NVENC - Encoding` section in https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new
         - name: SELKIES_ENCODER
           value: "nvh264enc"
         - name: SELKIES_ENABLE_RESIZE
           value: "false"
+        # Enable if network conditions rapidly fluctuate
+#        - name: SELKIES_CONGESTION_CONTROL
+#          value: "false"
+        # Enable basic authentication with the web interface
         - name: SELKIES_ENABLE_BASIC_AUTH
           value: "true"
-        - name: SELKIES_ENABLE_HTTPS_WEB
-          value: "false"
-        # Volume mount trusted HTTPS certificate to new path for no web browser warnings
-#        - name: SELKIES_HTTPS_WEB_CERT
-#          value: /etc/ssl/certs/ssl-cert-snakeoil.pem
-#        - name: SELKIES_HTTPS_WEB_KEY
-#          value: /etc/ssl/private/ssl-cert-snakeoil.key
         # Defaults to `PASSWD` if unspecified, choose either `value:` or `secretKeyRef:` but not both at the same time
 #        - name: SELKIES_BASIC_AUTH_PASSWORD
 #          value: "mypasswd"
@@ -72,6 +71,14 @@ spec:
 #            secretKeyRef:
 #              name: my-pass
 #              key: my-pass
+        # Enable HTTPS web interface from inside the container
+        - name: SELKIES_ENABLE_HTTPS
+          value: "false"
+        # Volume mount trusted HTTPS certificate to new path for no web browser warnings
+#        - name: SELKIES_HTTPS_CERT
+#          value: /etc/ssl/certs/ssl-cert-snakeoil.pem
+#        - name: SELKIES_HTTPS_KEY
+#          value: /etc/ssl/private/ssl-cert-snakeoil.key
         ###
         # Uncomment below to use a TURN server for improved network compatibility
         ###
@@ -94,6 +101,9 @@ spec:
 #            secretKeyRef:
 #              name: turn-password
 #              key: turn-password
+        # TURN REST URI authentication, all TURN server settings above are ignored if enabled
+#        - name: SELKIES_TURN_REST_URI
+#          value: "http://localhost:8008"
         # Change to `tcp` if the UDP protocol is throttled or blocked in your client network, or when the TURN server does not support UDP
 #        - name: SELKIES_TURN_PROTOCOL
 #          value: "udp"
