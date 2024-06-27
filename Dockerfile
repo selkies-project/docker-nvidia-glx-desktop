@@ -278,7 +278,8 @@ ENV SELKIES_ENABLE_BASIC_AUTH=true
 
 # Install Xorg
 RUN apt-get update && apt-get install --no-install-recommends -y \
-        xorg && \
+        xorg \
+        xterm && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/*
 
 # Anything below this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
