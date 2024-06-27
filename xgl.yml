@@ -56,11 +56,21 @@ spec:
         # Change `SELKIES_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` if your GPU does not support `H.264 (AVCHD)` under the `NVENC - Encoding` section in https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new
         - name: SELKIES_ENCODER
           value: "nvh264enc"
+        # Do NOT set to `true` if physical monitor is connected to video port
         - name: SELKIES_ENABLE_RESIZE
           value: "false"
-        # Enable if network conditions rapidly fluctuate
+        # Initial video bitrate in kilobits per second, may be changed later within web interface
+        - name: SELKIES_VIDEO_BITRATE
+          value: "8000"
+        # Initial frames per second, may be changed later within web interface
+        - name: SELKIES_FRAMERATE
+          value: "60"
+        # Initial audio bitrate in bits per second, may be changed later within web interface
+        - name: SELKIES_AUDIO_BITRATE
+          value: "128000"
+        # Uncomment if network conditions rapidly fluctuate
 #        - name: SELKIES_CONGESTION_CONTROL
-#          value: "false"
+#          value: "true"
         # Enable basic authentication with the web interface
         - name: SELKIES_ENABLE_BASIC_AUTH
           value: "true"
