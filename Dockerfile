@@ -452,7 +452,10 @@ SingleClick=false\n\
 \n\
 [KDE Action Restrictions]\n\
 action/lock_screen=false\n\
-logout=false" > /etc/xdg/kdeglobals
+logout=false\n\
+\n\
+[General]\n\
+BrowserApplication=firefox.desktop" > /etc/xdg/kdeglobals
 
 # Wine, Winetricks, Lutris, and PlayOnLinux, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
