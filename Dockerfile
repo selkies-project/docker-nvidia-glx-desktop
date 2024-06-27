@@ -136,6 +136,11 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         xserver-xorg-video-all \
         xserver-xorg-video-intel \
         xserver-xorg-video-qxl \
+        # NVIDIA driver installer dependencies
+        kmod \
+        libc6-dev \
+        libpci3 \
+        libelf-dev \
         # OpenGL libraries
         libxau6 \
         libxdmcp6 \
@@ -195,6 +200,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         vdpau-driver-all:i386 \
         mesa-vulkan-drivers:i386 \
         libvulkan-dev:i386 \
+        libc6:i386 \
         libxau6:i386 \
         libxdmcp6:i386 \
         libxcb1:i386 \
@@ -270,15 +276,9 @@ ENV SELKIES_ENCODER=nvh264enc
 ENV SELKIES_ENABLE_RESIZE=false
 ENV SELKIES_ENABLE_BASIC_AUTH=true
 
-# Install Xorg and NVIDIA driver installer dependencies
+# Install Xorg
 RUN apt-get update && apt-get install --no-install-recommends -y \
-        kmod \
-        libc6-dev \
-        libpci3 \
-        libelf-dev \
-        pkg-config \
         xorg && \
-    if [ "$(dpkg --print-architecture)" = "amd64" ]; then apt-get install --no-install-recommends -y libc6:i386; fi && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/*
 
 # Anything below this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
@@ -432,10 +432,10 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         libreoffice-kf5 \
         libreoffice-plasma \
         libreoffice-style-breeze && \
-    # Ensure Firefox as the default web browser
-    update-alternatives --set x-www-browser /usr/bin/firefox && xdg-settings set default-web-browser firefox.desktop && \
     # Install Google Chrome for supported architectures
-    if [ "$(dpkg --print-architecture)" = "amd64" ]; then cd /tmp && curl -o google-chrome-stable.deb -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_$(dpkg --print-architecture).deb" && apt-get update && apt-get install --no-install-recommends -y ./google-chrome-stable.deb && rm -f google-chrome-stable.deb && sed -i '/^Exec=/ s/$/ --password-store=basic/' /usr/share/applications/google-chrome.desktop; fi && \
+    if [ "$(dpkg --print-architecture)" = "amd64" ]; then cd /tmp && curl -o google-chrome-stable.deb -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_$(dpkg --print-architecture).deb" && apt-get update && apt-get install --no-install-recommends -y ./google-chrome-stable.deb && rm -f google-chrome-stable.deb && sed -i '/^Exec=/ s/$/ --password-store=basic --in-process-gpu/' /usr/share/applications/google-chrome.desktop; fi && \
+    # Ensure Firefox as the default web browser
+    update-alternatives --set x-www-browser /usr/bin/firefox && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
     # Fix KDE startup permissions issues in containers
     MULTI_ARCH=$(dpkg --print-architecture | sed -e 's/arm64/aarch64-linux-gnu/' -e 's/armhf/arm-linux-gnueabihf/' -e 's/riscv64/riscv64-linux-gnu/' -e 's/ppc64el/powerpc64le-linux-gnu/' -e 's/s390x/s390x-linux-gnu/' -e 's/i.*86/i386-linux-gnu/' -e 's/amd64/x86_64-linux-gnu/' -e 's/unknown/x86_64-linux-gnu/') && \
