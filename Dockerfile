@@ -12,7 +12,7 @@ LABEL maintainer="https://github.com/ehfd,https://github.com/danisla"
 ARG DEBIAN_FRONTEND=noninteractive
 # Configure rootless user environment for constrained conditions without escalated root privileges inside containers
 ARG TZ=UTC
-ARG PASSWD=mypasswd
+ENV PASSWD=mypasswd
 RUN apt-get clean && apt-get update && apt-get dist-upgrade -y && apt-get install --no-install-recommends -y \
     apt-utils \
     dbus-user-session \
@@ -264,7 +264,7 @@ ENV DISPLAY=":0"
 
 # Anything above this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
 
-# Default environment variables (password is "mypasswd")
+# Default environment variables
 ENV DISPLAY_SIZEW=1920
 ENV DISPLAY_SIZEH=1080
 ENV DISPLAY_REFRESH=60
