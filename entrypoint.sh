@@ -9,9 +9,9 @@ set -e
 trap "echo TRAPed signal" HUP INT QUIT TERM
 
 # Create and modify permissions of XDG_RUNTIME_DIR
-mkdir -pm700 /tmp/runtime-ubuntu
-chown -f ubuntu:ubuntu /tmp/runtime-ubuntu
-chmod -f 700 /tmp/runtime-ubuntu
+mkdir -pm700 "${XDG_RUNTIME_DIR}"
+chown -f ubuntu:ubuntu "${XDG_RUNTIME_DIR}"
+chmod -f 700 "${XDG_RUNTIME_DIR}"
 # Make user directory owned by the default ubuntu user
 chown ubuntu:ubuntu /home/ubuntu || sudo-root chown ubuntu:ubuntu /home/ubuntu || chown ubuntu:ubuntu /home/ubuntu/* || sudo-root chown ubuntu:ubuntu /home/ubuntu/* || echo 'Failed to change user directory permissions, there may be permission issues'
 # Change operating system password to environment variable
