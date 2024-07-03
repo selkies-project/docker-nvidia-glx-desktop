@@ -260,7 +260,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES=all
 # Disable VSYNC for NVIDIA GPUs
 ENV __GL_SYNC_TO_VBLANK=0
 # Set default DISPLAY environment
-ENV DISPLAY=":0"
+ENV DISPLAY=":20"
 
 # Anything above this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
 
@@ -586,7 +586,6 @@ turnserver \
     --external-ip=\"\${SELKIES_TURN_HOST:-\$(curl -fsSL checkip.amazonaws.com)}\" \
     --min-port=\"\${TURN_MIN_PORT:-49152}\" \
     --max-port=\"\${TURN_MAX_PORT:-65535}\" \
-    --no-udp-relay \
     --channel-lifetime=\"\${TURN_CHANNEL_LIFETIME:--1}\" \
     --lt-cred-mech \
     --user \"selkies:\${TURN_RANDOM_PASSWORD}\" \

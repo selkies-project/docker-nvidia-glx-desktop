@@ -17,11 +17,11 @@ spec:
         app: xgl
     spec:
       hostname: xgl
-      # Uncomment the below line to disable network isolation for WebRTC connectivity, may show an error if disallowed by the cluster
+      # Uncomment the below line to disable network isolation for WebRTC connectivity, display `:20` and `:21` should not be used in the host, may show an error if disallowed by the cluster
 #      hostNetwork: true
       containers:
       - name: xgl
-        # Change tag `latest` to Ubuntu version such as `24.04`
+        # Change tag `latest` to Ubuntu versions such as `24.04`
         image: ghcr.io/selkies-project/nvidia-glx-desktop:latest
         env:
         - name: TZ

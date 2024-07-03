@@ -1,0 +1,76 @@
+services:
+  xgl:
+    container_name: xgl
+    hostname: xgl
+    # Change tag `latest` to Ubuntu versions such as `24.04`
+    image: ghcr.io/selkies-project/nvidia-glx-desktop:latest
+    ports:
+    - '8080:8080'
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+    tmpfs:
+    - '/dev/shm:rw'
+#    volumes:
+#    - 'xgl-cache-vol:/cache'
+#    - 'xgl-root-vol:/home/ubuntu'
+    # Uncomment the below line to disable network isolation for WebRTC connectivity, display `:20` and `:21` should not be used in the host, may show an error if disallowed by the cluster
+#    network_mode: 'host'
+    environment:
+    - TZ=UTC
+    - DISPLAY_SIZEW=1920
+    - DISPLAY_SIZEH=1080
+    - DISPLAY_REFRESH=60
+    - DISPLAY_DPI=96
+    - DISPLAY_CDEPTH=24
+    # With driver versions lower than 550, change to `DP-0` or any other `DP-*` port for larger resolution support if NOT using datacenter GPUs
+    - VIDEO_PORT=DFP
+    # User password of container
+    - PASSWD=mypasswd
+    # Uncomment to enable KasmVNC instead of Selkies-GStreamer, `SELKIES_BASIC_AUTH_PASSWORD` is used for authentication with KasmVNC, defaulting to `PASSWD` if not provided
+    # Uses: `SELKIES_ENABLE_BASIC_AUTH`, `SELKIES_BASIC_AUTH_USER`, `SELKIES_BASIC_AUTH_PASSWORD`, `SELKIES_ENABLE_RESIZE`, `SELKIES_ENABLE_HTTPS`, `SELKIES_HTTPS_CERT`, `SELKIES_HTTPS_KEY`
+#    - KASMVNC_ENABLE=true
+    ###
+    # Selkies-GStreamer parameters, for additional configurations see `selkies-gstreamer --help`
+    ###
+    # Change `SELKIES_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` if using software fallback without allocated GPUs or your GPU does not support `H.264 (AVCHD)` under the `NVENC - Encoding` section in https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new
+    - SELKIES_ENCODER=nvh264enc
+    - SELKIES_ENABLE_RESIZE=false
+    # Initial video bitrate in kilobits per second, may be changed later within web interface
+    - SELKIES_VIDEO_BITRATE=8000
+    # Initial frames per second, may be changed later within web interface
+    - SELKIES_FRAMERATE=60
+    # Initial audio bitrate in bits per second, may be changed later within web interface
+    - SELKIES_AUDIO_BITRATE=128000
+    # Uncomment if network conditions rapidly fluctuate
+#    - SELKIES_CONGESTION_CONTROL=true
+    # Enable basic authentication with the web interface
+    - SELKIES_ENABLE_BASIC_AUTH=true
+    # Defaults to `PASSWD` if unspecified
+#    - SELKIES_BASIC_AUTH_PASSWORD=mypasswd
+    # Enable HTTPS web interface from inside the container
+    - SELKIES_ENABLE_HTTPS=false
+    # Volume mount trusted HTTPS certificate to new path for no web browser warnings
+#    - SELKIES_HTTPS_CERT=/etc/ssl/certs/ssl-cert-snakeoil.pem
+#    - SELKIES_HTTPS_KEY=/etc/ssl/private/ssl-cert-snakeoil.key
+    ###
+    # Uncomment and configure below to use a TURN server for improved network compatibility
+    ###
+#    - SELKIES_TURN_HOST=turn.example.com
+#    - SELKIES_TURN_PORT=3478
+    # Provide only `SELKIES_TURN_SHARED_SECRET` for time-limited shared secret authentication or both `SELKIES_TURN_USERNAME` and `SELKIES_TURN_PASSWORD` for legacy long-term authentication, but do not provide both authentication methods at the same time
+#    - SELKIES_TURN_SHARED_SECRET=n0TaRealCoTURNAuthSecretThatIsSixtyFourLengthsLongPlaceholdPlace
+#    - SELKIES_TURN_USERNAME=username
+#    - SELKIES_TURN_PASSWORD=mypasswd
+    # TURN REST URI authentication, all TURN server settings above are ignored if enabled
+#    - 'SELKIES_TURN_REST_URI=http://localhost:8008'
+    # Change to `tcp` if the UDP protocol is throttled or blocked in your client network, or when the TURN server does not support UDP
+#    - SELKIES_TURN_PROTOCOL=udp
+    # You need a valid hostname and a certificate from authorities such as ZeroSSL (Let's Encrypt may have issues) to enable this
+#    - SELKIES_TURN_TLS=false
