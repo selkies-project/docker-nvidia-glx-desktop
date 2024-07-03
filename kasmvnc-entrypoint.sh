@@ -31,6 +31,12 @@ server {
     $(if [ \"$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')\" != \"false\" ]; then echo "auth_basic \"Selkies\";"; echo -n "    auth_basic_user_file ${XDG_RUNTIME_DIR}/.htpasswd;"; fi)
 
     location / {
+        set \$token \"\";
+        if (\$is_args) {
+            set \$token \"&\";
+        }
+        set \$args \"\${args}\${token}autoconnect=1&resize=scale&clipboard_up=true&clipboard_down=true&clipboard_seamless=true&show_control_bar=true\";
+
         proxy_set_header        Upgrade \$http_upgrade;
         proxy_set_header        Connection \"upgrade\";
 
