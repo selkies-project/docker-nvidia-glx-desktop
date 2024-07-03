@@ -147,6 +147,7 @@ kubectl create secret generic turn-password --from-literal=turn-password=MY_SELK
 > NOTES: It is possible to skip the first step and directly provide the TURN password with `value:`, but this exposes the TURN password in plain text. Set `SELKIES_TURN_PROTOCOL` to `tcp` if you were able to only open TCP ports while creating your own coTURN Deployment/DaemonSet, or if your client network throttles or blocks the UDP protocol.
 
 ## Troubleshooting
+
 ### I have an issue related to the WebRTC HTML5 interface.
 
 **[Link]([https://github.com/selkies-project/selkies-gstreamer#troubleshooting)**
