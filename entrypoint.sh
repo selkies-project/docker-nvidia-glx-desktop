@@ -13,11 +13,11 @@ until [ -d "${XDG_RUNTIME_DIR}" ]; do sleep 0.5; done
 # Make user directory owned by the default ubuntu user
 chown ubuntu:ubuntu /home/ubuntu || sudo-root chown ubuntu:ubuntu /home/ubuntu || chown ubuntu:ubuntu /home/ubuntu/* || sudo-root chown ubuntu:ubuntu /home/ubuntu/* || echo 'Failed to change user directory permissions, there may be permission issues'
 # Change operating system password to environment variable
-(echo "mypasswd"; echo "$PASSWD"; echo "$PASSWD";) | passwd ubuntu || echo 'Password change failed, using default password'
+(echo "$PASSWD"; echo "$PASSWD";) | sudo passwd ubuntu || (echo "mypasswd"; echo "$PASSWD"; echo "$PASSWD";) | passwd ubuntu || echo 'Password change failed, using default password'
 # Remove directories to make sure the desktop environment starts
-rm -rf /tmp/.X* ~/.cache
+rm -rf /tmp/.X* ~/.cache || echo 'Failed to clean X11 paths'
 # Change time zone from environment variable
-ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | tee /etc/timezone > /dev/null
+ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | tee /etc/timezone > /dev/null || echo 'Failed to set timezone'
 # Add Lutris directories to path
 export PATH="${PATH:+${PATH}:}/usr/local/games:/usr/games"
 # Add LibreOffice to library path
@@ -65,7 +65,6 @@ if ! command -v nvidia-xconfig >/dev/null 2>&1; then
     cd "NVIDIA-Linux-${NVIDIA_DRIVER_ARCH}-${NVIDIA_DRIVER_VERSION}"
     # Run NVIDIA driver installation without the kernel modules and host components
     sudo ./nvidia-installer --silent \
-                      --accept-license \
                       --no-kernel-module \
                       --install-compat32-libs \
                       --no-nouveau-check \
