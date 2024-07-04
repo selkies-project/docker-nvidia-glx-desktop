@@ -18,6 +18,32 @@ export PIPEWIRE_RUNTIME_DIR="${PIPEWIRE_RUNTIME_DIR:-${XDG_RUNTIME_DIR:-/tmp}}"
 export PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}"
 export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
+# Configure KasmVNC
+export KASM_DISPLAY=":21"
+yq -i "
+.command_line.prompt = false |
+.desktop.resolution.width = ${DISPLAY_SIZEW} |
+.desktop.resolution.height = ${DISPLAY_SIZEH} |
+.desktop.allow_resize = $(echo ${SELKIES_ENABLE_RESIZE-false} | tr '[:upper:]' '[:lower:]') |
+.desktop.pixel_depth = ${DISPLAY_CDEPTH} |
+.network.interface = \"127.0.0.1\" |
+.network.websocket_port = 8082 |
+.network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]') |
+.encoding.max_frame_rate = ${DISPLAY_REFRESH}
+" /etc/kasmvnc/kasmvnc.yaml
+
+if [ -n "${SELKIES_HTTPS_CERT}" ]; then yq -i ".network.ssl.pem_certificate = \"${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem}\"" /etc/kasmvnc/kasmvnc.yaml; fi
+if [ -n "${SELKIES_HTTPS_KEY}" ]; then yq -i ".network.ssl.pem_key = \"${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key}\"" /etc/kasmvnc/kasmvnc.yaml; fi
+
+if [ "$(echo ${SELKIES_ENABLE_RESIZE} | tr '[:upper:]' '[:lower:]')" = "true" ]; then export KASM_PROXY_FLAG="${KASM_PROXY_FLAG} -r"; fi
+
+mkdir -pm700 ~/.vnc
+(echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}";) | kasmvncpasswd -u "${SELKIES_BASIC_AUTH_USER:-${USER}}" -ow ~/.kasmpasswd
+touch ~/.vnc/.de-was-selected
+
+# Wait for X server to start
+echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do sleep 0.5; done && echo 'X Server is ready'
+
 # Configure NGINX
 if [ "$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')" != "false" ]; then htpasswd -bcm "${XDG_RUNTIME_DIR}/.htpasswd" "${SELKIES_BASIC_AUTH_USER:-${USER}}" "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; fi
 echo "# Selkies KasmVNC NGINX Configuration
@@ -50,32 +76,6 @@ server {
         proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8082;
     }
 }" | tee /etc/nginx/sites-available/default > /dev/null
-
-# Configure KasmVNC
-export KASM_DISPLAY=":21"
-yq -i "
-.command_line.prompt = false |
-.desktop.resolution.width = ${DISPLAY_SIZEW} |
-.desktop.resolution.height = ${DISPLAY_SIZEH} |
-.desktop.allow_resize = $(echo ${SELKIES_ENABLE_RESIZE-false} | tr '[:upper:]' '[:lower:]') |
-.desktop.pixel_depth = ${DISPLAY_CDEPTH} |
-.network.interface = \"127.0.0.1\" |
-.network.websocket_port = 8082 |
-.network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]') |
-.encoding.max_frame_rate = ${DISPLAY_REFRESH}
-" /etc/kasmvnc/kasmvnc.yaml
-
-if [ -n "${SELKIES_HTTPS_CERT}" ]; then yq -i ".network.ssl.pem_certificate = \"${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem}\"" /etc/kasmvnc/kasmvnc.yaml; fi
-if [ -n "${SELKIES_HTTPS_KEY}" ]; then yq -i ".network.ssl.pem_key = \"${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key}\"" /etc/kasmvnc/kasmvnc.yaml; fi
-
-if [ "$(echo ${SELKIES_ENABLE_RESIZE} | tr '[:upper:]' '[:lower:]')" = "true" ]; then export KASM_PROXY_FLAG="${KASM_PROXY_FLAG} -r"; fi
-
-mkdir -pm700 ~/.vnc
-(echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}";) | kasmvncpasswd -u "${SELKIES_BASIC_AUTH_USER:-${USER}}" -ow ~/.kasmpasswd
-touch ~/.vnc/.de-was-selected
-
-# Wait for X server to start
-echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do sleep 0.5; done && echo 'X Server is ready'
 
 # Run KasmVNC
 if ls ~/.vnc/*\:"${KASM_DISPLAY#*:}".pid >/dev/null 2>&1; then kasmvncserver -kill "${KASM_DISPLAY}"; fi
