@@ -19,24 +19,24 @@ export PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}
 export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
 # Configure KasmVNC
-export KASM_DISPLAY=":21"
+export KASMVNC_DISPLAY=":21"
 yq -i "
 .command_line.prompt = false |
 .desktop.resolution.width = ${DISPLAY_SIZEW} |
 .desktop.resolution.height = ${DISPLAY_SIZEH} |
 .desktop.allow_resize = $(echo ${SELKIES_ENABLE_RESIZE-false} | tr '[:upper:]' '[:lower:]') |
 .desktop.pixel_depth = ${DISPLAY_CDEPTH} |
-.encoding.rect_encoding_mode.rectangle_compress_threads = ${KASMVNC_THREADS-auto} |
+.encoding.rect_encoding_mode.rectangle_compress_threads = ${KASMVNC_THREADS-0} |
+.encoding.max_frame_rate = ${DISPLAY_REFRESH} |
 .network.interface = \"127.0.0.1\" |
 .network.websocket_port = 8082 |
-.network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]') |
-.encoding.max_frame_rate = ${DISPLAY_REFRESH}
+.network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]')
 " /etc/kasmvnc/kasmvnc.yaml
 
 if [ -n "${SELKIES_HTTPS_CERT}" ]; then yq -i ".network.ssl.pem_certificate = \"${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem}\"" /etc/kasmvnc/kasmvnc.yaml; fi
 if [ -n "${SELKIES_HTTPS_KEY}" ]; then yq -i ".network.ssl.pem_key = \"${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key}\"" /etc/kasmvnc/kasmvnc.yaml; fi
 
-if [ "$(echo ${SELKIES_ENABLE_RESIZE} | tr '[:upper:]' '[:lower:]')" = "true" ]; then export KASM_PROXY_FLAG="${KASM_PROXY_FLAG} -r"; fi
+if [ "$(echo ${SELKIES_ENABLE_RESIZE} | tr '[:upper:]' '[:lower:]')" = "true" ]; then export KASMVNC_PROXY_FLAG="${KASMVNC_PROXY_FLAG} -r"; fi
 
 mkdir -pm700 ~/.vnc
 (echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}";) | kasmvncpasswd -u "${SELKIES_BASIC_AUTH_USER:-${USER}}" -ow ~/.kasmpasswd
@@ -79,9 +79,9 @@ server {
 }" | tee /etc/nginx/sites-available/default > /dev/null
 
 # Run KasmVNC
-if ls ~/.vnc/*\:"${KASM_DISPLAY#*:}".pid >/dev/null 2>&1; then kasmvncserver -kill "${KASM_DISPLAY}"; fi
-kasmvncserver "${KASM_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -noxstartup -FrameRate "${DISPLAY_REFRESH}" -interface 127.0.0.1 -rfbport 9082 -websocketPort 8082 -disableBasicAuth -AlwaysShared -BlacklistTimeout 0 ${KASM_FLAG}
+if ls ~/.vnc/*\:"${KASMVNC_DISPLAY#*:}".pid >/dev/null 2>&1; then kasmvncserver -kill "${KASMVNC_DISPLAY}"; fi
+kasmvncserver "${KASMVNC_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -noxstartup -FrameRate "${DISPLAY_REFRESH}" -RectThreads "${KASMVNC_THREADS}" -interface 127.0.0.1 -rfbport 9082 -websocketPort 8082 -disableBasicAuth -AlwaysShared -BlacklistTimeout 0 ${KASMVNC_FLAG}
 
-until [ -S "/tmp/.X11-unix/X${KASM_DISPLAY#*:}" ]; do sleep 0.5; done;
+until [ -S "/tmp/.X11-unix/X${KASMVNC_DISPLAY#*:}" ]; do sleep 0.5; done;
 
-kasmxproxy -a "${DISPLAY}" -v "${KASM_DISPLAY}" -f "${DISPLAY_REFRESH}" ${KASM_PROXY_FLAG}
+kasmxproxy -a "${DISPLAY}" -v "${KASMVNC_DISPLAY}" -f "${DISPLAY_REFRESH}" ${KASMVNC_PROXY_FLAG}

@@ -52,7 +52,7 @@ spec:
 #          value: "true"
         # Number of threads for encoding frames with KasmVNC, default value is all threads
 #        - name: KASMVNC_THREADS
-#          value: "auto"
+#          value: "0"
         ###
         # Selkies-GStreamer parameters, for additional configurations see `selkies-gstreamer --help`
         ###
