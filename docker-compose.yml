@@ -36,6 +36,8 @@ services:
     # Uncomment to enable KasmVNC instead of Selkies-GStreamer, `SELKIES_BASIC_AUTH_PASSWORD` is used for authentication with KasmVNC, defaulting to `PASSWD` if not provided
     # Uses: `SELKIES_ENABLE_BASIC_AUTH`, `SELKIES_BASIC_AUTH_USER`, `SELKIES_BASIC_AUTH_PASSWORD`, `SELKIES_ENABLE_RESIZE`, `SELKIES_ENABLE_HTTPS`, `SELKIES_HTTPS_CERT`, `SELKIES_HTTPS_KEY`
 #    - KASMVNC_ENABLE=true
+    # Number of threads for encoding frames with KasmVNC, default value is all threads
+#    - name: KASMVNC_THREADS=auto
     ###
     # Selkies-GStreamer parameters, for additional configurations see `selkies-gstreamer --help`
     ###

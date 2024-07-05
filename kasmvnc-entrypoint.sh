@@ -26,6 +26,7 @@ yq -i "
 .desktop.resolution.height = ${DISPLAY_SIZEH} |
 .desktop.allow_resize = $(echo ${SELKIES_ENABLE_RESIZE-false} | tr '[:upper:]' '[:lower:]') |
 .desktop.pixel_depth = ${DISPLAY_CDEPTH} |
+.encoding.rect_encoding_mode.rectangle_compress_threads = ${KASMVNC_THREADS-auto} |
 .network.interface = \"127.0.0.1\" |
 .network.websocket_port = 8082 |
 .network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]') |

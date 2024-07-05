@@ -50,6 +50,9 @@ spec:
         # Uses: `SELKIES_ENABLE_BASIC_AUTH`, `SELKIES_BASIC_AUTH_USER`, `SELKIES_BASIC_AUTH_PASSWORD`, `SELKIES_ENABLE_RESIZE`, `SELKIES_ENABLE_HTTPS`, `SELKIES_HTTPS_CERT`, `SELKIES_HTTPS_KEY`
 #        - name: KASMVNC_ENABLE
 #          value: "true"
+        # Number of threads for encoding frames with KasmVNC, default value is all threads
+#        - name: KASMVNC_THREADS
+#          value: "auto"
         ###
         # Selkies-GStreamer parameters, for additional configurations see `selkies-gstreamer --help`
         ###
