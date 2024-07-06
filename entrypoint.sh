@@ -11,7 +11,7 @@ trap "echo TRAPed signal" HUP INT QUIT TERM
 # Wait for XDG_RUNTIME_DIR
 until [ -d "${XDG_RUNTIME_DIR}" ]; do sleep 0.5; done
 # Make user directory owned by the default ubuntu user
-chown ubuntu:ubuntu "${HOME}" || sudo-root chown ubuntu:ubuntu "${HOME}" || chown ubuntu:ubuntu "${HOME}/*" || sudo-root chown ubuntu:ubuntu "${HOME}/*" || echo 'Failed to change user directory permissions, there may be permission issues'
+chown ubuntu:ubuntu ~ || sudo-root chown ubuntu:ubuntu ~ || chown ubuntu:ubuntu ~/* || sudo-root chown ubuntu:ubuntu ~/* || echo 'Failed to change user directory permissions, there may be permission issues'
 # Change operating system password to environment variable
 (echo "$PASSWD"; echo "$PASSWD";) | sudo passwd ubuntu || (echo "mypasswd"; echo "$PASSWD"; echo "$PASSWD";) | passwd ubuntu || echo 'Password change failed, using default password'
 # Remove directories to make sure the desktop environment starts
