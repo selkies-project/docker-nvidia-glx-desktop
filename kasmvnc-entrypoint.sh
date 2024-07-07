@@ -29,7 +29,7 @@ yq -i "
 .encoding.rect_encoding_mode.rectangle_compress_threads = ${KASMVNC_THREADS-0} |
 .encoding.max_frame_rate = ${DISPLAY_REFRESH} |
 .network.interface = \"127.0.0.1\" |
-.network.websocket_port = 8082 |
+.network.websocket_port = 8081 |
 .network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]')
 " /etc/kasmvnc/kasmvnc.yaml
 
@@ -74,13 +74,13 @@ server {
 
         client_max_body_size    10M;
 
-        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8082;
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8081;
     }
 }" | tee /etc/nginx/sites-available/default > /dev/null
 
 # Run KasmVNC
 if ls ~/.vnc/*\:"${KASMVNC_DISPLAY#*:}".pid >/dev/null 2>&1; then kasmvncserver -kill "${KASMVNC_DISPLAY}"; fi
-kasmvncserver "${KASMVNC_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -noxstartup -FrameRate "${DISPLAY_REFRESH}" -RectThreads "${KASMVNC_THREADS}" -interface 127.0.0.1 -rfbport 9082 -websocketPort 8082 -disableBasicAuth -AlwaysShared -BlacklistTimeout 0 ${KASMVNC_FLAG}
+kasmvncserver "${KASMVNC_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -noxstartup -FrameRate "${DISPLAY_REFRESH}" -RectThreads "${KASMVNC_THREADS}" -interface 127.0.0.1 -rfbport 9082 -websocketPort 8081 -disableBasicAuth -AlwaysShared -BlacklistTimeout 0 ${KASMVNC_FLAG}
 
 until [ -S "/tmp/.X11-unix/X${KASMVNC_DISPLAY#*:}" ]; do sleep 0.5; done;
 
