@@ -19,7 +19,7 @@ export PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}
 export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
 # Configure KasmVNC
-export KASMVNC_DISPLAY=":21"
+export KASMVNC_DISPLAY="${KASMVNC_DISPLAY:-:21}"
 yq -i "
 .command_line.prompt = false |
 .desktop.resolution.width = ${DISPLAY_SIZEW} |
