@@ -161,7 +161,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libsm6 \
         # NGINX web server
         nginx \
-        apache2-utils && \
+        apache2-utils \
+        netcat-openbsd && \
     # Sanitize NGINX path
     sed -i -e 's/\/var\/log\/nginx\/access\.log/\/dev\/stdout/g' -e 's/\/var\/log\/nginx\/error\.log/\/dev\/stderr/g' -e 's/\/run\/nginx\.pid/\/tmp\/nginx\.pid/g' /etc/nginx/nginx.conf && \
     echo "error_log /dev/stderr;" >> /etc/nginx/nginx.conf && \
