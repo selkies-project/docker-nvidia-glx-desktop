@@ -30,7 +30,8 @@ yq -i "
 .encoding.max_frame_rate = ${DISPLAY_REFRESH} |
 .network.interface = \"127.0.0.1\" |
 .network.websocket_port = 8081 |
-.network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]')
+.network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]') |
+.network.udp.public_ip = \"$(curl -fsSL checkip.amazonaws.com 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || echo '127.0.0.1')\"
 " /etc/kasmvnc/kasmvnc.yaml
 
 if [ -n "${SELKIES_HTTPS_CERT}" ]; then yq -i ".network.ssl.pem_certificate = \"${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem}\"" /etc/kasmvnc/kasmvnc.yaml; fi
