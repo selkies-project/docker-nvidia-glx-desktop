@@ -404,7 +404,7 @@ Make sure that the `NVIDIA_DRIVER_CAPABILITIES` environment variable is set to `
 
 ### The container does not work if I set the resolution above 1920 x 1200 or 2560 x 1600 in 60 hz.
 
-**Upgrade to the latest minor version of the NVIDIA driver major versions 550 or higher. The answer contains legacy information for people who cannot upgrade.**
+**Upgrade to the latest minor version of the NVIDIA driver major version 550 or higher. The answer contains legacy information for people who cannot upgrade.**
 
 <details>
   <summary>Open Answer</summary>
