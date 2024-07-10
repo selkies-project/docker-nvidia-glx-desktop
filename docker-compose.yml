@@ -2,7 +2,7 @@ services:
   xgl:
     container_name: xgl
     hostname: xgl
-    # Change tag `latest` to Ubuntu versions such as `24.04`
+    # Change tag `latest` to Ubuntu versions such as `24.04`, use a persistent tag such as `24.04-20210101010101` to persist a certain container version
     image: ghcr.io/selkies-project/nvidia-glx-desktop:latest
     ports:
     - '8080:8080'
@@ -73,7 +73,7 @@ services:
 #    - SELKIES_TURN_PORT=3478
     # Change to `tcp` if the UDP protocol is throttled or blocked in your client network, or when the TURN server does not support UDP
 #    - SELKIES_TURN_PROTOCOL=udp
-    # You need a valid hostname and a certificate from authorities such as ZeroSSL (Let's Encrypt may have issues) to enable this
+    # You need a valid hostname and a certificate from authorities such as ZeroSSL or Let's Encrypt to enable this
 #    - SELKIES_TURN_TLS=false
     # Internal TURN server settings, do not uncomment other TURN server settings below this when using an internal TURN server
 #    - TURN_MIN_PORT=65534
