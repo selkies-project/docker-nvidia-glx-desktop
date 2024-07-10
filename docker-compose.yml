@@ -57,7 +57,7 @@ services:
     - SELKIES_AUDIO_BITRATE=128000
     # Uncomment if network conditions rapidly fluctuate
 #    - SELKIES_CONGESTION_CONTROL=true
-    # Enable basic authentication with the web interface
+    # Enable Basic Authentication from the web interface
     - SELKIES_ENABLE_BASIC_AUTH=true
     # Defaults to `PASSWD` if unspecified
 #    - SELKIES_BASIC_AUTH_PASSWORD=mypasswd

@@ -74,7 +74,7 @@ spec:
         # Uncomment if network conditions rapidly fluctuate
 #        - name: SELKIES_CONGESTION_CONTROL
 #          value: "true"
-        # Enable basic authentication with the web interface
+        # Enable Basic Authentication from the web interface
         - name: SELKIES_ENABLE_BASIC_AUTH
           value: "true"
         # Defaults to `PASSWD` if unspecified, choose either `value:` or `secretKeyRef:` but not both at the same time
