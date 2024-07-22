@@ -83,9 +83,9 @@ If UDP cannot be used, at the cost of higher latency and lower performance, omit
 <details>
   <summary>Open Section</summary>
 
-The Selkies-GStreamer WebRTC HTML5 interface will likely just start working if you open UDP and TCP ports 49152–65535 in your host server network and add `--network host` to the above `docker run` command, or `network_mode: 'host'` in `docker-compose.yml`. When deploying multiple containers, you must also pass a new `DISPLAY` environment variable such as `-e DISPLAY=:22`, that is not used with any other X11 server or container in the same host, into the container.
+The Selkies-GStreamer WebRTC HTML5 interface will likely just start working if you open UDP and TCP ports 49152–65535 in your host server network and add `--network host` to the above `docker run` command, or `network_mode: 'host'` in `docker-compose.yml`. Note that running multiple desktop containers in one host under this configuration may be problematic and is not recommended. When deploying multiple containers, you must also pass a new `DISPLAY` environment variable such as `-e DISPLAY=:22` into the container, that is not used with any other X11 server or container in the same host.
 
-However, host networking may be restricted or not be desired because of security reasons. If not available, check if the container starts working after omitting `--network host`.
+However, host networking may be restricted or not be desired because of security reasons or when deploying multiple desktop containers in one host. If not available, check if the container starts working after omitting `--network host`.
 
 </details>
 
@@ -154,9 +154,9 @@ If UDP cannot be used, at the cost of higher latency and lower performance, omit
 <details>
   <summary>Open Section</summary>
 
-Otherwise, the Selkies-GStreamer WebRTC HTML5 interface will likely just start working if you open UDP and TCP ports 49152–65535 in your host server network and uncomment `hostNetwork: true` in `xgl.yml`. When deploying multiple containers with `hostNetwork: true`, you must also pass a new `DISPLAY` environment variable such as the value `:22`, that is not used with any other X11 server or container in the same host, into the container.
+Otherwise, the Selkies-GStreamer WebRTC HTML5 interface will likely just start working if you open UDP and TCP ports 49152–65535 in your host server network and uncomment `hostNetwork: true` in `xgl.yml`. Note that running multiple desktop containers in one host under this configuration may be problematic and is not recommended. When deploying multiple desktop containers with `hostNetwork: true`, you must also pass a new `DISPLAY` environment variable such as the value `:22` into the container, that is not used with any other X11 server or container in the same host.
 
-However, host networking may be restricted or not be desired because of security reasons. If not available, check if the container starts working after commenting out `hostNetwork: true`.
+However, host networking may be restricted or not be desired because of security reasons or when deploying multiple desktop containers in one host. If not available, check if the container starts working after commenting out `hostNetwork: true`.
 
 </details>
 
@@ -177,11 +177,9 @@ In most cases when either of your server or client has a permissive firewall, th
 
 **Read the last steps of each Docker/Kubernetes instruction to use an internal TURN server. Alternatively, read the below sections.**
 
-For an easy fix to when the signaling connection works, but the WebRTC connection fails, **open UDP and TCP ports 49152–65535 in your host server network** (or use Full Cone NAT in your network router/infrastructure settings), then add the option `--network host` to your Docker command (or `network_mode: 'host'` in `docker-compose.yml`), or uncomment `hostNetwork: true` in your `xgl.yml` file when using Kubernetes (note that your cluster may have not allowed this, resulting in an error). This exposes your container to the host network, which disables network isolation.
+For an easy fix to when the signaling connection works, but the WebRTC connection fails, **open UDP and TCP ports 49152–65535 in your host server network** (or use Full Cone NAT in your network router/infrastructure settings), then add the option `--network host` to your Docker command (or `network_mode: 'host'` in `docker-compose.yml`), or uncomment `hostNetwork: true` in your `xgl.yml` file when using Kubernetes (note that your cluster may have not allowed this, resulting in an error). This exposes your container to the host network, which disables network isolation. Note that running multiple desktop containers in one host under this configuration may be problematic and is not recommended. You must also pass a new `DISPLAY` environment variable such as `-e DISPLAY=:22` into the container, that is not used with any other X11 server or container in the same host.
 
-When deploying multiple containers with host networking, you must also pass a new `DISPLAY` environment variable such as `-e DISPLAY=:22`, that is not used with any other X11 server or container in the same host, into the container.
-
-If this does not fix the connection issue (normally when the host is behind another additional firewall) or you cannot use this fix for security or technical reasons, read the below text to set up an external [TURN server](https://github.com/selkies-project/selkies-gstreamer/blob/main/docs/firewall.md#turn-server).
+If this does not fix the connection issue (normally when the host is behind another additional firewall), you cannot use this fix for security or technical reasons, or when deploying multiple desktop containers in one host, read the below text to set up an external [TURN server](https://github.com/selkies-project/selkies-gstreamer/blob/main/docs/firewall.md#turn-server).
 
 ### Deploying a TURN server
 
