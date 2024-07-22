@@ -14,14 +14,14 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=UTC
 ENV PASSWD=mypasswd
 RUN apt-get clean && apt-get update && apt-get dist-upgrade -y && apt-get install --no-install-recommends -y \
-    apt-utils \
-    dbus-user-session \
-    fakeroot \
-    locales \
-    ssl-cert \
-    sudo \
-    udev \
-    tzdata && \
+        apt-utils \
+        dbus-user-session \
+        fakeroot \
+        locales \
+        ssl-cert \
+        sudo \
+        udev \
+        tzdata && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
     locale-gen en_US.UTF-8 && \
     ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone && \
