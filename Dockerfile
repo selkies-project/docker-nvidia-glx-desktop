@@ -17,6 +17,8 @@ RUN apt-get clean && apt-get update && apt-get dist-upgrade -y && apt-get instal
         apt-utils \
         dbus-user-session \
         fakeroot \
+        fuse \
+        kmod \
         locales \
         ssl-cert \
         sudo \
@@ -138,7 +140,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         xserver-xorg-video-intel \
         xserver-xorg-video-qxl \
         # NVIDIA driver installer dependencies
-        kmod \
         libc6-dev \
         libpci3 \
         libelf-dev \
