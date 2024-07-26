@@ -291,24 +291,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 # Anything below this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
 
 # Install KDE and other GUI packages
-ENV DESKTOP_SESSION=plasma
-ENV XDG_SESSION_DESKTOP=KDE
-ENV XDG_CURRENT_DESKTOP=KDE
-ENV XDG_SESSION_TYPE=x11
-ENV KDE_FULL_SESSION=true
-ENV KDE_SESSION_VERSION=5
-ENV KDE_APPLICATIONS_AS_SCOPE=1
-ENV KWIN_COMPOSE=N
-ENV KWIN_X11_NO_SYNC_TO_VBLANK=1
-# Use sudoedit to change protected files instead of using sudo on kwrite
-ENV SUDO_EDITOR=kwrite
-# Set input to fcitx
-ENV GTK_IM_MODULE=fcitx
-ENV QT_IM_MODULE=fcitx
-ENV XIM=fcitx
-ENV XMODIFIERS="@im=fcitx"
-# Enable AppImage execution in containers
-ENV APPIMAGE_EXTRACT_AND_RUN=1
 RUN mkdir -pm755 /etc/apt/preferences.d && echo "Package: firefox*\n\
 Pin: version 1:1snap*\n\
 Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
@@ -432,6 +414,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         vlc-plugin-video-splitter \
         vlc-plugin-visualization \
         xdg-user-dirs \
+        xdg-utils \
         firefox \
         transmission-qt && \
     apt-get install --install-recommends -y \
@@ -440,6 +423,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         libreoffice-plasma \
         libreoffice-style-breeze && \
     # Ensure Firefox as the default web browser
+    xdg-settings set default-web-browser firefox.desktop && \
     update-alternatives --set x-www-browser /usr/bin/firefox && \
     # Install Google Chrome for supported architectures
     if [ "$(dpkg --print-architecture)" = "amd64" ]; then cd /tmp && curl -o google-chrome-stable.deb -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_$(dpkg --print-architecture).deb" && apt-get update && apt-get install --no-install-recommends -y ./google-chrome-stable.deb && rm -f google-chrome-stable.deb && sed -i '/^Exec=/ s/$/ --password-store=basic --in-process-gpu/' /usr/share/applications/google-chrome.desktop; fi && \
@@ -463,6 +447,25 @@ logout=false\n\
 \n\
 [General]\n\
 BrowserApplication=firefox.desktop" > /etc/xdg/kdeglobals
+# KDE environment variables
+ENV DESKTOP_SESSION=plasma
+ENV XDG_SESSION_DESKTOP=KDE
+ENV XDG_CURRENT_DESKTOP=KDE
+ENV XDG_SESSION_TYPE=x11
+ENV KDE_FULL_SESSION=true
+ENV KDE_SESSION_VERSION=5
+ENV KDE_APPLICATIONS_AS_SCOPE=1
+ENV KWIN_COMPOSE=N
+ENV KWIN_X11_NO_SYNC_TO_VBLANK=1
+# Use sudoedit to change protected files instead of using sudo on kwrite
+ENV SUDO_EDITOR=kwrite
+# Enable AppImage execution in containers
+ENV APPIMAGE_EXTRACT_AND_RUN=1
+# Set input to fcitx
+ENV GTK_IM_MODULE=fcitx
+ENV QT_IM_MODULE=fcitx
+ENV XIM=fcitx
+ENV XMODIFIERS="@im=fcitx"
 
 # Wine, Winetricks, and launchers, this process must be consistent with https://wiki.winehq.org/Ubuntu
 ARG WINE_BRANCH=staging
