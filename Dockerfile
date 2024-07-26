@@ -179,15 +179,18 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         pipewire-jack \
         pipewire-locales \
         pipewire-v4l2 \
+        pipewire-vulkan \
         pipewire-libcamera \
+        gstreamer1.0-libcamera \
         gstreamer1.0-pipewire \
         libpipewire-0.3-modules \
         libpipewire-module-x11-bell \
+        libspa-0.2-bluetooth \
         libspa-0.2-jack \
         libspa-0.2-modules \
         wireplumber \
         wireplumber-locales \
-        gir1.2-wp-0.4 && \
+        gir1.2-wp-0.5 && \
     # Packages only meant for x86_64
     if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
     dpkg --add-architecture i386 && apt-get update && apt-get install --no-install-recommends -y \
@@ -293,6 +296,7 @@ ENV XDG_SESSION_DESKTOP=KDE
 ENV XDG_CURRENT_DESKTOP=KDE
 ENV XDG_SESSION_TYPE=x11
 ENV KDE_FULL_SESSION=true
+ENV KDE_SESSION_VERSION=5
 ENV KDE_APPLICATIONS_AS_SCOPE=1
 ENV KWIN_COMPOSE=N
 ENV KWIN_X11_NO_SYNC_TO_VBLANK=1
@@ -428,7 +432,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         vlc-plugin-video-splitter \
         vlc-plugin-visualization \
         xdg-user-dirs \
-        xdg-utils \
         firefox \
         transmission-qt && \
     apt-get install --install-recommends -y \
@@ -438,7 +441,6 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         libreoffice-style-breeze && \
     # Ensure Firefox as the default web browser
     update-alternatives --set x-www-browser /usr/bin/firefox && \
-    xdg-settings set default-web-browser firefox.desktop && \
     # Install Google Chrome for supported architectures
     if [ "$(dpkg --print-architecture)" = "amd64" ]; then cd /tmp && curl -o google-chrome-stable.deb -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_$(dpkg --print-architecture).deb" && apt-get update && apt-get install --no-install-recommends -y ./google-chrome-stable.deb && rm -f google-chrome-stable.deb && sed -i '/^Exec=/ s/$/ --password-store=basic --in-process-gpu/' /usr/share/applications/google-chrome.desktop; fi && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
