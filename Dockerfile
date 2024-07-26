@@ -296,8 +296,8 @@ ENV KDE_FULL_SESSION=true
 ENV KDE_APPLICATIONS_AS_SCOPE=1
 ENV KWIN_COMPOSE=N
 ENV KWIN_X11_NO_SYNC_TO_VBLANK=1
-# Use sudoedit to change protected files instead of using sudo on kate
-ENV SUDO_EDITOR=kate
+# Use sudoedit to change protected files instead of using sudo on kwrite
+ENV SUDO_EDITOR=kwrite
 # Set input to fcitx
 ENV GTK_IM_MODULE=fcitx
 ENV QT_IM_MODULE=fcitx
@@ -348,7 +348,7 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         haveged \
         hunspell \
         im-config \
-        kate \
+        kwrite \
         kcalc \
         kcharselect \
         kdeadmin \
@@ -360,7 +360,9 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         kde-spectacle \
         kdf \
         kdialog \
+        kfind \
         kget \
+        khotkeys \
         kimageformat-plugins \
         kinfocenter \
         kio \
@@ -370,7 +372,9 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         kmix \
         kmousetool \
         kmouth \
+        knewstuff-dialog \
         ksshaskpass \
+        ksystemstats \
         ktimer \
         kwayland-integration \
         kwin-addons \
@@ -419,15 +423,14 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         systemsettings \
         ubuntu-drivers-common \
         vlc \
-        vlc-l10n \
         vlc-plugin-access-extra \
         vlc-plugin-notify \
         vlc-plugin-samba \
         vlc-plugin-skins2 \
         vlc-plugin-video-splitter \
         vlc-plugin-visualization \
-        xdg-desktop-portal-kde \
         xdg-user-dirs \
+        xdg-utils \
         firefox \
         transmission-qt && \
     apt-get install --install-recommends -y \
@@ -435,10 +438,11 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
         libreoffice-kf5 \
         libreoffice-plasma \
         libreoffice-style-breeze && \
-    # Install Google Chrome for supported architectures
-    if [ "$(dpkg --print-architecture)" = "amd64" ]; then cd /tmp && curl -o google-chrome-stable.deb -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_$(dpkg --print-architecture).deb" && apt-get update && apt-get install --no-install-recommends -y ./google-chrome-stable.deb && rm -f google-chrome-stable.deb && sed -i '/^Exec=/ s/$/ --password-store=basic --in-process-gpu/' /usr/share/applications/google-chrome.desktop; fi && \
     # Ensure Firefox as the default web browser
     update-alternatives --set x-www-browser /usr/bin/firefox && \
+    xdg-settings set default-web-browser firefox.desktop && \
+    # Install Google Chrome for supported architectures
+    if [ "$(dpkg --print-architecture)" = "amd64" ]; then cd /tmp && curl -o google-chrome-stable.deb -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_$(dpkg --print-architecture).deb" && apt-get update && apt-get install --no-install-recommends -y ./google-chrome-stable.deb && rm -f google-chrome-stable.deb && sed -i '/^Exec=/ s/$/ --password-store=basic --in-process-gpu/' /usr/share/applications/google-chrome.desktop; fi && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/* && \
     # Fix KDE startup permissions issues in containers
     MULTI_ARCH=$(dpkg --print-architecture | sed -e 's/arm64/aarch64-linux-gnu/' -e 's/armhf/arm-linux-gnueabihf/' -e 's/riscv64/riscv64-linux-gnu/' -e 's/ppc64el/powerpc64le-linux-gnu/' -e 's/s390x/s390x-linux-gnu/' -e 's/i.*86/i386-linux-gnu/' -e 's/amd64/x86_64-linux-gnu/' -e 's/unknown/x86_64-linux-gnu/') && \
@@ -610,7 +614,7 @@ ENV PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}"
 ENV PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
 # dbus-daemon to the below address is required during startup
-ENV DBUS_SYSTEM_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR:-/tmp}/dbus-session-bus"
+ENV DBUS_SYSTEM_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR:-/tmp}/dbus-system-bus"
 
 USER 1000
 ENV SHELL=/bin/bash

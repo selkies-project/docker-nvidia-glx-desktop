@@ -148,7 +148,7 @@ echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do 
 # Start KDE desktop environment
 export XDG_SESSION_ID="${DISPLAY#*:}"
 export QT_LOGGING_RULES='*.debug=false;qt.qpa.*=false'
-/usr/bin/dbus-launch /usr/bin/startplasma-x11 &
+/usr/bin/dbus-launch --exit-with-session /usr/bin/startplasma-x11 &
 
 # Start Fcitx input method framework
 /usr/bin/fcitx &
