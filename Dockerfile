@@ -440,6 +440,8 @@ Pin-Priority: -1" > /etc/apt/preferences.d/firefox-nosnap && \
     echo "[Daemon]\n\
 Autolock=false\n\
 LockOnResume=false" > /etc/xdg/kscreenlockerrc && \
+    echo "[Compositing]\n\
+Enabled=false" > /etc/xdg/kwinrc && \
     echo "[KDE]\n\
 SingleClick=false\n\
 \n\
