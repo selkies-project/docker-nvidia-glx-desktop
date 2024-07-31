@@ -12,7 +12,7 @@ until [ -d "${XDG_RUNTIME_DIR}" ]; do sleep 0.5; done
 # Set default display
 export DISPLAY="${DISPLAY:-:20}"
 # PipeWire-Pulse server socket path
-export PIPEWIRE_LATENCY="32/48000"
+export PIPEWIRE_LATENCY="128/48000"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
 export PIPEWIRE_RUNTIME_DIR="${PIPEWIRE_RUNTIME_DIR:-${XDG_RUNTIME_DIR:-/tmp}}"
 export PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}"
