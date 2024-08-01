@@ -80,14 +80,6 @@ if ! command -v nvidia-xconfig >/dev/null 2>&1; then
   fi
 fi
 
-# Allow starting Xorg from a pseudoterminal instead of strictly on a tty console
-if [ ! -f /etc/X11/Xwrapper.config ]; then
-    echo -e "allowed_users=anybody\nneeds_root_rights=yes" | tee /etc/X11/Xwrapper.config > /dev/null
-fi
-if grep -Fxq "allowed_users=console" /etc/X11/Xwrapper.config; then
-  sed -i "s/allowed_users=console/allowed_users=anybody/;$ a needs_root_rights=yes" /etc/X11/Xwrapper.config
-fi
-
 # Remove existing Xorg configuration
 if [ -f "/etc/X11/xorg.conf" ]; then
   rm -f "/etc/X11/xorg.conf"
@@ -136,13 +128,10 @@ sed -i '/Section\s\+"Monitor"/a\    '"$MODELINE" /etc/X11/xorg.conf
 sed -i '/"DPMS"/d' /etc/X11/xorg.conf
 sed -i '/Section\s\+"Monitor"/a\    Option         "DPMS" "False"' /etc/X11/xorg.conf
 # Prevent interference between GPUs, add this to the host or other containers running Xorg as well
-echo -e "Section \"ServerFlags\"\n    Option         \"DontVTSwitch\" \"True\"\n    Option         \"DontZap\" \"True\"\n    Option         \"AllowMouseOpenFail\" \"True\"\n    Option         \"AutoAddGPU\" \"False\"\n    Option         \"AutoBindGPU\" \"False\"\nEndSection" | tee -a /etc/X11/xorg.conf > /dev/null
-
-# Real sudo (sudo-root) is required in Ubuntu 20.04 but not newer Ubuntu, this symbolic link enables running Xorg inside a container with `-sharevts`
-ln -snf /dev/ptmx /dev/tty7 || sudo-root ln -snf /dev/ptmx /dev/tty7 || echo 'Failed to create /dev/tty7 device'
+echo -e "Section \"ServerFlags\"\n    Option         \"DontVTSwitch\" \"True\"\n    Option         \"DontZap\" \"True\"\n    Option         \"AllowMouseOpenFail\" \"True\"\n    Option         \"AutoAddGPU\" \"False\"\nEndSection" | tee -a /etc/X11/xorg.conf > /dev/null
 
 # Run Xorg server with required extensions
-/usr/bin/Xorg "${DISPLAY}" vt7 -noreset -novtswitch -sharevts -nolisten "tcp" -ac -dpi "${DISPLAY_DPI}" +extension "COMPOSITE" +extension "DAMAGE" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" +extension "XFIXES" +extension "XTEST" &
+/usr/lib/xorg/Xorg "${DISPLAY}" vt7 -noreset -novtswitch -sharevts -nolisten "tcp" -ac -dpi "${DISPLAY_DPI}" +extension "COMPOSITE" +extension "DAMAGE" +extension "GLX" +extension "RANDR" +extension "RENDER" +extension "MIT-SHM" +extension "XFIXES" +extension "XTEST" &
 
 # Wait for X server to start
 echo 'Waiting for X Socket' && until [ -S "/tmp/.X11-unix/X${DISPLAY#*:}" ]; do sleep 0.5; done && echo 'X Server is ready'

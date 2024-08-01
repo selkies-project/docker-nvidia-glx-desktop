@@ -354,6 +354,19 @@ Do not use `systemd`, `polkit`, FUSE mounts, or sandboxed application distributi
 
 </details>
 
+### I want to use this container with laptops or other integrated/hybrid GPU systems.
+
+<details>
+  <summary>Open Answer</summary>
+
+If you need a container that works out of the box, you should use [docker-nvidia-egl-desktop](https://github.com/selkies-project/docker-nvidia-egl-desktop).
+
+This container may work after some substantial configuration with the internal X.Org X11 server of the container, but is not guaranteed or officially supported.
+
+Some references include [https://wiki.archlinux.org/title/NVIDIA_Optimus](https://wiki.archlinux.org/title/NVIDIA_Optimus), [https://wiki.archlinux.org/title/Bumblebee](https://wiki.archlinux.org/title/Bumblebee), and [https://wiki.debian.org/NVIDIA%20Optimus](https://wiki.debian.org/NVIDIA%20Optimus).
+
+</details>
+
 ### I want to share one GPU with multiple containers to run GUI workloads.
 
 <details>
@@ -383,7 +396,7 @@ Then, edit the `/etc/X11/xorg.conf` file of your host outside the container and 
 
 ```
 Section "ServerFlags"
-    Option "AutoAddGPU" "false"
+    Option "AutoAddGPU" "False"
 EndSection
 ```
 
