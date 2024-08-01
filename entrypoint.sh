@@ -13,11 +13,11 @@ until [ -d "${XDG_RUNTIME_DIR}" ]; do sleep 0.5; done
 # Make user directory owned by the default ubuntu user
 chown -f ubuntu:ubuntu ~ || sudo-root chown -f ubuntu:ubuntu ~ || chown -R -f -h --no-preserve-root ubuntu:ubuntu ~ || sudo-root chown -R -f -h --no-preserve-root ubuntu:ubuntu ~ || echo 'Failed to change user directory permissions, there may be permission issues'
 # Change operating system password to environment variable
-(echo "$PASSWD"; echo "$PASSWD";) | sudo passwd ubuntu || (echo "mypasswd"; echo "$PASSWD"; echo "$PASSWD";) | passwd ubuntu || echo 'Password change failed, using default password'
+(echo "${PASSWD}"; echo "${PASSWD}";) | sudo passwd ubuntu || (echo "mypasswd"; echo "${PASSWD}"; echo "${PASSWD}";) | passwd ubuntu || echo 'Password change failed, using default password'
 # Remove directories to make sure the desktop environment starts
 rm -rf /tmp/.X* ~/.cache || echo 'Failed to clean X11 paths'
 # Change time zone from environment variable
-ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" | tee /etc/timezone > /dev/null || echo 'Failed to set timezone'
+ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime && echo "${TZ}" | tee /etc/timezone > /dev/null || echo 'Failed to set timezone'
 # Add Lutris directories to path
 export PATH="${PATH:+${PATH}:}/usr/local/games:/usr/games"
 # Add LibreOffice to library path
@@ -85,52 +85,52 @@ if [ -f "/etc/X11/xorg.conf" ]; then
   rm -f "/etc/X11/xorg.conf"
 fi
 
-# Get first GPU device if all devices are available or `NVIDIA_VISIBLE_DEVICES` is not set
-if [ "$NVIDIA_VISIBLE_DEVICES" = "all" ] || [ -z "$NVIDIA_VISIBLE_DEVICES" ]; then
-  export GPU_SELECT="$(nvidia-smi --query-gpu=uuid --format=csv,noheader | head -n1)"
-# Get first GPU device out of the visible devices in other situations
+# Get first GPU device of specified visible devices when `NVIDIA_VISIBLE_DEVICES` devices are specified
+if [ "${NVIDIA_VISIBLE_DEVICES}" != "all" ] && [ "${NVIDIA_VISIBLE_DEVICES}" != "none" ] && [ "${NVIDIA_VISIBLE_DEVICES}" != "void" ] && [ -n "${NVIDIA_VISIBLE_DEVICES}" ]; then
+  export GPU_SELECT="$(nvidia-smi --id=$(echo ${NVIDIA_VISIBLE_DEVICES} | cut -d ',' -f1) --query-gpu=uuid --format=csv,noheader | head -n1)"
+# Get first GPU device out of all visible devices in other situations
 else
-  export GPU_SELECT="$(nvidia-smi --id=$(echo "$NVIDIA_VISIBLE_DEVICES" | cut -d ',' -f1) --query-gpu=uuid --format=csv,noheader | head -n1)"
-  if [ -z "$GPU_SELECT" ]; then
-    export GPU_SELECT="$(nvidia-smi --query-gpu=uuid --format=csv,noheader | head -n1)"
+  export GPU_SELECT="$(nvidia-smi --query-gpu=uuid --format=csv,noheader | head -n1)"
+fi
+
+if [ -z "${GPU_SELECT}" ]; then
+  export GPU_SELECT="$(nvidia-smi --query-gpu=uuid --format=csv,noheader | head -n1)"
+  if [ -z "${GPU_SELECT}" ]; then
+    echo "No NVIDIA GPUs detected or NVIDIA Container Toolkit not configured. Exiting."
+    exit 1
   fi
 fi
 
-if [ -z "$GPU_SELECT" ]; then
-  echo "No NVIDIA GPUs detected or nvidia-container-toolkit not configured. Exiting."
-  exit 1
-fi
-
-# Setting `VIDEO_PORT` to none disables RANDR/XRANDR, do not set this if using datacenter GPUs
+# Setting `VIDEO_PORT` to none disables RANDR/XRANDR, causing potential compatibility issues, set to DFP if using datacenter GPUs
 if [ "$(echo ${VIDEO_PORT} | tr '[:upper:]' '[:lower:]')" = "none" ]; then
   export CONNECTED_MONITOR="--use-display-device=None"
 # The X server is otherwise deliberately set to a specific video port despite not being plugged to enable RANDR/XRANDR, monitor will display the screen if plugged to the specific port
 else
-  export CONNECTED_MONITOR="--connected-monitor=${VIDEO_PORT}"
+  export CONNECTED_MONITOR="--connected-monitor=${VIDEO_PORT:-DFP}"
 fi
 
 # Bus ID from nvidia-smi is in hexadecimal format and should be converted to decimal format (including the domain) which Xorg understands, required because nvidia-xconfig doesn't work as intended in a container
-HEX_ID="$(nvidia-smi --query-gpu=pci.bus_id --id="$GPU_SELECT" --format=csv,noheader | head -n1)"
-IFS=":." ARR_ID=($HEX_ID)
+HEX_ID="$(nvidia-smi --query-gpu=pci.bus_id --id=${GPU_SELECT} --format=csv,noheader | head -n1)"
+IFS=":." ARR_ID=(${HEX_ID})
 unset IFS
-BUS_ID="PCI:$((16#${ARR_ID[1]}))@$((16#${ARR_ID[0]})):$((16#${ARR_ID[2]})):$((16#${ARR_ID[3]}))"
+BUS_ID="PCI:$(printf '%u' 0x${ARR_ID[1]})@$(printf '%u' 0x${ARR_ID[0]}):$(printf '%u' 0x${ARR_ID[2]}):$(printf '%u' 0x${ARR_ID[3]})"
 # A custom modeline should be generated because there is no monitor to fetch this information normally
-export MODELINE="$(cvt -r "${DISPLAY_SIZEW}" "${DISPLAY_SIZEH}" "${DISPLAY_REFRESH}" | sed -n 2p)"
+export MODELINE="$(cvt -r ${DISPLAY_SIZEW} ${DISPLAY_SIZEH} ${DISPLAY_REFRESH} | sed -n 2p)"
 # Generate /etc/X11/xorg.conf with nvidia-xconfig
-nvidia-xconfig --virtual="${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" --depth="$DISPLAY_CDEPTH" --mode="$(echo "$MODELINE" | awk '{print $2; exit}' | tr -d '\"')" --allow-empty-initial-configuration --no-probe-all-gpus --busid="$BUS_ID" --include-implicit-metamodes --mode-debug --no-sli --no-base-mosaic --only-one-x-screen ${CONNECTED_MONITOR}
+nvidia-xconfig --virtual="${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" --depth="${DISPLAY_CDEPTH}" --mode="$(echo ${MODELINE} | awk '{print $2; exit}' | tr -d '\"')" --allow-empty-initial-configuration --no-probe-all-gpus --busid="${BUS_ID}" --include-implicit-metamodes --mode-debug --no-sli --no-base-mosaic --only-one-x-screen ${CONNECTED_MONITOR}
 # Guarantee that the X server starts without a monitor by adding more options to the configuration
 sed -i '/Driver\s\+"nvidia"/a\    Option         "ModeValidation" "NoMaxPClkCheck,NoEdidMaxPClkCheck,NoMaxSizeCheck,NoHorizSyncCheck,NoVertRefreshCheck,NoVirtualSizeCheck,NoExtendedGpuCapabilitiesCheck,NoTotalSizeCheck,NoDualLinkDVICheck,NoDisplayPortBandwidthCheck,AllowNon3DVisionModes,AllowNonHDMI3DModes,AllowNonEdidModes,NoEdidHDMI2Check,AllowDpInterlaced"' /etc/X11/xorg.conf
 # Support external GPUs
 sed -i '/Driver\s\+"nvidia"/a\    Option         "AllowExternalGpus" "True"' /etc/X11/xorg.conf
 # Add custom generated modeline to the configuration
-sed -i '/Section\s\+"Monitor"/a\    '"$MODELINE" /etc/X11/xorg.conf
+sed -i '/Section\s\+"Monitor"/a\    '"${MODELINE}" /etc/X11/xorg.conf
 # Disable screen blanking in X11
 sed -i '/"DPMS"/d' /etc/X11/xorg.conf
 sed -i '/Section\s\+"Monitor"/a\    Option         "DPMS" "False"' /etc/X11/xorg.conf
 # Prevent interference between GPUs, add this to the host or other containers running Xorg as well
 echo -e "Section \"ServerFlags\"\n    Option         \"DontVTSwitch\" \"True\"\n    Option         \"DontZap\" \"True\"\n    Option         \"AllowMouseOpenFail\" \"True\"\n    Option         \"AutoAddGPU\" \"False\"\nEndSection" | tee -a /etc/X11/xorg.conf > /dev/null
 
-# Real sudo (sudo-root) is required in Ubuntu 20.04 but not newer Ubuntu, this symbolic link enables running Xorg inside a container with `-sharevts`
+# Real sudo (sudo-root) is required in Ubuntu 20.04 but not in newer Ubuntu, this symbolic link enables running Xorg inside a container with `-sharevts`
 ln -snf /dev/ptmx /dev/tty7 || sudo-root ln -snf /dev/ptmx /dev/tty7 || echo 'Failed to create /dev/tty7 device'
 
 # Run Xorg server with required extensions
