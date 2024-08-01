@@ -86,7 +86,7 @@ if [ -f "/etc/X11/xorg.conf" ]; then
 fi
 
 # Get first GPU device if all devices are available or `NVIDIA_VISIBLE_DEVICES` is not set
-if [ "$NVIDIA_VISIBLE_DEVICES" == "all" ] || [ -z "$NVIDIA_VISIBLE_DEVICES" ]; then
+if [ "$NVIDIA_VISIBLE_DEVICES" = "all" ] || [ -z "$NVIDIA_VISIBLE_DEVICES" ]; then
   export GPU_SELECT="$(nvidia-smi --query-gpu=uuid --format=csv,noheader | head -n1)"
 # Get first GPU device out of the visible devices in other situations
 else
