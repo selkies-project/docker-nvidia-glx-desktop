@@ -10,10 +10,10 @@ trap "echo TRAPed signal" HUP INT QUIT TERM
 
 # Wait for XDG_RUNTIME_DIR
 until [ -d "${XDG_RUNTIME_DIR}" ]; do sleep 0.5; done
-# Make user directory owned by the default ubuntu user
-chown -f ubuntu:ubuntu ~ || sudo-root chown -f ubuntu:ubuntu ~ || chown -R -f -h --no-preserve-root ubuntu:ubuntu ~ || sudo-root chown -R -f -h --no-preserve-root ubuntu:ubuntu ~ || echo 'Failed to change user directory permissions, there may be permission issues'
+# Make user directory owned by the default user
+chown -f "$(id -nu):$(id -ng)" ~ || sudo-root chown -f "$(id -nu):$(id -ng)" ~ || chown -R -f -h --no-preserve-root "$(id -nu):$(id -ng)" ~ || sudo-root chown -R -f -h --no-preserve-root "$(id -nu):$(id -ng)" ~ || echo 'Failed to change user directory permissions, there may be permission issues'
 # Change operating system password to environment variable
-(echo "${PASSWD}"; echo "${PASSWD}";) | sudo passwd ubuntu || (echo "mypasswd"; echo "${PASSWD}"; echo "${PASSWD}";) | passwd ubuntu || echo 'Password change failed, using default password'
+(echo "${PASSWD}"; echo "${PASSWD}";) | sudo passwd "$(id -nu)" || (echo "mypasswd"; echo "${PASSWD}"; echo "${PASSWD}";) | passwd "$(id -nu)" || echo 'Password change failed, using default password'
 # Remove directories to make sure the desktop environment starts
 rm -rf /tmp/.X* ~/.cache || echo 'Failed to clean X11 paths'
 # Change time zone from environment variable
