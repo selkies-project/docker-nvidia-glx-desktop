@@ -146,6 +146,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libc6-dev \
         libpci3 \
         libelf-dev \
+        libglvnd-dev \
         # OpenGL libraries
         libxau6 \
         libxdmcp6 \
