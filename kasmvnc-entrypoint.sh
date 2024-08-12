@@ -21,7 +21,7 @@ export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DI
 # Configure KasmVNC
 mkdir -pm700 ~/.vnc
 (echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}"; echo "${SELKIES_BASIC_AUTH_PASSWORD:-${PASSWD}}";) | kasmvncpasswd -u "${SELKIES_BASIC_AUTH_USER:-${USER}}" -ow ~/.kasmpasswd
-touch ~/.vnc/.de-was-selected
+touch ~/.vnc/.de-was-selected ~/.vnc/kasmvnc.yaml
 export KASMVNC_DISPLAY="${KASMVNC_DISPLAY:-:21}"
 yq -i "
 .command_line.prompt = false |
