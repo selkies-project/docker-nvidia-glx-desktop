@@ -3,8 +3,10 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 # Supported base images: Ubuntu 24.04, 22.04, 20.04
+ARG DISTRIB_IMAGE=ubuntu
 ARG DISTRIB_RELEASE=24.04
-FROM ubuntu:${DISTRIB_RELEASE}
+FROM ${DISTRIB_IMAGE}:${DISTRIB_RELEASE}
+ARG DISTRIB_IMAGE
 ARG DISTRIB_RELEASE
 
 LABEL maintainer="https://github.com/ehfd,https://github.com/danisla"
@@ -502,30 +504,17 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         python3-gi \
         python3-setuptools \
         python3-wheel \
-        libaa1 \
-        bzip2 \
         libgcrypt20 \
-        libcairo-gobject2 \
-        libpangocairo-1.0-0 \
-        libgdk-pixbuf2.0-0 \
-        libsoup2.4-1 \
-        libsoup-gnome2.4-1 \
         libgirepository-1.0-1 \
         glib-networking \
         libglib2.0-0 \
-        libjson-glib-1.0-0 \
         libgudev-1.0-0 \
         alsa-utils \
         jackd2 \
         libjack-jackd2-0 \
         libpulse0 \
-        libogg0 \
         libopus0 \
-        libvorbis-dev \
-        libjpeg-turbo8 \
-        libopenjp2-7 \
         libvpx-dev \
-        libwebp-dev \
         x264 \
         x265 \
         libdrm2 \
@@ -543,17 +532,17 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         xsel \
         xdotool \
         x11-utils \
+        x11-xkb-utils \
         x11-xserver-utils \
         xserver-xorg-core \
         libx11-xcb1 \
         libxcb-dri3-0 \
-        libxkbcommon0 \
         libxdamage1 \
         libxfixes3 \
         libxv1 \
         libxtst6 \
         libxext6 && \
-    if [ "$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt libopenh264-dev libde265-0 svt-av1 aom-tools; else apt-get install --no-install-recommends -y mesa-utils-extra; fi && \
+    if [ "$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')" \> "20.04" ]; then apt-get install --no-install-recommends -y xcvt libopenh264-dev svt-av1 aom-tools; else apt-get install --no-install-recommends -y mesa-utils-extra; fi && \
     # Automatically fetch the latest Selkies-GStreamer version and install the components
     SELKIES_VERSION="$(curl -fsSL "https://api.github.com/repos/selkies-project/selkies-gstreamer/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
     cd /opt && curl -fsSL "https://github.com/selkies-project/selkies-gstreamer/releases/download/v${SELKIES_VERSION}/gstreamer-selkies_gpl_v${SELKIES_VERSION}_ubuntu$(grep VERSION_ID= /etc/os-release | cut -d= -f2 | tr -d '\"')_$(dpkg --print-architecture).tar.gz" | tar -xzf - && \
