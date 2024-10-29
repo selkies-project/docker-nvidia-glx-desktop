@@ -343,7 +343,7 @@ If you checked everything here, scroll down.
 
 </details>
 
-### I want to use `systemd`, `polkit`, FUSE mounts, or sandboxed (containerized) application distribution systems like Flatpak, Snapcraft (snap), AppImage, and etc.
+### I want to use `systemd`, `polkit`, FUSE mounts, or sandboxed (containerized) application distribution systems like Flatpak, Snapcraft (snap), AppImage, Electron, chrome-sandbox, etc.
 
 <details>
   <summary>Open Answer</summary>
