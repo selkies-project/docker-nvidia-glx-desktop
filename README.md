@@ -74,7 +74,7 @@ Then, open the ports with the `docker run` arguments `-p 8080:8080 -p 3478:3478 
 
 If UDP cannot be used, at the cost of higher latency and lower performance, omit the ports containing `/udp` and use the environment variable `-e SELKIES_TURN_PROTOCOL=tcp`.
 
-All these ports must be exposed to the internet if you need access over the internet. If you need use TURN within a local network, add `-e SELKIES_TURN_HOST=[YOUR_INTERNAL_IP]` with `YOUR_INTERNAL_IP` to the internal hostname or IP of the local network.
+All these ports must be exposed to the internet if you need access over the internet. If you need use TURN within a local network, add `-e SELKIES_TURN_HOST={YOUR_INTERNAL_IP}` with `{YOUR_INTERNAL_IP}` to the internal hostname or IP of the local network. IPv6 addresses must be enclosed with square brackets such as `[::1]`.
 
 </details>
 
@@ -145,7 +145,7 @@ Uncomment the relevant environment variables `SELKIES_TURN_PROTOCOL=udp`, `SELKI
 
 If UDP cannot be used, at the cost of higher latency and lower performance, omit the UDP ports in the configuration and use the environment variable `SELKIES_TURN_PROTOCOL=tcp` (within `name:` and `value:`).
 
-All these ports must be exposed to the internet if you need access over the internet. If you need use TURN within a local network, add the environment variable `SELKIES_TURN_HOST=[YOUR_INTERNAL_IP]` (within `name:` and `value:`) with `YOUR_INTERNAL_IP` to the internal hostname or IP of the local network.
+All these ports must be exposed to the internet if you need access over the internet. If you need use TURN within a local network, add the environment variable `SELKIES_TURN_HOST={YOUR_INTERNAL_IP}` (within `name:` and `value:`) with `{YOUR_INTERNAL_IP}` to the internal hostname or IP of the local network. IPv6 addresses must be enclosed with square brackets such as `[::1]`.
 
 </details>
 
