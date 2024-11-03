@@ -32,7 +32,7 @@ yq -i "
 .encoding.rect_encoding_mode.rectangle_compress_threads = ${KASMVNC_THREADS-0} |
 .encoding.max_frame_rate = ${DISPLAY_REFRESH} |
 .network.interface = \"127.0.0.1\" |
-.network.websocket_port = 8081 |
+.network.websocket_port = ${SELKIES_PORT:-8081} |
 .network.ssl.require_ssl = $(echo ${SELKIES_ENABLE_HTTPS-false} | tr '[:upper:]' '[:lower:]') |
 .network.udp.public_ip = \"$(dig -4 TXT +short @ns1.google.com o-o.myaddr.l.google.com 2>/dev/null | { read output; if [ -z "$output" ] || echo "$output" | grep -q '^;;'; then exit 1; else echo "$(echo $output | sed 's,\",,g')"; fi } || dig -6 TXT +short @ns1.google.com o-o.myaddr.l.google.com 2>/dev/null | { read output; if [ -z "$output" ] || echo "$output" | grep -q '^;;'; then exit 1; else echo "[$(echo $output | sed 's,\",,g')]"; fi } || hostname -I 2>/dev/null | awk '{print $1; exit}' || echo '127.0.0.1')\"
 " ~/.vnc/kasmvnc.yaml
@@ -51,8 +51,8 @@ echo "# Selkies KasmVNC NGINX Configuration
 server {
     access_log /dev/stdout;
     error_log /dev/stderr;
-    listen 8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "ssl"; fi);
-    listen [::]:8080 $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "ssl"; fi);
+    listen ${NGINX_PORT:-8080} $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "ssl"; fi);
+    listen [::]:${NGINX_PORT:-8080} $(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "ssl"; fi);
     ssl_certificate ${SELKIES_HTTPS_CERT-/etc/ssl/certs/ssl-cert-snakeoil.pem};
     ssl_certificate_key ${SELKIES_HTTPS_KEY-/etc/ssl/private/ssl-cert-snakeoil.key};
     $(if [ \"$(echo ${SELKIES_ENABLE_BASIC_AUTH} | tr '[:upper:]' '[:lower:]')\" != \"false\" ]; then echo "auth_basic \"Selkies\";"; echo -n "    auth_basic_user_file ${XDG_RUNTIME_DIR}/.htpasswd;"; fi)
@@ -74,13 +74,13 @@ server {
 
         client_max_body_size    10M;
 
-        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:8081;
+        proxy_pass http$(if [ \"$(echo ${SELKIES_ENABLE_HTTPS} | tr '[:upper:]' '[:lower:]')\" = \"true\" ]; then echo -n "s"; fi)://localhost:${SELKIES_PORT:-8081};
     }
 }" | tee /etc/nginx/sites-available/default > /dev/null
 
 # Run KasmVNC
 if ls ~/.vnc/*\:"${KASMVNC_DISPLAY#*:}".pid >/dev/null 2>&1; then kasmvncserver -kill "${KASMVNC_DISPLAY}"; fi
-kasmvncserver "${KASMVNC_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -noxstartup -FrameRate "${DISPLAY_REFRESH}" -RectThreads "${KASMVNC_THREADS}" -interface 127.0.0.1 -rfbport 9082 -websocketPort 8081 -disableBasicAuth -AlwaysShared -BlacklistTimeout 0 ${KASMVNC_FLAG}
+kasmvncserver "${KASMVNC_DISPLAY}" -geometry "${DISPLAY_SIZEW}x${DISPLAY_SIZEH}" -depth "${DISPLAY_CDEPTH}" -noxstartup -FrameRate "${DISPLAY_REFRESH}" -RectThreads "${KASMVNC_THREADS}" -interface 127.0.0.1 -websocketPort "${SELKIES_PORT:-8081}" -disableBasicAuth -AlwaysShared -BlacklistTimeout 0 ${KASMVNC_FLAG}
 
 until [ -S "/tmp/.X11-unix/X${KASMVNC_DISPLAY#*:}" ]; do sleep 0.5; done;
 
