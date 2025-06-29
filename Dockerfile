@@ -274,7 +274,7 @@ ENV __GL_SYNC_TO_VBLANK=0
 # Set default DISPLAY environment
 ENV DISPLAY=":20"
 
-# Anything above this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
+# Anything above this line should always be kept the same between docker-selkies-glx-desktop and docker-selkies-egl-desktop
 
 # Default environment variables (default password is "mypasswd")
 ENV DISPLAY_SIZEW=1920
@@ -294,7 +294,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         xterm && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/* /var/tmp/*
 
-# Anything below this line should always be kept the same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
+# Anything below this line should always be kept the same between docker-selkies-glx-desktop and docker-selkies-egl-desktop
 
 # Install KDE and other GUI packages
 RUN mkdir -pm755 /etc/apt/preferences.d && echo "Package: firefox*\n\

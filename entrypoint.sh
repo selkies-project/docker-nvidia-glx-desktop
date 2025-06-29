@@ -41,7 +41,7 @@ export PULSE_RUNTIME_PATH="${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}
 export PULSE_SERVER="${PULSE_SERVER:-unix:${PULSE_RUNTIME_PATH:-${XDG_RUNTIME_DIR:-/tmp}/pulse}/native}"
 
 if ! command -v nvidia-xconfig >/dev/null 2>&1; then
-  # Install NVIDIA userspace driver components including X graphic libraries, keep contents same between docker-nvidia-glx-desktop and docker-nvidia-egl-desktop
+  # Install NVIDIA userspace driver components including X graphic libraries, keep contents same between docker-selkies-glx-desktop and docker-selkies-egl-desktop
   export NVIDIA_DRIVER_ARCH="$(dpkg --print-architecture | sed -e 's/arm64/aarch64/' -e 's/armhf/32bit-ARM/' -e 's/i.*86/x86/' -e 's/amd64/x86_64/' -e 's/unknown/x86_64/')"
   if [ -z "${NVIDIA_DRIVER_VERSION}" ]; then
     # Driver version is provided by the kernel through the container toolkit, prioritize kernel driver version if available

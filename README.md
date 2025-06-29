@@ -1,14 +1,14 @@
-# docker-nvidia-glx-desktop
+# docker-selkies-glx-desktop
 
 KDE Plasma Desktop container designed for Kubernetes, supporting OpenGL EGL and GLX, Vulkan, and Wine/Proton for NVIDIA GPUs through WebRTC and HTML5, providing an open-source remote cloud/HPC graphics or game streaming platform. Spawns its own fully isolated X.Org X11 Server instead of using the host X Server, not requiring `/tmp/.X11-unix` host sockets or host configuration.
 
-Use [docker-nvidia-egl-desktop](https://github.com/selkies-project/docker-nvidia-egl-desktop) for a KDE Plasma Desktop container which directly accesses NVIDIA (and unofficially Intel and AMD) GPUs without using an X.Org X11 Server, supports sharing one GPU with many containers, supports [Apptainer](https://github.com/apptainer/apptainer)/[Singularity](https://github.com/sylabs/singularity), and automatically falling back to software acceleration in the absence of GPUs (but with lower graphics performance).
+Use [docker-selkies-egl-desktop](https://github.com/selkies-project/docker-selkies-egl-desktop) for a KDE Plasma Desktop container which directly accesses NVIDIA (and unofficially Intel and AMD) GPUs without using an X.Org X11 Server, supports sharing one GPU with many containers, supports [Apptainer](https://github.com/apptainer/apptainer)/[Singularity](https://github.com/sylabs/singularity), and automatically falling back to software acceleration in the absence of GPUs (but with lower graphics performance).
 
-[![Build](https://github.com/selkies-project/docker-nvidia-glx-desktop/actions/workflows/container-publish.yml/badge.svg)](https://github.com/selkies-project/docker-nvidia-glx-desktop/actions/workflows/container-publish.yml)
+[![Build](https://github.com/selkies-project/docker-selkies-glx-desktop/actions/workflows/container-publish.yml/badge.svg)](https://github.com/selkies-project/docker-selkies-glx-desktop/actions/workflows/container-publish.yml)
 
 [![Discord](https://img.shields.io/badge/dynamic/json?logo=discord&label=Discord%20Members&query=approximate_member_count&url=https%3A%2F%2Fdiscordapp.com%2Fapi%2Finvites%2FwDNGDeSW5F%3Fwith_counts%3Dtrue)](https://discord.gg/wDNGDeSW5F)
 
-**Please read [Troubleshooting](#troubleshooting) first, then use [Discord](https://discord.gg/wDNGDeSW5F) or [GitHub Discussions](https://github.com/selkies-project/docker-nvidia-glx-desktop/discussions) for support questions. Please only use [Issues](https://github.com/selkies-project/docker-nvidia-glx-desktop/issues) for technical inquiries or bug reports.**
+**Please read [Troubleshooting](#troubleshooting) first, then use [Discord](https://discord.gg/wDNGDeSW5F) or [GitHub Discussions](https://github.com/selkies-project/docker-selkies-glx-desktop/discussions) for support questions. Please only use [Issues](https://github.com/selkies-project/docker-selkies-glx-desktop/issues) for technical inquiries or bug reports.**
 
 ## Usage
 
@@ -43,7 +43,7 @@ docker compose down
 
 **If the Selkies WebRTC HTML5 interface does not connect or is extremely slow, read Step 3 and the [WebRTC and Firewall Issues](#webrtc-and-firewall-issues) section very carefully.**
 
-> NOTE: The container tags available are `latest` and `24.04` for Ubuntu 24.04, `22.04` for Ubuntu 22.04, and `20.04` for Ubuntu 20.04. [Persistent container tags](https://github.com/selkies-project/docker-nvidia-glx-desktop/pkgs/container/nvidia-glx-desktop) are available in the form `24.04-20210101010101`. Replace all instances of `mypasswd` with your desired password. `SELKIES_BASIC_AUTH_PASSWORD` will default to `PASSWD` if unspecified. The container must NOT be run in privileged mode.
+> NOTE: The container tags available are `latest` and `24.04` for Ubuntu 24.04, `22.04` for Ubuntu 22.04, and `20.04` for Ubuntu 20.04. [Persistent container tags](https://github.com/selkies-project/docker-selkies-glx-desktop/pkgs/container/nvidia-glx-desktop) are available in the form `24.04-20210101010101`. Replace all instances of `mypasswd` with your desired password. `SELKIES_BASIC_AUTH_PASSWORD` will default to `PASSWD` if unspecified. The container must NOT be run in privileged mode.
 
 Change `SELKIES_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` when using the Selkies interface if your GPU does not support `H.264 (AVCHD)` under the `NVENC - Encoding` section in NVIDIA's [Video Encode and Decode GPU Support Matrix](https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new).
 
@@ -116,7 +116,7 @@ kubectl create -f xgl.yml
 
 **If the Selkies WebRTC HTML5 interface does not connect or is extremely slow, read Step 4 and the [WebRTC and Firewall Issues](#webrtc-and-firewall-issues) section very carefully.**
 
-> NOTE: The container tags available are `latest` and `24.04` for Ubuntu 24.04, `22.04` for Ubuntu 22.04, and `20.04` for Ubuntu 20.04. [Persistent container tags](https://github.com/selkies-project/docker-nvidia-glx-desktop/pkgs/container/nvidia-glx-desktop) are available in the form `24.04-20210101010101`. `SELKIES_BASIC_AUTH_PASSWORD` will default to `PASSWD` if unspecified. The container must NOT be run in privileged mode.
+> NOTE: The container tags available are `latest` and `24.04` for Ubuntu 24.04, `22.04` for Ubuntu 22.04, and `20.04` for Ubuntu 20.04. [Persistent container tags](https://github.com/selkies-project/docker-selkies-glx-desktop/pkgs/container/nvidia-glx-desktop) are available in the form `24.04-20210101010101`. `SELKIES_BASIC_AUTH_PASSWORD` will default to `PASSWD` if unspecified. The container must NOT be run in privileged mode.
 
 Change `SELKIES_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` when using the Selkies interface if your GPU does not support `H.264 (AVCHD)` under the `NVENC - Encoding` section in NVIDIA's [Video Encode and Decode GPU Support Matrix](https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new).
 
@@ -359,7 +359,7 @@ Do not use `systemd`, `polkit`, FUSE mounts, or sandboxed application distributi
 <details markdown>
   <summary>Open Answer</summary>
 
-If you need a container that works out of the box, you should use [docker-nvidia-egl-desktop](https://github.com/selkies-project/docker-nvidia-egl-desktop).
+If you need a container that works out of the box, you should use [docker-selkies-egl-desktop](https://github.com/selkies-project/docker-selkies-egl-desktop).
 
 This container may work after some substantial configuration with the internal X.Org X11 server of the container, but is not guaranteed or officially supported.
 
@@ -372,7 +372,7 @@ Some references include [https://wiki.archlinux.org/title/NVIDIA_Optimus](https:
 <details markdown>
   <summary>Open Answer</summary>
 
-Note that because of restrictions from Xorg, it is not possible to share one GPU to multiple Xorg servers running in different containers. Use [docker-nvidia-egl-desktop](https://github.com/selkies-project/docker-nvidia-egl-desktop) if you intend to do this.
+Note that because of restrictions from Xorg, it is not possible to share one GPU to multiple Xorg servers running in different containers. Use [docker-selkies-egl-desktop](https://github.com/selkies-project/docker-selkies-egl-desktop) if you intend to do this.
 
 </details>
 
