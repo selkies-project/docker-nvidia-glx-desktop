@@ -46,7 +46,7 @@ spec:
 #            secretKeyRef:
 #              name: my-pass
 #              key: my-pass
-        # Uncomment to enable KasmVNC instead of Selkies-GStreamer, `SELKIES_BASIC_AUTH_PASSWORD` is used for authentication with KasmVNC, defaulting to `PASSWD` if not provided
+        # Uncomment to enable KasmVNC instead of Selkies, `SELKIES_BASIC_AUTH_PASSWORD` is used for authentication with KasmVNC, defaulting to `PASSWD` if not provided
         # Uses: `SELKIES_ENABLE_BASIC_AUTH`, `SELKIES_BASIC_AUTH_USER`, `SELKIES_BASIC_AUTH_PASSWORD`, `SELKIES_ENABLE_RESIZE`, `SELKIES_ENABLE_HTTPS`, `SELKIES_HTTPS_CERT`, `SELKIES_HTTPS_KEY`
 #        - name: KASMVNC_ENABLE
 #          value: "true"
@@ -54,7 +54,7 @@ spec:
 #        - name: KASMVNC_THREADS
 #          value: "0"
         ###
-        # Selkies-GStreamer parameters, for additional configurations see `selkies-gstreamer --help`
+        # Selkies parameters, for additional configurations see `selkies-gstreamer --help`
         ###
         # Change `SELKIES_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` if your GPU does not support `H.264 (AVCHD)` under the `NVENC - Encoding` section in https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new
         - name: SELKIES_ENCODER

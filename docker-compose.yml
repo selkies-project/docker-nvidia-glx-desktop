@@ -38,13 +38,13 @@ services:
     - VIDEO_PORT=DFP
     # User password of container
     - PASSWD=mypasswd
-    # Uncomment to enable KasmVNC instead of Selkies-GStreamer, `SELKIES_BASIC_AUTH_PASSWORD` is used for authentication with KasmVNC, defaulting to `PASSWD` if not provided
+    # Uncomment to enable KasmVNC instead of Selkies, `SELKIES_BASIC_AUTH_PASSWORD` is used for authentication with KasmVNC, defaulting to `PASSWD` if not provided
     # Uses: `SELKIES_ENABLE_BASIC_AUTH`, `SELKIES_BASIC_AUTH_USER`, `SELKIES_BASIC_AUTH_PASSWORD`, `SELKIES_ENABLE_RESIZE`, `SELKIES_ENABLE_HTTPS`, `SELKIES_HTTPS_CERT`, `SELKIES_HTTPS_KEY`
 #    - KASMVNC_ENABLE=true
     # Number of threads for encoding frames with KasmVNC, default value is all threads
 #    - name: KASMVNC_THREADS=0
     ###
-    # Selkies-GStreamer parameters, for additional configurations see `selkies-gstreamer --help`
+    # Selkies parameters, for additional configurations see `selkies-gstreamer --help`
     ###
     # Change `SELKIES_ENCODER` to `x264enc`, `vp8enc`, or `vp9enc` if using software fallback without allocated GPUs or your GPU does not support `H.264 (AVCHD)` under the `NVENC - Encoding` section in https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new
     - SELKIES_ENCODER=nvh264enc
